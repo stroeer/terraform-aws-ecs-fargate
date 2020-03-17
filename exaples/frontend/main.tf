@@ -1,9 +1,10 @@
 variable "region" {
-  default = ""
 }
+
 provider "aws" {
-  region = var.region
+  region  = var.region
 }
+
 locals {
   service_name = "test-frontend"
 }
@@ -13,7 +14,7 @@ module "service" {
   cluster_id            = "k8"
   alb_listener_priority = 666
   health_check_endpoint = "/actuator/info"
-  desired_count         = 1
+  desired_count         = 0
   service_name          = local.service_name
   container_port        = 9000
   assign_public_ip      = true

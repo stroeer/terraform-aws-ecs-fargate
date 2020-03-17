@@ -31,7 +31,7 @@ resource "aws_ecs_service" "this" {
   launch_type                        = "FARGATE"
   deployment_minimum_healthy_percent = 100
   deployment_maximum_percent         = 200
-  task_definition                    = aws_ecs_task_definition.this.arn
+  task_definition                    = "${aws_ecs_task_definition.this.family}:${max("${aws_ecs_task_definition.this.revision}", "${data.aws_ecs_task_definition.this.revision}")}"
 
   deployment_controller {
     type = "ECS"
@@ -73,6 +73,11 @@ resource "aws_ecs_task_definition" "this" {
   memory                = var.memory
   container_definitions = var.container_definitions
   tags                  = local.default_tags
+}
+
+# Simply specify the family to find the latest ACTIVE revision in that family.
+data "aws_ecs_task_definition" "this" {
+  task_definition = aws_ecs_task_definition.this.family
 }
 
 resource "aws_alb_target_group" "public" {
