@@ -119,7 +119,7 @@ data "aws_lb" "public" {
 }
 data "aws_lb_listener" "public" {
   load_balancer_arn = data.aws_lb.public.arn
-  port              = 80
+  port              = 443
 }
 
 data "aws_lb" "private" {
