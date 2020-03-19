@@ -3,7 +3,6 @@ variable "region" {
 
 provider "aws" {
   region = var.region
-  profile = "to"
 }
 
 locals {

@@ -82,7 +82,7 @@ data "aws_ecs_task_definition" "this" {
 
 resource "aws_alb_target_group" "public" {
   name                 = "${var.service_name}-public"
-  port                 = 9000
+  port                 = var.container_port
   protocol             = "HTTP"
   vpc_id               = data.aws_vpc.selected.id
   deregistration_delay = 5
@@ -99,7 +99,7 @@ resource "aws_alb_target_group" "public" {
 
 resource "aws_alb_target_group" "private" {
   name                 = "${var.service_name}-private"
-  port                 = 9000
+  port                 = var.container_port
   protocol             = "HTTP"
   vpc_id               = data.aws_vpc.selected.id
   deregistration_delay = 5
