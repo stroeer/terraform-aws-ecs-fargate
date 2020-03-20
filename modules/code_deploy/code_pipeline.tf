@@ -50,7 +50,7 @@ resource "aws_codepipeline" "codepipeline" {
         "Owner": "thisismana",
         "Repo": "code-deploy-sample"
         "PollForSourceChanges": "false",
-        "Branch": "master"
+        "Branch": "blue_green"
         "OAuthToken": "cb522a63c2c0ee3132f8affb79aa0a388babf454"
       }
     }
