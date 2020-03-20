@@ -34,7 +34,7 @@ resource "aws_ecs_service" "this" {
   task_definition                    = "${aws_ecs_task_definition.this.family}:${max("${aws_ecs_task_definition.this.revision}", "${data.aws_ecs_task_definition.this.revision}")}"
 
   deployment_controller {
-    type = "ECS"
+    type = var.use_code_deploy ? "CODE_DEPLOY" : "ECS"
   }
   network_configuration {
     subnets          = data.aws_subnet_ids.selected.ids
@@ -42,17 +42,26 @@ resource "aws_ecs_service" "this" {
     assign_public_ip = var.assign_public_ip
   }
 
-  load_balancer {
-    container_name   = local.container_name
-    container_port   = var.container_port
-    target_group_arn = aws_alb_target_group.public.arn
-  }
 
-  load_balancer {
-    container_name   = local.container_name
-    container_port   = var.container_port
-    target_group_arn = aws_alb_target_group.private.arn
+  dynamic "load_balancer" {
+    for_each = flatten(list(list(aws_alb_target_group.public.arn), aws_alb_target_group.private.*.arn, module.code_deploy.target_groups))
+    content {
+      container_name   = local.container_name
+      container_port   = var.container_port
+      target_group_arn = load_balancer.value
+    }
   }
+  #  load_balancer {
+  #    container_name   = local.container_name
+  #    container_port   = var.container_port
+  #    target_group_arn = aws_alb_target_group.public.*.arn
+  #  }
+  #
+  #  load_balancer {
+  #    container_name   = local.container_name
+  #    container_port   = var.container_port
+  #    target_group_arn = aws_alb_target_group.private.arn
+  #  }
 
   #  service_registries {
   #    registry_arn   = aws_service_discovery_service.this.arn
@@ -81,6 +90,7 @@ data "aws_ecs_task_definition" "this" {
 }
 
 resource "aws_alb_target_group" "public" {
+#  count                = var.use_code_deploy ? 0 : 1
   name                 = "${var.service_name}-public"
   port                 = var.container_port
   protocol             = "HTTP"
@@ -94,10 +104,10 @@ resource "aws_alb_target_group" "public" {
     interval          = 6
     healthy_threshold = 2
   }
-
 }
 
 resource "aws_alb_target_group" "private" {
+  count                = var.use_code_deploy ? 0 : 1
   name                 = "${var.service_name}-private"
   port                 = var.container_port
   protocol             = "HTTP"
@@ -131,6 +141,7 @@ data "aws_lb_listener" "private" {
 }
 
 resource "aws_alb_listener_rule" "public" {
+#  count        = var.use_code_deploy ? 0 : 1
   listener_arn = data.aws_lb_listener.public.arn
   priority     = var.alb_listener_priority
 
@@ -138,7 +149,6 @@ resource "aws_alb_listener_rule" "public" {
     type             = "forward"
     target_group_arn = aws_alb_target_group.public.arn
   }
-  # todo(mana): once dns is ready, use host_header
   condition {
     host_header {
       values = [trimsuffix("${var.service_name}.${data.aws_route53_zone.external.name}", ".")]
@@ -147,12 +157,13 @@ resource "aws_alb_listener_rule" "public" {
 }
 
 resource "aws_alb_listener_rule" "private" {
-  listener_arn = data.aws_lb_listener.private.arn
+  count        = var.use_code_deploy ? 0 : 1
+  listener_arn = data.aws_lb_listener.private[count.index].arn
   priority     = var.alb_listener_priority
 
   action {
     type             = "forward"
-    target_group_arn = aws_alb_target_group.private.arn
+    target_group_arn = aws_alb_target_group.private[count.index].arn
   }
   # todo(mana): once dns is ready, use host_header
   condition {
@@ -178,4 +189,16 @@ locals {
 
 resource "aws_ecr_repository" "this" {
   name = var.service_name
+}
+
+module "code_deploy" {
+  source = "./modules/code_deploy"
+
+  cluster_name      = var.cluster_id
+  container_port    = var.container_port
+  health_check_path = var.health_check_endpoint
+  listener_arns     = [data.aws_lb_listener.private.arn, data.aws_lb_listener.public.arn]
+  service_name      = var.service_name
+  vpc_id            = data.aws_vpc.selected.id
+  use_code_deploy   = var.use_code_deploy
 }
