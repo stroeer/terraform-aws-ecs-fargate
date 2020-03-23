@@ -6,19 +6,18 @@ provider "aws" {
 }
 
 locals {
-  service_name = "test-backend"
+  service_name = "test-frontend"
 }
-
 module "service" {
-  source = "../../"
+  source = "../.."
 
   cluster_id            = "k8"
-  alb_listener_priority = 668
+  alb_listener_priority = 666
   health_check_endpoint = "/actuator/info"
   desired_count         = 0
   service_name          = local.service_name
   container_port        = 9000
-  assign_public_ip      = false
+  assign_public_ip      = true
   container_definitions = <<DOC
 [
   {

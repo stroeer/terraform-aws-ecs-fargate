@@ -1,10 +1,10 @@
 variable "cluster_id" {
-  type = string
+  type        = string
   description = "The ECS cluster id that should run this service"
 }
 
 variable "service_name" {
-  type = string
+  type        = string
   description = "The service name. Will also be used as Route53 DNS entry."
 }
 
@@ -26,18 +26,18 @@ variable "container_definitions" {
 }
 
 variable "assign_public_ip" {
-  type    = bool
-  default = false
+  type        = bool
+  default     = false
   description = "As Fargate does not support IPv6 yet, this is the only way to enable internet access for the service."
 }
 
 variable "alb_listener_priority" {
-  type = number
+  type        = number
   description = "Ordering of listers, must be unique."
 }
 
 variable "health_check_endpoint" {
-  type = string
+  type        = string
   description = "Endpoint (/health) that will be probed by the LB to determine the service's health."
 }
 
@@ -55,8 +55,8 @@ module {
 
 */
 variable "policy_document" {
-  type    = string
-  default = ""
+  type        = string
+  default     = ""
   description = "AWS Policy JSON describing the permissions required for this service."
 }
 
@@ -73,14 +73,14 @@ CPU value 	    | Memory value (MiB)
 */
 
 variable "cpu" {
-  type    = number
-  default = 256
+  type        = number
+  default     = 256
   description = "Amount of CPU required by this service. 1024 == 1 vCPU"
 }
 
 variable "memory" {
-  type    = number
-  default = 512
+  type        = number
+  default     = 512
   description = "Amount of memory [MB] is required by this service."
 }
 
@@ -91,7 +91,7 @@ variable "desired_count" {
 }
 
 variable "use_code_deploy" {
-  type = bool
-  default = false
+  type        = bool
+  default     = false
   description = "Creates a code-deploy pipeline from ECR trigger"
 }

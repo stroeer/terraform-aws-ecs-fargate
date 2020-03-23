@@ -4,10 +4,11 @@ data "aws_vpc" "selected" {
     Name = "main"
   }
 }
+
 # the subnets to be used based on the Tier tag
 data "aws_subnet_ids" "selected" {
   vpc_id = data.aws_vpc.selected.id
-  tags   = {
+  tags = {
     Tier = var.assign_public_ip ? "public" : "private"
   }
 }
@@ -90,7 +91,7 @@ data "aws_ecs_task_definition" "this" {
 }
 
 resource "aws_alb_target_group" "public" {
-#  count                = var.use_code_deploy ? 0 : 1
+  #  count                = var.use_code_deploy ? 0 : 1
   name                 = "${var.service_name}-public"
   port                 = var.container_port
   protocol             = "HTTP"
@@ -141,7 +142,7 @@ data "aws_lb_listener" "private" {
 }
 
 resource "aws_alb_listener_rule" "public" {
-#  count        = var.use_code_deploy ? 0 : 1
+  #  count        = var.use_code_deploy ? 0 : 1
   listener_arn = data.aws_lb_listener.public.arn
   priority     = var.alb_listener_priority
 
@@ -175,8 +176,8 @@ resource "aws_alb_listener_rule" "private" {
 
 
 locals {
-  root_path    = split("/", abspath(path.root))
-  tf_stack     = join("/", slice(local.root_path, length(local.root_path) - 1, length(local.root_path)))
+  root_path = split("/", abspath(path.root))
+  tf_stack  = join("/", slice(local.root_path, length(local.root_path) - 1, length(local.root_path)))
   default_tags = {
     managed_by = "terraform",
     source     = "github.com/stroeer/buzzgate"

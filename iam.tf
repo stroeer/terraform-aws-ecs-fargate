@@ -2,8 +2,7 @@ resource "aws_iam_role" "ecs_task_role" {
   name               = "ecs-${var.service_name}"
   description        = "Role for ECS service ${var.service_name}"
   assume_role_policy = data.aws_iam_policy_document.ecs_task_assume_role_policy.json
-  tags = local.default_tags
-
+  tags               = local.default_tags
 }
 
 resource "aws_iam_role_policy" "ecs_task_role_policy" {

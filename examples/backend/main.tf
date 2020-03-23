@@ -2,22 +2,23 @@ variable "region" {
 }
 
 provider "aws" {
-  region  = var.region
+  region = var.region
 }
 
 locals {
-  service_name = "test-frontend"
+  service_name = "test-backend"
 }
+
 module "service" {
-  source = "../.."
+  source = "../../"
 
   cluster_id            = "k8"
-  alb_listener_priority = 666
+  alb_listener_priority = 668
   health_check_endpoint = "/actuator/info"
   desired_count         = 0
   service_name          = local.service_name
   container_port        = 9000
-  assign_public_ip      = true
+  assign_public_ip      = false
   container_definitions = <<DOC
 [
   {

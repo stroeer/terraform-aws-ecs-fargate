@@ -34,7 +34,7 @@ resource "aws_route53_record" "internal" {
 }
 
 data "aws_route53_zone" "external" {
-  name         = "buzz.t-online.delivery."
+  name = "buzz.t-online.delivery."
 }
 
 # service_name.buzz.t-online.delivery
