@@ -1,22 +1,16 @@
+# ---------------------------------------------------------------------------------------------------------------------
+# REQUIRED PARAMETERS
+# You must provide a value for each of these parameters.
+# ---------------------------------------------------------------------------------------------------------------------
+
+variable "alb_listener_priority" {
+  type        = number
+  description = "Ordering of listers, must be unique."
+}
+
 variable "cluster_id" {
   type        = string
-  description = "The ECS cluster id that should run this service"
-}
-
-variable "service_name" {
-  type        = string
-  description = "The service name. Will also be used as Route53 DNS entry."
-}
-
-variable "container_port" {
-  type        = number
-  description = "The port used by the web app within the container"
-}
-
-variable "container_name" {
-  type        = string
-  default     = ""
-  description = "Defaults to var.service_name, can be overriden if it differs. Used as a target for LB."
+  description = "The ECS cluster id that should run this service."
 }
 
 variable "container_definitions" {
@@ -25,39 +19,37 @@ variable "container_definitions" {
   description = "JSON container definition."
 }
 
-variable "assign_public_ip" {
-  type        = bool
-  default     = false
-  description = "As Fargate does not support IPv6 yet, this is the only way to enable internet access for the service."
-}
-
-variable "alb_listener_priority" {
+variable "container_port" {
   type        = number
-  description = "Ordering of listers, must be unique."
+  description = "The port used by the web app within the container."
 }
 
 variable "health_check_endpoint" {
-  type        = string
   description = "Endpoint (/health) that will be probed by the LB to determine the service's health."
-}
-
-/* add permissions for this service
-data "aws_iam_policy_document" "s3_reader" {
-  statement {
-    actions   = ["s3:Get*"]
-    resources = ["*"]
-  }
-}
-module {
-  ...
-  policy_document = data.aws_iam_policy_document.s3_reader.json
-}
-
-*/
-variable "policy_document" {
   type        = string
+}
+
+variable "service_name" {
+  type        = string
+  description = "The service name. Will also be used as Route53 DNS entry."
+}
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# OPTIONAL PARAMETERS
+# These parameters have reasonable defaults.
+# ---------------------------------------------------------------------------------------------------------------------
+
+variable "assign_public_ip" {
+  default     = false
+  description = "As Fargate does not support IPv6 yet, this is the only way to enable internet access for the service."
+  type        = bool
+}
+
+variable "container_name" {
   default     = ""
-  description = "AWS Policy JSON describing the permissions required for this service."
+  description = "Defaults to var.service_name, can be overriden if it differs. Used as a target for LB."
+  type        = string
 }
 
 /*
@@ -73,25 +65,45 @@ CPU value 	    | Memory value (MiB)
 */
 
 variable "cpu" {
-  type        = number
   default     = 256
   description = "Amount of CPU required by this service. 1024 == 1 vCPU"
-}
-
-variable "memory" {
   type        = number
-  default     = 512
-  description = "Amount of memory [MB] is required by this service."
 }
 
 variable "desired_count" {
-  type        = number
   default     = 0
   description = "Desired count of services to be started/running."
+  type        = number
+}
+
+variable "memory" {
+  default     = 512
+  description = "Amount of memory [MB] is required by this service."
+  type        = number
+}
+
+variable "policy_document" {
+  default     = ""
+  description = "AWS Policy JSON describing the permissions required for this service."
+  type        = string
 }
 
 variable "use_code_deploy" {
-  type        = bool
   default     = false
   description = "Creates a code-deploy pipeline from ECR trigger"
+  type        = bool
 }
+
+/* add permissions for this service
+data "aws_iam_policy_document" "s3_reader" {
+  statement {
+    actions   = ["s3:Get*"]
+    resources = ["*"]
+  }
+}
+module {
+  ...
+  policy_document = data.aws_iam_policy_document.s3_reader.json
+}
+
+*/
