@@ -1,23 +1,20 @@
-variable "region" {
-}
-
-provider "aws" {
-  region = var.region
-}
-
 locals {
-  service_name = "test-frontend"
+  service_name = "test-backend"
 }
+
+data "aws_caller_identity" "current" {}
+data "aws_region" "current" {}
+
 module "service" {
-  source = "../.."
+  source = "../../"
 
   cluster_id            = "k8"
-  alb_listener_priority = 666
+  alb_listener_priority = 668
   health_check_endpoint = "/actuator/info"
   desired_count         = 0
   service_name          = local.service_name
   container_port        = 9000
-  assign_public_ip      = true
+  assign_public_ip      = false
   container_definitions = <<DOC
 [
   {
@@ -36,14 +33,4 @@ module "service" {
   }
 ]
 DOC
-}
-
-data "aws_caller_identity" "current" {}
-data "aws_region" "current" {}
-
-terraform {
-  backend "s3" {
-    encrypt        = true
-    dynamodb_table = terraform-lock
-  }
 }
