@@ -22,6 +22,14 @@ variable "listener_arns" {
  type = list(string)
 }
 
-variable "use_code_deploy" {
+variable "create_deployment_pipeline" {
   type = bool
+}
+
+variable "task_role_arn" {
+  type = string
+}
+
+variable "tags" {
+  type = map(string)
 }

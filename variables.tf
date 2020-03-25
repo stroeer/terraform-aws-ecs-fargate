@@ -90,8 +90,8 @@ variable "desired_count" {
   description = "Desired count of services to be started/running."
 }
 
-variable "use_code_deploy" {
+variable "create_deployment_pipeline" {
   type = bool
-  default = false
-  description = "Creates a code-deploy pipeline from ECR trigger"
+  default = true
+  description = "Creates a deploy pipeline from ECR trigger"
 }

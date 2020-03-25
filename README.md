@@ -18,6 +18,7 @@ Terraform Services module
 | container\_name | Defaults to var.service\_name, can be overriden if it differs. Used as a target for LB. | `string` | `""` | no |
 | container\_port | The port used by the web app within the container | `number` | n/a | yes |
 | cpu | Amount of CPU required by this service. 1024 == 1 vCPU | `number` | `256` | no |
+| create\_deployment\_pipeline | Creates a deploy pipeline from ECR trigger | `bool` | `true` | no |
 | desired\_count | Desired count of services to be started/running. | `number` | `0` | no |
 | health\_check\_endpoint | Endpoint (/health) that will be probed by the LB to determine the service's health. | `string` | n/a | yes |
 | memory | Amount of memory [MB] is required by this service. | `number` | `512` | no |
@@ -28,7 +29,9 @@ Terraform Services module
 
 | Name | Description |
 |------|-------------|
-| ecr\_repo\_ids | n/a |
+| ecr\_repo\_arn | ECR repository |
+| private\_dns | Private DNS entry. |
+| public\_dns | Public DNS entry. |
 
 Requirements
 ------------

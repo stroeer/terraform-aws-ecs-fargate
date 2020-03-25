@@ -1,13 +1,13 @@
 resource "aws_iam_role" "ecs_task_role" {
-  name               = "ecs-${var.service_name}"
-  description        = "Role for ECS service ${var.service_name}"
+  name               = var.service_name
+  path               = "/ecs/task-role/"
+  description        = "ECS Task Role for service ${var.service_name}"
   assume_role_policy = data.aws_iam_policy_document.ecs_task_assume_role_policy.json
-  tags = local.default_tags
-
+  tags               = local.default_tags
 }
 
 resource "aws_iam_role_policy" "ecs_task_role_policy" {
-  name   = "ecs-${var.service_name}"
+  name   = "ecs-task-${var.service_name}"
   role   = aws_iam_role.ecs_task_role.id
   policy = var.policy_document == "" ? data.aws_iam_policy_document.nothing_is_allowed.json : var.policy_document
 }
