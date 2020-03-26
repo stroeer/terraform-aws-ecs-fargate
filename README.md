@@ -56,9 +56,33 @@ The following resources are referenced from this module and therefore prerequisi
 
 - Service Names `var.service_name = [a-z-]+`
 
+### Automated Service Deployment
+
+Once `create_deployment_pipeline` is set to `true`, we will create an automated Deployment Pipeline:
+
+![deployment pipeline](docs/ecs_deployer.png)
+
+How it works:
+
+- You'll need AWS credentials that allow pushing images into the ECR container registry.
+- Once you push an image with `[tag=production]` - a Cloudwatch Event will trigger the start of a CodePipeline
+- **⚠ This tag will only trigger the pipeline. You will need a minimum of 3 tags**
+1. `production` will trigger the pipeline
+2. `container.$CONTAINER_NAME` is required to locate the correct container from the service's [task-definition.json](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/create-task-definition.html)
+3.  One more tag that will be unique and used for the actual deployment and the task-definition.json. A good
+choice would be `git.sha`. To be specific, we chose a tag that does not `start with container.` and is none 
+of `["local", "production", "staging", "infrastructure"]`
+
+- That CodePipeline will do the heavy lifting (see deployment flow above):
+
+1. Pull the full `imagedefinitions.json` from the ECR registry
+2. Trigger a CodeBuild to transform the `imagedefinitions.json` into a `imagedefinitions.json` for deployment
+3. Update the ECS service's task-definition by replacing the specified `imageUri` for the given `name`.
+
 Todos
 -----
 
 * [ ] Cognito auth for ALB listeners
-* [ ] CodeDeploy with ECR trigger
+* [x] CodeDeploy with ECR trigger
 * [ ] ECR policies
+* [ ] Notification for the deployment pipeline [success/failure] 
