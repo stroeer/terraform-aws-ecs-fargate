@@ -30,7 +30,7 @@ resource "aws_codepipeline" "codepipeline" {
 
       configuration = {
         "ImageTag": "production",
-        "RepositoryName": data.aws_ecr_repository.repo.name
+        "RepositoryName": var.ecr_repository_name
       }
     }
   }

@@ -33,3 +33,7 @@ variable "task_role_arn" {
 variable "tags" {
   type = map(string)
 }
+
+variable "ecr_repository_name" {
+  type = string
+}

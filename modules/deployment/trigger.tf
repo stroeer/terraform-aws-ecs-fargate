@@ -18,7 +18,7 @@ resource "aws_cloudwatch_event_rule" "this" {
             "production"
         ],
         "repository-name": [
-            "${data.aws_ecr_repository.repo.name}"
+            "${var.ecr_repository_name}"
         ],
         "result": [
             "SUCCESS"

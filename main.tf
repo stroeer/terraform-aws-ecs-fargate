@@ -39,7 +39,6 @@ resource "aws_ecs_service" "this" {
     assign_public_ip = var.assign_public_ip
   }
 
-
   dynamic "load_balancer" {
     for_each = list(aws_alb_target_group.public.arn, aws_alb_target_group.private.arn)
     content {
@@ -49,10 +48,10 @@ resource "aws_ecs_service" "this" {
     }
   }
 
-  #  service_registries {
-  #    registry_arn   = aws_service_discovery_service.this.arn
-  #    container_name = var.container_name
-  #  }
+  service_registries {
+    registry_arn = aws_service_discovery_service.this.arn
+    container_name = var.container_name
+  }
 
   health_check_grace_period_seconds = 0
   propagate_tags                    = "SERVICE"
@@ -73,6 +72,7 @@ resource "aws_ecs_task_definition" "this" {
 # Simply specify the family to find the latest ACTIVE revision in that family.
 data "aws_ecs_task_definition" "this" {
   task_definition = aws_ecs_task_definition.this.family
+  depends_on      = [aws_ecs_task_definition.this]
 }
 
 resource "aws_alb_target_group" "public" {
@@ -185,4 +185,5 @@ module "code_deploy" {
   create_deployment_pipeline = var.create_deployment_pipeline
   task_role_arn              = aws_iam_role.ecs_task_role.arn
   tags                       = local.default_tags
+  ecr_repository_name        = aws_ecr_repository.this.name
 }
