@@ -16,6 +16,16 @@ resource "aws_service_discovery_service" "this" {
     failure_threshold = 1
   }
 }
+data "aws_region" "current" {}
+data "aws_caller_identity" "current" {}
+data "terraform_remote_state" "ecs" {
+  backend = "s3"
+  config  = {
+    bucket = "terraform-state-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}"
+    key    = "regional/ecs_cluster/terraform.tfstate"
+    region = data.aws_region.current.name
+  }
+}
 
 data "aws_route53_zone" "internal" {
   private_zone = true
@@ -33,7 +43,7 @@ resource "aws_route53_record" "internal" {
 }
 
 data "aws_route53_zone" "external" {
-  name         = "buzz.t-online.delivery."
+  name = "buzz.t-online.delivery."
 }
 
 # service_name.buzz.t-online.delivery
