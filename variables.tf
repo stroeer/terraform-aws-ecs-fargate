@@ -100,3 +100,10 @@ variable "create_log_streaming" {
   default     = true
   description = "Creates a Kinesis Firehose delivery stream for streaming application logs to an existing Elasticsearch domain."
 }
+
+
+variable "with_appmesh" {
+  type = bool
+  default = false
+  description = "This services should be created with an appmesh proxy."
+}

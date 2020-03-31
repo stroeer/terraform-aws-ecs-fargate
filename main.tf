@@ -67,6 +67,22 @@ resource "aws_ecs_task_definition" "this" {
   memory                = var.memory
   container_definitions = var.container_definitions
   tags                  = local.default_tags
+
+  dynamic "proxy_configuration" {
+    for_each = var.with_appmesh ? [var.with_appmesh] : []
+    content {
+      container_name = "envoy"
+      type           = "APPMESH"
+
+      properties = {
+        AppPorts         = "9000"
+        EgressIgnoredIPs = "169.254.170.2,169.254.169.254"
+        IgnoredUID       = "1337"
+        ProxyEgressPort  = 15001
+        ProxyIngressPort = 15000
+      }
+    }
+  }
 }
 
 # Simply specify the family to find the latest ACTIVE revision in that family.
@@ -77,33 +93,37 @@ data "aws_ecs_task_definition" "this" {
 
 resource "aws_alb_target_group" "public" {
   name                 = "${var.service_name}-public"
-  port                 = var.container_port
+  port                 = var.with_appmesh ? 15000 : var.container_port
   protocol             = "HTTP"
   vpc_id               = data.aws_vpc.selected.id
   deregistration_delay = 5
   target_type          = "ip"
   tags                 = local.default_tags
   health_check {
-    path              = var.health_check_endpoint
-    protocol          = "HTTP"
-    interval          = 6
-    healthy_threshold = 2
+    path                = var.health_check_endpoint
+    port                = var.container_port
+    protocol            = "HTTP"
+    interval            = 30
+    healthy_threshold   = 2
+    unhealthy_threshold = 10
   }
 }
 
 resource "aws_alb_target_group" "private" {
   name                 = "${var.service_name}-private"
-  port                 = var.container_port
+  port                 = var.with_appmesh ? 15000 : var.container_port
   protocol             = "HTTP"
   vpc_id               = data.aws_vpc.selected.id
   deregistration_delay = 5
   target_type          = "ip"
   tags                 = local.default_tags
   health_check {
-    path              = var.health_check_endpoint
-    protocol          = "HTTP"
-    interval          = 6
-    healthy_threshold = 2
+    path                = var.health_check_endpoint
+    port                = var.container_port
+    protocol            = "HTTP"
+    interval            = 30
+    healthy_threshold   = 2
+    unhealthy_threshold = 10
   }
 }
 
@@ -138,6 +158,9 @@ resource "aws_alb_listener_rule" "public" {
       values = [trimsuffix("${var.service_name}.${data.aws_route53_zone.external.name}", ".")]
     }
   }
+  depends_on = [
+    aws_alb_target_group.public
+  ]
 }
 
 resource "aws_alb_listener_rule" "private" {
@@ -154,6 +177,10 @@ resource "aws_alb_listener_rule" "private" {
       values = [trimsuffix("${var.service_name}.${data.aws_route53_zone.internal.name}", ".")]
     }
   }
+
+  depends_on = [
+    aws_alb_target_group.private
+  ]
 }
 
 locals {
