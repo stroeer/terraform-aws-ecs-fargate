@@ -7,7 +7,7 @@ data "aws_vpc" "selected" {
 # the subnets to be used based on the Tier tag
 data "aws_subnet_ids" "selected" {
   vpc_id = data.aws_vpc.selected.id
-  tags   = {
+  tags = {
     Tier = var.assign_public_ip ? "public" : "private"
   }
 }
@@ -49,7 +49,7 @@ resource "aws_ecs_service" "this" {
   }
 
   service_registries {
-    registry_arn = aws_service_discovery_service.this.arn
+    registry_arn   = aws_service_discovery_service.this.arn
     container_name = var.container_name
   }
 
@@ -157,9 +157,9 @@ resource "aws_alb_listener_rule" "private" {
 }
 
 locals {
-  root_path      = split("/", abspath(path.root))
-  tf_stack       = join("/", slice(local.root_path, length(local.root_path) - 1, length(local.root_path)))
-  default_tags   = {
+  root_path = split("/", abspath(path.root))
+  tf_stack  = join("/", slice(local.root_path, length(local.root_path) - 1, length(local.root_path)))
+  default_tags = {
     managed_by = "terraform",
     source     = "github.com/stroeer/buzzgate"
     tf_stack   = local.tf_stack,
@@ -186,4 +186,11 @@ module "code_deploy" {
   task_role_arn              = aws_iam_role.ecs_task_role.arn
   tags                       = local.default_tags
   ecr_repository_name        = aws_ecr_repository.this.name
+}
+
+module "logs" {
+  source = "./modules/logs"
+
+  service_name = var.service_name
+  tags         = local.default_tags
 }
