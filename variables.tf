@@ -87,6 +87,25 @@ variable "desired_count" {
   description = "Desired count of services to be started/running."
 }
 
+variable "ecr" {
+  description = "ECR repository configuration."
+  type = object({
+    image_scanning_configuration = object({
+      scan_on_push = bool
+    })
+    image_tag_mutability = string,
+  })
+
+  # if you change any of the defaults, the whole configuration object needs to be provided. 
+  # https://github.com/hashicorp/terraform/issues/19898 will probably change this
+  default = {
+    image_scanning_configuration = {
+      scan_on_push = false
+    }
+    image_tag_mutability = "MUTABLE",
+  }
+}
+
 variable "memory" {
   default     = 512
   description = "Amount of memory [MB] is required by this service."

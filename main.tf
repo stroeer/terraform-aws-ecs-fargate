@@ -196,8 +196,13 @@ locals {
   container_name = var.container_name == "" ? var.service_name : var.container_name
 }
 
-resource "aws_ecr_repository" "this" {
-  name = var.service_name
+module "ecr" {
+  source = "./modules/ecr"
+
+  image_scanning_configuration = var.ecr.image_scanning_configuration
+  image_tag_mutability         = var.ecr.image_tag_mutability
+  name                         = var.service_name
+  tags                         = local.default_tags
 }
 
 module "code_deploy" {
@@ -206,7 +211,7 @@ module "code_deploy" {
 
   cluster_name        = var.cluster_id
   container_port      = var.container_port
-  ecr_repository_name = aws_ecr_repository.this.name
+  ecr_repository_name = module.ecr.name
   health_check_path   = var.health_check_endpoint
   listener_arns       = [data.aws_lb_listener.private.arn, data.aws_lb_listener.public.arn]
   service_name        = var.service_name
