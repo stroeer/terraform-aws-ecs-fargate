@@ -28,6 +28,7 @@ No requirements.
 | create\_deployment\_pipeline | Creates a deploy pipeline from ECR trigger. | `bool` | `true` | no |
 | create\_log\_streaming | Creates a Kinesis Firehose delivery stream for streaming application logs to an existing Elasticsearch domain. | `bool` | `true` | no |
 | desired\_count | Desired count of services to be started/running. | `number` | `0` | no |
+| ecr | ECR repository configuration. | <pre>object({<br>    image_scanning_configuration = object({<br>      scan_on_push = bool<br>    })<br>    image_tag_mutability = string,<br>  })</pre> | <pre>{<br>  "image_scanning_configuration": {<br>    "scan_on_push": false<br>  },<br>  "image_tag_mutability": "MUTABLE"<br>}</pre> | no |
 | health\_check\_endpoint | Endpoint (/health) that will be probed by the LB to determine the service's health. | `string` | n/a | yes |
 | memory | Amount of memory [MB] is required by this service. | `number` | `512` | no |
 | policy\_document | AWS Policy JSON describing the permissions required for this service. | `string` | `""` | no |
@@ -38,7 +39,7 @@ No requirements.
 
 | Name | Description |
 |------|-------------|
-| ecr\_repo\_arn | ECR repository |
+| ecr\_repository\_arn | Full ARN of the ECR repository |
 | kinesis\_firehose\_delivery\_stream\_name | The name of the Kinesis Firehose delivery stream. |
 | private\_dns | Private DNS entry. |
 | public\_dns | Public DNS entry. |

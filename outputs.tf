@@ -1,6 +1,6 @@
-output "ecr_repo_arn" {
-  description = "ECR repository"
-  value       = aws_ecr_repository.this.arn
+output "ecr_repository_arn" {
+  description = "Full ARN of the ECR repository"
+  value       = module.ecr.arn
 }
 
 output "kinesis_firehose_delivery_stream_name" {
