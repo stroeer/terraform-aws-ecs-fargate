@@ -218,6 +218,7 @@ module "code_deploy" {
 module "logs" {
   source = "./modules/logs"
 
+  enabled      = var.create_log_streaming
   service_name = var.service_name
   tags         = local.default_tags
 }
