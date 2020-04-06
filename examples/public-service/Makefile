@@ -1,9 +1,9 @@
 # can be overriden during make invocation
 # MODE=apply make TARGET
 MODE ?= plan
-SERVICE_NAME ?= test-backend
+SERVICE_NAME ?= httpd
 
-ACCOUNT := 053041861227
+ACCOUNT ?= 053041861227
 TF_BACKEND_CFG := -backend-config=bucket=terraform-state-${ACCOUNT}-$${TF_VAR_region} -backend-config=region=$${TF_VAR_region} -backend-config=encrypt=true -backend-config=dynamodb_table=terraform-lock
 
 % :: export TF_VAR_region := eu-west-1

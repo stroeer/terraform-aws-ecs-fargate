@@ -3,7 +3,7 @@ data "aws_iam_role" "codebuild" {
 }
 
 resource "aws_codebuild_project" "this" {
-  count        = var.create_deployment_pipeline ? 1 : 0
+  count        = var.enabled ? 1 : 0
   name         = "${var.service_name}-deployment"
   service_role = data.aws_iam_role.codebuild.arn
   tags         = var.tags

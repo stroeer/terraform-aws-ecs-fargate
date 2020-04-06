@@ -5,6 +5,7 @@
 
 variable "service_name" {
   description = "Name of the service to collect log events for. This will be used as the Elasticsearch index name and for IAM configuration."
+  type        = string
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -15,11 +16,13 @@ variable "service_name" {
 variable "domain_name" {
   default     = "application-logs"
   description = "The name of an existing Elasticsearch domain used as destination for the Firehose delivery stream."
+  type        = string
 }
 
 variable "enabled" {
   default     = true
   description = "Conditionally enables this module (and all it's ressources)."
+  type        = bool
 }
 
 variable "tags" {

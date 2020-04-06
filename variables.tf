@@ -1,63 +1,54 @@
-variable "cluster_id" {
-  type        = string
-  description = "The ECS cluster id that should run this service"
-}
+# ---------------------------------------------------------------------------------------------------------------------
+# REQUIRED PARAMETERS
+# You must provide a value for each of these parameters.
+# ---------------------------------------------------------------------------------------------------------------------
 
-variable "service_name" {
-  type        = string
-  description = "The service name. Will also be used as Route53 DNS entry."
-}
-
-variable "container_port" {
+variable "alb_listener_priority" {
+  description = "Ordering of listeners, must be unique."
   type        = number
-  description = "The port used by the web app within the container"
 }
 
-variable "container_name" {
+variable "cluster_id" {
+  description = "The ECS cluster id that should run this service"
   type        = string
-  default     = ""
-  description = "Defaults to var.service_name, can be overriden if it differs. Used as a target for LB."
 }
 
 variable "container_definitions" {
-  type = string
   # Full documentation here: https://docs.aws.amazon.com/AmazonECS/latest/developerguide/create-task-definition.html
   description = "JSON container definition."
+  type        = string
 }
 
-variable "assign_public_ip" {
-  type        = bool
-  default     = false
-  description = "As Fargate does not support IPv6 yet, this is the only way to enable internet access for the service."
-}
-
-variable "alb_listener_priority" {
+variable "container_port" {
+  description = "The port used by the web app within the container"
   type        = number
-  description = "Ordering of listers, must be unique."
 }
 
 variable "health_check_endpoint" {
-  type        = string
   description = "Endpoint (/health) that will be probed by the LB to determine the service's health."
-}
-
-/* add permissions for this service
-data "aws_iam_policy_document" "s3_reader" {
-  statement {
-    actions   = ["s3:Get*"]
-    resources = ["*"]
-  }
-}
-module {
-  ...
-  policy_document = data.aws_iam_policy_document.s3_reader.json
-}
-
-*/
-variable "policy_document" {
   type        = string
+}
+
+variable "service_name" {
+  description = "The service name. Will also be used as Route53 DNS entry."
+  type        = string
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# OPTIONAL PARAMETERS
+# These parameters have reasonable defaults.
+# ---------------------------------------------------------------------------------------------------------------------
+
+variable "assign_public_ip" {
+  default     = false
+  description = "As Fargate does not support IPv6 yet, this is the only way to enable internet access for the service."
+  type        = bool
+}
+
+variable "container_name" {
   default     = ""
-  description = "AWS Policy JSON describing the permissions required for this service."
+  description = "Defaults to var.service_name, can be overriden if it differs. Used as a target for LB."
+  type        = string
 }
 
 /*
@@ -73,15 +64,21 @@ CPU value 	    | Memory value (MiB)
 */
 
 variable "cpu" {
-  type        = number
   default     = 256
   description = "Amount of CPU required by this service. 1024 == 1 vCPU"
+  type        = number
 }
 
-variable "memory" {
-  type        = number
-  default     = 512
-  description = "Amount of memory [MB] is required by this service."
+variable "create_deployment_pipeline" {
+  default     = true
+  description = "Creates a deploy pipeline from ECR trigger."
+  type        = bool
+}
+
+variable "create_log_streaming" {
+  default     = true
+  description = "Creates a Kinesis Firehose delivery stream for streaming application logs to an existing Elasticsearch domain."
+  type        = bool
 }
 
 variable "desired_count" {
@@ -90,20 +87,20 @@ variable "desired_count" {
   description = "Desired count of services to be started/running."
 }
 
-variable "create_deployment_pipeline" {
-  type        = bool
-  default     = true
-  description = "Creates a deploy pipeline from ECR trigger"
+variable "memory" {
+  default     = 512
+  description = "Amount of memory [MB] is required by this service."
+  type        = number
 }
 
-variable "create_log_streaming" {
-  default     = true
-  description = "Creates a Kinesis Firehose delivery stream for streaming application logs to an existing Elasticsearch domain."
+variable "policy_document" {
+  default     = ""
+  description = "AWS Policy JSON describing the permissions required for this service."
+  type        = string
 }
-
 
 variable "with_appmesh" {
-  type        = bool
   default     = false
   description = "This services should be created with an appmesh proxy."
+  type        = bool
 }
