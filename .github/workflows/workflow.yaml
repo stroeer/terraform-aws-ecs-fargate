@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v1
+
+      - name: Run a Terraform init
+        uses: docker://hashicorp/terraform:0.12.24
+        with:
+          entrypoint: terraform
+          args: init
+
+      - name: Run a Terraform fmt
+        uses: docker://hashicorp/terraform:0.12.24
+        with:
+          entrypoint: terraform
+          args: fmt -check=true
+
+      - name: Run a Terraform validate
+        uses: docker://hashicorp/terraform:0.12.24
+        env:
+          AWS_REGION: eu-west-1
+        with:
+          entrypoint: terraform
+          args: validate
