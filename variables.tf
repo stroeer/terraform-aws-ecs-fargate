@@ -103,7 +103,7 @@ variable "create_log_streaming" {
 
 
 variable "with_appmesh" {
-  type = bool
-  default = false
+  type        = bool
+  default     = false
   description = "This services should be created with an appmesh proxy."
 }

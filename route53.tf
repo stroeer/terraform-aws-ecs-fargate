@@ -20,7 +20,7 @@ data "aws_region" "current" {}
 data "aws_caller_identity" "current" {}
 data "terraform_remote_state" "ecs" {
   backend = "s3"
-  config  = {
+  config = {
     bucket = "terraform-state-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}"
     key    = "regional/ecs_cluster/terraform.tfstate"
     region = data.aws_region.current.name

@@ -29,8 +29,8 @@ resource "aws_codepipeline" "codepipeline" {
       output_artifacts = ["ecr_source"]
 
       configuration = {
-        "ImageTag": "production",
-        "RepositoryName": var.ecr_repository_name
+        "ImageTag" : "production",
+        "RepositoryName" : var.ecr_repository_name
       }
     }
   }
@@ -47,7 +47,7 @@ resource "aws_codepipeline" "codepipeline" {
       output_artifacts = ["build_source"]
 
       configuration = {
-        "ProjectName": aws_codebuild_project.this[count.index].name
+        "ProjectName" : aws_codebuild_project.this[count.index].name
       }
     }
   }
@@ -64,9 +64,9 @@ resource "aws_codepipeline" "codepipeline" {
       version         = "1"
 
       configuration = {
-        "ClusterName": "k8",
-        "ServiceName": var.service_name
-        "FileName": "imagedefinitions.json"
+        "ClusterName" : "k8",
+        "ServiceName" : var.service_name
+        "FileName" : "imagedefinitions.json"
       }
     }
   }
