@@ -1,6 +1,8 @@
 Terraform Services module
 =========================
 
+![Terraform Version](https://img.shields.io/badge/Terraform-0.12+-green.svg) [![License: Apache 2.0](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
+
 ## Providers
 
 | Name | Version |

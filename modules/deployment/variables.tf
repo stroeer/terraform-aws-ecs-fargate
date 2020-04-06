@@ -19,7 +19,7 @@ variable "vpc_id" {
 }
 
 variable "listener_arns" {
- type = list(string)
+  type = list(string)
 }
 
 variable "create_deployment_pipeline" {
