@@ -210,14 +210,9 @@ module "code_deploy" {
   enabled = var.create_deployment_pipeline
 
   cluster_name        = var.cluster_id
-  container_port      = var.container_port
   ecr_repository_name = module.ecr.name
-  health_check_path   = var.health_check_endpoint
-  listener_arns       = [data.aws_lb_listener.private.arn, data.aws_lb_listener.public.arn]
   service_name        = var.service_name
   tags                = local.default_tags
-  task_role_arn       = aws_iam_role.ecs_task_role.arn
-  vpc_id              = data.aws_vpc.selected.id
 }
 
 module "logs" {
