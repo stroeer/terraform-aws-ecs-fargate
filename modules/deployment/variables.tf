@@ -4,39 +4,22 @@
 # ---------------------------------------------------------------------------------------------------------------------
 
 variable "cluster_name" {
-  type = string
-}
-
-variable "container_port" {
-  type = number
+  type        = string
+  description = "Target ECS cluster used for deployments."
 }
 
 variable "ecr_repository_name" {
-  type = string
-}
-
-variable "health_check_path" {
-  type = string
+  type        = string
+  description = "Name of the ECR repository for wich a trigger will be created to start the deployment pipeline."
 }
 
 variable "service_name" {
-  type = string
-}
-
-variable "vpc_id" {
-  type = string
-}
-
-variable "listener_arns" {
-  type = list(string)
+  type        = string
+  description = "The service's name to create the pipeline resources."
 }
 
 variable "tags" {
   type = map(string)
-}
-
-variable "task_role_arn" {
-  type = string
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
