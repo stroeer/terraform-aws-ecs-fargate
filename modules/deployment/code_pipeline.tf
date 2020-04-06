@@ -1,3 +1,6 @@
+data "aws_caller_identity" "current" {}
+data "aws_region" "current" {}
+
 data "aws_s3_bucket" "this" {
   bucket = "codepipeline-bucket-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}"
 }
@@ -7,7 +10,7 @@ data "aws_iam_role" "codepipeline" {
 }
 
 resource "aws_codepipeline" "codepipeline" {
-  count    = var.create_deployment_pipeline ? 1 : 0
+  count    = var.enabled ? 1 : 0
   name     = var.service_name
   role_arn = data.aws_iam_role.codepipeline.arn
   tags     = var.tags
