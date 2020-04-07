@@ -25,7 +25,7 @@ validate: ## Validates the Terraform files
 	@AWS_REGION=eu-west-1 terraform validate
 
 .PHONY: documentation
-documentation:
+documentation: ## Generates README.md from static snippets and Terraform variables
 	terraform-docs markdown table . > docs/part2.md
 	cat docs/*.md > README.md
 
@@ -39,7 +39,7 @@ $(SEMBUMP):
 
 .PHONY: bump-version
 BUMP := patch
-bump-version: $(SEMBUMP) ## Bump the version in the version file. Set BUMP to [ patch | major | minor ].
+bump-version: $(SEMBUMP) ## Bump the version in the version file. Set BUMP to [ patch | major | minor ]
 	$(eval NEW_VERSION = $(shell $(BINDIR)/sembump --kind $(BUMP) $(VERSION)))
 	@echo "Bumping VERSION.txt from $(VERSION) to $(NEW_VERSION)"
 	echo $(NEW_VERSION) > VERSION.txt
