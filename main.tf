@@ -88,15 +88,6 @@ data "aws_ecs_task_definition" "this" {
 }
 
 locals {
-  root_path = split("/", abspath(path.root))
-  tf_stack  = join("/", slice(local.root_path, length(local.root_path) - 1, length(local.root_path)))
-  default_tags = {
-    managed_by = "terraform",
-    source     = "github.com/stroeer/buzzgate"
-    tf_stack   = local.tf_stack,
-    tf_module  = basename(abspath(path.module))
-    service    = var.service_name
-  }
   container_name = var.container_name == "" ? var.service_name : var.container_name
 }
 
