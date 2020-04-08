@@ -32,3 +32,21 @@ variable "enabled" {
   description = "Conditionally enables this module (and all it's ressources)."
   type        = bool
 }
+
+variable "artifact_bucket" {
+  default = ""
+  description = "Use an existing bucket for codepipeline artifacts that can be reused for multiple services."
+  type = string
+}
+
+variable "code_pipeline_role" {
+  default = ""
+  description = "Use an existing role for codepipeline permissions that can be reused for multiple services."
+  type = string
+}
+
+variable "code_build_role" {
+  default = ""
+  description = "Use an existing role for codebuild permissions that can be reused for multiple services."
+  type = string
+}

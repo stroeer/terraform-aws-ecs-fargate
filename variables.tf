@@ -69,6 +69,24 @@ variable "cpu" {
   type        = number
 }
 
+variable "code_pipeline_artifact_bucket" {
+  default     = ""
+  description = "Use an existing bucket for codepipeline artifacts that can be reused for multiple services."
+  type        = string
+}
+
+variable "code_pipeline_role" {
+  default     = ""
+  description = "Use an existing role for codepipeline permissions that can be reused for multiple services."
+  type        = string
+}
+
+variable "code_build_role" {
+  default     = ""
+  description = "Use an existing role for codebuild permissions that can be reused for multiple services."
+  type        = string
+}
+
 variable "create_deployment_pipeline" {
   default     = true
   description = "Creates a deploy pipeline from ECR trigger."
