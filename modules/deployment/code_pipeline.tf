@@ -1,22 +1,11 @@
-data "aws_caller_identity" "current" {}
-data "aws_region" "current" {}
-
-data "aws_s3_bucket" "this" {
-  bucket = "codepipeline-bucket-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}"
-}
-
-data "aws_iam_role" "codepipeline" {
-  name = "codepipeline_role"
-}
-
 resource "aws_codepipeline" "codepipeline" {
   count    = var.enabled ? 1 : 0
   name     = var.service_name
-  role_arn = data.aws_iam_role.codepipeline.arn
+  role_arn = var.code_pipeline_role == "" ? aws_iam_role.code_pipeline_role[count.index].arn : data.aws_iam_role.code_pipeline[count.index].arn
   tags     = var.tags
 
   artifact_store {
-    location = data.aws_s3_bucket.this.id
+    location = var.artifact_bucket == "" ? module.s3_bucket.this_s3_bucket_id : data.aws_s3_bucket.codepipeline[count.index].bucket
     type     = "S3"
   }
 
@@ -73,8 +62,4 @@ resource "aws_codepipeline" "codepipeline" {
       }
     }
   }
-
-  depends_on = [
-    aws_codebuild_project.this
-  ]
 }
