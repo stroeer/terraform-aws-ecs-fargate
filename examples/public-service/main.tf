@@ -13,7 +13,7 @@ module "service" {
   create_log_streaming       = false
   desired_count              = 1
   health_check_endpoint      = "/"
-  service_name               = "httpd"
+  service_name               = local.service_name
   container_definitions      = <<DOC
 [
   {
