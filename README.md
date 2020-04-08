@@ -3,10 +3,6 @@ Terraform Services module
 
 ![CI](https://github.com/stroeer/terraform-aws-buzzgate/workflows/CI/badge.svg?branch=master) ![Terraform Version](https://img.shields.io/badge/Terraform-0.12+-green.svg) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
 
-## Requirements
-
-No requirements.
-
 ## Providers
 
 | Name | Version |
@@ -17,10 +13,13 @@ No requirements.
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
+|------|-------------|------|---------|:-----:|
 | alb\_listener\_priority | Ordering of listeners, must be unique. | `number` | n/a | yes |
 | assign\_public\_ip | As Fargate does not support IPv6 yet, this is the only way to enable internet access for the service. | `bool` | `false` | no |
 | cluster\_id | The ECS cluster id that should run this service | `string` | n/a | yes |
+| code\_build\_role | Use an existing role for codebuild permissions that can be reused for multiple services. | `string` | `""` | no |
+| code\_pipeline\_artifact\_bucket | Use an existing bucket for codepipeline artifacts that can be reused for multiple services. | `string` | `""` | no |
+| code\_pipeline\_role | Use an existing role for codepipeline permissions that can be reused for multiple services. | `string` | `""` | no |
 | container\_definitions | JSON container definition. | `string` | n/a | yes |
 | container\_name | Defaults to var.service\_name, can be overriden if it differs. Used as a target for LB. | `string` | `""` | no |
 | container\_port | The port used by the web app within the container | `number` | n/a | yes |
