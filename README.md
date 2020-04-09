@@ -17,9 +17,9 @@ Terraform Services module
 | alb\_listener\_priority | Ordering of listeners, must be unique. | `number` | n/a | yes |
 | assign\_public\_ip | As Fargate does not support IPv6 yet, this is the only way to enable internet access for the service. | `bool` | `false` | no |
 | cluster\_id | The ECS cluster id that should run this service | `string` | n/a | yes |
-| code\_build\_role | Use an existing role for codebuild permissions that can be reused for multiple services. | `string` | `""` | no |
-| code\_pipeline\_artifact\_bucket | Use an existing bucket for codepipeline artifacts that can be reused for multiple services. | `string` | `""` | no |
-| code\_pipeline\_role | Use an existing role for codepipeline permissions that can be reused for multiple services. | `string` | `""` | no |
+| code\_build\_role\_name | Use an existing role for codebuild permissions that can be reused for multiple services. Otherwise a separate role for each service will be created. | `string` | `""` | no |
+| code\_pipeline\_artifact\_bucket | Use an existing bucket for codepipeline artifacts that can be reused for multiple services. Otherwise a separate bucket for each service will be created. | `string` | `""` | no |
+| code\_pipeline\_role\_name | Use an existing role for codepipeline permissions that can be reused for multiple services. Otherwise a separate role for each service will be created. | `string` | `""` | no |
 | container\_definitions | JSON container definition. | `string` | n/a | yes |
 | container\_name | Defaults to var.service\_name, can be overriden if it differs. Used as a target for LB. | `string` | `""` | no |
 | container\_port | The port used by the web app within the container | `number` | n/a | yes |
@@ -59,7 +59,15 @@ The following resources are referenced from this module and therefore prerequisi
 * ALB — there must be ALBs with `name = (public|private)`. 
 * ALB Listeners — Those ALBs should have listeners for HTTP(s) (Port `80` and `443`) configured
 * IAM role — There should be a role named `ssm_ecs_task_execution_role` that will be used as a task execution role
- 
+
+### When using the automated deployment pipeline (optional):
+
+* A shared S3 bucket for storing artifacts from _CodePipeline_ can be used. You can specify
+it through the variable `code_pipeline_artifact_bucket`. Otherwise a new bucket is created 
+for every service.
+* A shared `IAM::Role` for _CodePipeline_ and _CodeBuild_ can be used. You can specify
+those through the variables `code_pipeline_role_name` and `code_build_role_name`. Otherwise new 
+roles are created for every service. For the permissions required see the [module code](./modules/deployment)
  
 
 ### Naming Conventions
@@ -94,5 +102,5 @@ Todos
 
 * [ ] Cognito auth for ALB listeners
 * [x] CodeDeploy with ECR trigger
-* [ ] ECR policies
+* [x] ECR policies
 * [ ] Notification for the deployment pipeline [success/failure] 

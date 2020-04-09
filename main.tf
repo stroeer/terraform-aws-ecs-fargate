@@ -107,8 +107,8 @@ module "code_deploy" {
   cluster_name        = var.cluster_id
   ecr_repository_name = module.ecr.name
   service_name        = var.service_name
-  code_build_role     = var.code_build_role
-  code_pipeline_role  = var.code_pipeline_role
+  code_build_role     = var.code_build_role_name
+  code_pipeline_role  = var.code_pipeline_role_name
   artifact_bucket     = var.code_pipeline_artifact_bucket
   tags                = local.default_tags
 }
