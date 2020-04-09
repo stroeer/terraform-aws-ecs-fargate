@@ -8,6 +8,7 @@ data "aws_region" "current" {}
 # see https://docs.aws.amazon.com/firehose/latest/dev/controlling-access.html#using-iam-es
 data "aws_iam_policy_document" "stream_policy" {
   count = var.enabled ? 1 : 0
+
   statement {
     actions = [
       "s3:AbortMultipartUpload",
@@ -18,8 +19,8 @@ data "aws_iam_policy_document" "stream_policy" {
       "s3:PutObject"
     ]
     resources = [
-      "arn:aws:s3:::${aws_s3_bucket.firehose[count.index].id}",
-      "arn:aws:s3:::${aws_s3_bucket.firehose[count.index].id}/*"
+      "arn:aws:s3:::${module.s3_firehose.this_s3_bucket_id}",
+      "arn:aws:s3:::${module.s3_firehose.this_s3_bucket_id}/*"
     ]
   }
 
@@ -73,7 +74,11 @@ resource "aws_iam_role" "firehose_role" {
   assume_role_policy = data.aws_iam_policy_document.firehose_policy[count.index].json
   description        = "IAM permissions for ${var.service_name} as Firehose delivery stream to Elasticsearch."
   name               = "firehose_elasticsearch_role_${var.service_name}"
-  tags               = var.tags
+  path               = "/ecs/logging/"
+
+  tags = merge(var.tags, {
+    tf_module = basename(path.module)
+  })
 }
 
 
@@ -88,20 +93,21 @@ resource "aws_iam_role_policy_attachment" "stream_policy_attachment" {
   policy_arn = aws_iam_policy.stream_policy[count.index].arn
 }
 
-resource "aws_s3_bucket" "firehose" {
-  count  = var.enabled ? 1 : 0
-  acl    = "private"
-  bucket = "${var.service_name}-failed-documents-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}"
-  tags   = var.tags
-}
+module "s3_firehose" {
+  source        = "terraform-aws-modules/s3-bucket/aws"
+  create_bucket = var.enabled
 
-resource "aws_s3_bucket_public_access_block" "firehose" {
-  count                   = var.enabled ? 1 : 0
-  block_public_acls       = true
-  block_public_policy     = true
-  bucket                  = aws_s3_bucket.firehose[count.index].id
-  ignore_public_acls      = true
-  restrict_public_buckets = true
+  bucket        = "failed-documents-${var.service_name}-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}"
+  acl           = "private"
+  force_destroy = true
+
+  versioning = {
+    enabled = true
+  }
+
+  tags = merge(var.tags, {
+    tf_module = basename(path.module)
+  })
 }
 
 data "aws_elasticsearch_domain" "elasticsearch" {
@@ -113,7 +119,6 @@ resource "aws_kinesis_firehose_delivery_stream" "elasticsearch_stream" {
   count       = var.enabled ? 1 : 0
   name        = "${var.service_name}-stream"
   destination = "elasticsearch"
-  tags        = var.tags
 
   elasticsearch_configuration {
     domain_arn            = data.aws_elasticsearch_domain.elasticsearch[count.index].arn
@@ -128,7 +133,7 @@ resource "aws_kinesis_firehose_delivery_stream" "elasticsearch_stream" {
   }
 
   s3_configuration {
-    bucket_arn         = aws_s3_bucket.firehose[count.index].arn
+    bucket_arn         = module.s3_firehose.this_s3_bucket_arn
     compression_format = "GZIP"
     role_arn           = aws_iam_role.firehose_role[count.index].arn
     # kms_key_arn = "todo with default key from data to enable encryption"
@@ -137,4 +142,8 @@ resource "aws_kinesis_firehose_delivery_stream" "elasticsearch_stream" {
       enabled = false
     }
   }
+
+  tags = merge(var.tags, {
+    tf_module = basename(path.module)
+  })
 }
