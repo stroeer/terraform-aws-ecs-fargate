@@ -1,3 +1,7 @@
+locals {
+  create_code_pipeline_iam = var.enabled && var.code_pipeline_role == ""
+}
+
 resource "aws_iam_role" "code_pipeline_role" {
   count              = local.create_code_pipeline_iam ? 1 : 0
   name               = "code-pipeline-${var.service_name}"
@@ -47,17 +51,6 @@ data "aws_iam_policy_document" "code_pipepline_permissions" {
       "${local.artifact_bucket_arn}/*"
     ]
   }
-  #  statement {
-  #    actions   = [
-  #      "ecs:DescribeServices",
-  #      "ecs:DescribeTaskDefinition",
-  #      "ecs:DescribeTasks",
-  #      "ecs:ListTasks",
-  #      "ecs:RegisterTaskDefinition",
-  #      "ecs:UpdateService"
-  #    ]
-  #    resources = ["*"]
-  #  }
 
   statement {
     # start downstream builds and retrieve output artefacts
@@ -69,7 +62,6 @@ data "aws_iam_policy_document" "code_pipepline_permissions" {
     actions   = [
       "autoscaling:Describe*",
       "autoscaling:UpdateAutoScalingGroup",
-#      "ec2:Describe*",
       "elasticloadbalancing:*",
       "ecs:*",
       "iam:ListInstanceProfiles",
@@ -77,7 +69,6 @@ data "aws_iam_policy_document" "code_pipepline_permissions" {
       "iam:PassRole"
     ]
     resources = ["*"]
-    #    resources = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/ecs/task-role/*"]
   }
 }
 
@@ -86,7 +77,7 @@ resource "aws_iam_role_policy_attachment" "AmazonEC2ContainerServiceFullAccess" 
   role       = aws_iam_role.code_pipeline_role[count.index].name
   policy_arn = data.aws_iam_policy.AmazonEC2ContainerServiceFullAccess[count.index].arn
 }
-#
+
 data "aws_iam_policy" "AmazonEC2ContainerServiceFullAccess" {
   count = local.create_code_pipeline_iam ? 1 : 0
   arn   = "arn:aws:iam::aws:policy/AWSCodeDeployRoleForECS"

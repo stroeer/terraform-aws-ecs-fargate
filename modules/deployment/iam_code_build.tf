@@ -1,3 +1,7 @@
+locals {
+  create_code_build_iam    = var.enabled && var.code_build_role == ""
+}
+
 resource "aws_iam_role" "code_build_role" {
   count              = local.create_code_build_iam ? 1 : 0
   name               = "code-build-${var.service_name}"

@@ -14,7 +14,15 @@ The following resources are referenced from this module and therefore prerequisi
 * ALB — there must be ALBs with `name = (public|private)`. 
 * ALB Listeners — Those ALBs should have listeners for HTTP(s) (Port `80` and `443`) configured
 * IAM role — There should be a role named `ssm_ecs_task_execution_role` that will be used as a task execution role
- 
+
+### When using the automated deployment pipeline (optional):
+
+* A shared S3 bucket for storing artifacts from _CodePipeline_ can be used. You can specify
+it through the variable `code_pipeline_artifact_bucket`. Otherwise a new bucket is created 
+for every service.
+* A shared `IAM::Role` for _CodePipeline_ and _CodeBuild_ can be used. You can specify
+those through the variables `code_pipeline_role_name` and `code_build_role_name`. Otherwise new 
+roles are created for every service. For the permissions required see the [module code](./modules/deployment)
  
 
 ### Naming Conventions

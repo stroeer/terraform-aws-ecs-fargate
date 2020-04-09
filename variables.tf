@@ -71,19 +71,19 @@ variable "cpu" {
 
 variable "code_pipeline_artifact_bucket" {
   default     = ""
-  description = "Use an existing bucket for codepipeline artifacts that can be reused for multiple services."
+  description = "Use an existing bucket for codepipeline artifacts that can be reused for multiple services. Otherwise a separate bucket for each service will be created."
   type        = string
 }
 
-variable "code_pipeline_role" {
+variable "code_pipeline_role_name" {
   default     = ""
-  description = "Use an existing role for codepipeline permissions that can be reused for multiple services."
+  description = "Use an existing role for codepipeline permissions that can be reused for multiple services. Otherwise a separate role for each service will be created."
   type        = string
 }
 
-variable "code_build_role" {
+variable "code_build_role_name" {
   default     = ""
-  description = "Use an existing role for codebuild permissions that can be reused for multiple services."
+  description = "Use an existing role for codebuild permissions that can be reused for multiple services. Otherwise a separate role for each service will be created."
   type        = string
 }
 
