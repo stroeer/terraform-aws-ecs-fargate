@@ -27,8 +27,10 @@ No requirements.
 | create\_log\_streaming | Creates a Kinesis Firehose delivery stream for streaming application logs to an existing Elasticsearch domain. | `bool` | `true` | no |
 | desired\_count | Desired count of services to be started/running. | `number` | `0` | no |
 | ecr | ECR repository configuration. | <pre>object({<br>    image_scanning_configuration = object({<br>      scan_on_push = bool<br>    })<br>    image_tag_mutability = string,<br>  })</pre> | <pre>{<br>  "image_scanning_configuration": {<br>    "scan_on_push": false<br>  },<br>  "image_tag_mutability": "MUTABLE"<br>}</pre> | no |
-| firehose\_delivery\_stream\_s3\_backup\_bucket\_arn | Use an existing S3 bucket to backup log documents which couldn't be streamed to Elasticsearch. Otherwise a separate bucket for this service will be created. | `string` | `""` | no |
 | health\_check\_endpoint | Endpoint (/health) that will be probed by the LB to determine the service's health. | `string` | n/a | yes |
+| logs\_domain\_name | The name of an existing Elasticsearch domain used as destination for the Firehose delivery stream. | `string` | `"application-logs"` | no |
+| logs\_firehose\_delivery\_stream\_s3\_backup\_bucket\_arn | Use an existing S3 bucket to backup log documents which couldn't be streamed to Elasticsearch. Otherwise a separate bucket for this service will be created. | `string` | `""` | no |
+| logs\_fluentbit\_cloudwatch\_log\_group\_name | Use an existing CloudWatch log group for storing logs of the fluent-bit sidecar. Otherwise a dedicate log group for this service will be created. | `string` | `""` | no |
 | memory | Amount of memory [MB] is required by this service. | `number` | `512` | no |
 | policy\_document | AWS Policy JSON describing the permissions required for this service. | `string` | `""` | no |
 | service\_name | The service name. Will also be used as Route53 DNS entry. | `string` | n/a | yes |
@@ -39,6 +41,7 @@ No requirements.
 | Name | Description |
 |------|-------------|
 | ecr\_repository\_arn | Full ARN of the ECR repository |
+| fluentbit\_cloudwatch\_log\_group | Name of the CloudWatch log group of the fluent-bit sidecar. |
 | kinesis\_firehose\_delivery\_stream\_name | The name of the Kinesis Firehose delivery stream. |
 | private\_dns | Private DNS entry. |
 | public\_dns | Public DNS entry. |
