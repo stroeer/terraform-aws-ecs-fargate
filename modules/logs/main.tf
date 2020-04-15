@@ -102,7 +102,7 @@ module "s3_firehose" {
   force_destroy = true
 
   versioning = {
-    enabled = true
+    enabled = false
   }
 
   tags = merge(var.tags, {
