@@ -95,7 +95,7 @@ resource "aws_iam_role_policy_attachment" "stream_policy_attachment" {
 
 module "s3_firehose" {
   source        = "terraform-aws-modules/s3-bucket/aws"
-  create_bucket = var.enabled
+  create_bucket = var.enabled && var.firehose_delivery_stream_s3_backup_bucket_arn == ""
 
   bucket        = "failed-documents-${var.service_name}-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}"
   acl           = "private"
@@ -133,8 +133,9 @@ resource "aws_kinesis_firehose_delivery_stream" "elasticsearch_stream" {
   }
 
   s3_configuration {
-    bucket_arn         = module.s3_firehose.this_s3_bucket_arn
+    bucket_arn         = var.firehose_delivery_stream_s3_backup_bucket_arn != "" ? var.firehose_delivery_stream_s3_backup_bucket_arn : module.s3_firehose.this_s3_bucket_arn
     compression_format = "GZIP"
+    prefix             = var.firehose_delivery_stream_s3_backup_bucket_arn != "" ? "${var.service_name}/" : ""
     role_arn           = aws_iam_role.firehose_role[count.index].arn
     # kms_key_arn = "todo with default key from data to enable encryption"
 
