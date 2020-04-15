@@ -129,6 +129,12 @@ variable "firehose_delivery_stream_s3_backup_bucket_arn" {
   description = "Use an existing S3 bucket to backup log documents which couldn't be streamed to Elasticsearch. Otherwise a separate bucket for this service will be created."
 }
 
+variable "logs_domain_name" {
+  default     = "application-logs"
+  description = "The name of an existing Elasticsearch domain used as destination for the Firehose delivery stream."
+  type        = string
+}
+
 variable "memory" {
   default     = 512
   description = "Amount of memory [MB] is required by this service."

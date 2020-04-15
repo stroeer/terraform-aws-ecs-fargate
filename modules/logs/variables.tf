@@ -3,6 +3,11 @@
 # You must provide a value for each of these parameters.
 # ---------------------------------------------------------------------------------------------------------------------
 
+variable "domain_name" {
+  description = "The name of an existing Elasticsearch domain used as destination for the Firehose delivery stream."
+  type        = string
+}
+
 variable "service_name" {
   description = "Name of the service to collect log events for. This will be used as the Elasticsearch index name and for IAM configuration."
   type        = string
@@ -17,12 +22,6 @@ variable "task_role_name" {
 # OPTIONAL PARAMETERS
 # These parameters have reasonable defaults.
 # ---------------------------------------------------------------------------------------------------------------------
-
-variable "domain_name" {
-  default     = "application-logs"
-  description = "The name of an existing Elasticsearch domain used as destination for the Firehose delivery stream."
-  type        = string
-}
 
 variable "enabled" {
   default     = true
