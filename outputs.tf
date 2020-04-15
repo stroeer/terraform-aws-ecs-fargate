@@ -3,6 +3,11 @@ output "ecr_repository_arn" {
   value       = module.ecr.arn
 }
 
+output "fluentbit_cloudwatch_log_group" {
+  description = "Name of the CloudWatch log group of the fluent-bit sidecar."
+  value       = module.logs.fluentbit_cloudwatch_log_group
+}
+
 output "kinesis_firehose_delivery_stream_name" {
   description = "The name of the Kinesis Firehose delivery stream."
   value       = module.logs.kinesis_firehose_delivery_stream_name

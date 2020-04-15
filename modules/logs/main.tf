@@ -167,3 +167,14 @@ resource "aws_iam_role_policy_attachment" "firehose_task_policy_attachment" {
   role       = var.task_role_name
   policy_arn = aws_iam_policy.firehose_task_policy[count.index].arn
 }
+
+resource "aws_cloudwatch_log_group" "fluentbit" {
+  count             = var.enabled && var.fluentbit_cloudwatch_log_group_name == "" ? 1 : 0
+  name              = "/aws/ecs/${var.service_name}-fluentbit-container"
+  retention_in_days = 7
+
+  tags = merge(var.tags, {
+    tf_module = basename(path.module)
+  })
+}
+

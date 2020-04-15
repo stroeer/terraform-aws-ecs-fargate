@@ -118,7 +118,8 @@ module "logs" {
   enabled = var.create_log_streaming
 
   domain_name                                   = var.logs_domain_name
-  firehose_delivery_stream_s3_backup_bucket_arn = var.firehose_delivery_stream_s3_backup_bucket_arn
+  firehose_delivery_stream_s3_backup_bucket_arn = var.logs_firehose_delivery_stream_s3_backup_bucket_arn
+  fluentbit_cloudwatch_log_group_name           = var.logs_fluentbit_cloudwatch_log_group_name
   service_name                                  = var.service_name
   tags                                          = local.default_tags
   task_role_name                                = aws_iam_role.ecs_task_role.name
