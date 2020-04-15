@@ -1,52 +1,14 @@
-Terraform Services module
-=========================
+# AWS Fargate ECS Terraform Module
 
 ![CI](https://github.com/stroeer/terraform-aws-buzzgate/workflows/CI/badge.svg?branch=master) ![Terraform Version](https://img.shields.io/badge/Terraform-0.12+-green.svg) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
 
-## Providers
+A somewhat opinionated Terraform module to create Fargate ECS resources on AWS. 
 
-| Name | Version |
-|------|---------|
-| aws | n/a |
-| terraform | n/a |
+This module supports [automated service deployment](#Automated-service-deployment)
+and [log routing](https://docs.amazonaws.cn/en_us/AmazonECS/latest/developerguide/using_firelens.html) to an Elasticsearch domain using 
+[Amazon Kinesis Data Firehose delivery streams](https://docs.amazonaws.cn/en_us/AmazonECS/latest/developerguide/using_firelens.html#firelens-example-firehose) and [Fluent-Bit](https://fluentbit.io/).  
 
-## Inputs
-
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:-----:|
-| alb\_listener\_priority | Ordering of listeners, must be unique. | `number` | n/a | yes |
-| assign\_public\_ip | As Fargate does not support IPv6 yet, this is the only way to enable internet access for the service. | `bool` | `false` | no |
-| cluster\_id | The ECS cluster id that should run this service | `string` | n/a | yes |
-| code\_build\_role\_name | Use an existing role for codebuild permissions that can be reused for multiple services. Otherwise a separate role for each service will be created. | `string` | `""` | no |
-| code\_pipeline\_artifact\_bucket | Use an existing bucket for codepipeline artifacts that can be reused for multiple services. Otherwise a separate bucket for each service will be created. | `string` | `""` | no |
-| code\_pipeline\_role\_name | Use an existing role for codepipeline permissions that can be reused for multiple services. Otherwise a separate role for each service will be created. | `string` | `""` | no |
-| container\_definitions | JSON container definition. | `string` | n/a | yes |
-| container\_name | Defaults to var.service\_name, can be overriden if it differs. Used as a target for LB. | `string` | `""` | no |
-| container\_port | The port used by the web app within the container | `number` | n/a | yes |
-| cpu | Amount of CPU required by this service. 1024 == 1 vCPU | `number` | `256` | no |
-| create\_deployment\_pipeline | Creates a deploy pipeline from ECR trigger. | `bool` | `true` | no |
-| create\_log\_streaming | Creates a Kinesis Firehose delivery stream for streaming application logs to an existing Elasticsearch domain. | `bool` | `true` | no |
-| desired\_count | Desired count of services to be started/running. | `number` | `0` | no |
-| ecr | ECR repository configuration. | <pre>object({<br>    image_scanning_configuration = object({<br>      scan_on_push = bool<br>    })<br>    image_tag_mutability = string,<br>  })</pre> | <pre>{<br>  "image_scanning_configuration": {<br>    "scan_on_push": false<br>  },<br>  "image_tag_mutability": "MUTABLE"<br>}</pre> | no |
-| health\_check\_endpoint | Endpoint (/health) that will be probed by the LB to determine the service's health. | `string` | n/a | yes |
-| memory | Amount of memory [MB] is required by this service. | `number` | `512` | no |
-| policy\_document | AWS Policy JSON describing the permissions required for this service. | `string` | `""` | no |
-| service\_name | The service name. Will also be used as Route53 DNS entry. | `string` | n/a | yes |
-| with\_appmesh | This services should be created with an appmesh proxy. | `bool` | `false` | no |
-
-## Outputs
-
-| Name | Description |
-|------|-------------|
-| ecr\_repository\_arn | Full ARN of the ECR repository |
-| kinesis\_firehose\_delivery\_stream\_name | The name of the Kinesis Firehose delivery stream. |
-| private\_dns | Private DNS entry. |
-| public\_dns | Public DNS entry. |
-
-Requirements
-------------
-
-Documentation is generated with `brew install terraform-docs`
+## Requirements
 
 The following resources are referenced from this module and therefore prerequisites:
 
@@ -68,15 +30,135 @@ for every service.
 * A shared `IAM::Role` for _CodePipeline_ and _CodeBuild_ can be used. You can specify
 those through the variables `code_pipeline_role_name` and `code_build_role_name`. Otherwise new 
 roles are created for every service. For the permissions required see the [module code](./modules/deployment)
- 
 
+### When using log streaming (optional):
+
+* An Elasticsearch domain with the following name: `application-logs`
+ 
+## Usage
+
+Simple Fargate ECS service:
+
+```hcl-terraform
+locals {
+  service_name = "example"
+}
+
+data "aws_caller_identity" "current" {}
+data "aws_region" "current" {}
+
+module "service" {
+  source = "git@github.com:stroeer/terraform-aws-ecs-fargate.git"
+
+  alb_listener_priority         = 664  
+  cluster_id                    = "k8"
+  container_port                = 8080
+  create_log_streaming          = false
+  desired_count                 = 1
+  health_check_endpoint         = "/health"
+  service_name                  = local.service_name
+  container_definitions         = <<DOC
+[
+  {
+    "name": "${local.service_name}",
+    "image": "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com/${local.service_name}:production",
+    "cpu": 256,
+    "memory": 512,
+    "essential": true,
+    "portMappings": [ {"containerPort": 8080, "protocol": "tcp"} ] 
+  }
+]
+DOC
+}
+``` 
+
+with log streaming to Elasticsearch using Fluent-Bit and Kinesis Firehose Delivery Streams:
+
+```hcl-terraform
+locals {
+  service_name = "example"
+}
+
+data "aws_caller_identity" "current" {}
+data "aws_region" "current" {}
+
+data "aws_iam_policy_document" "policy" {  
+  statement {
+    actions = ["firehose:PutRecordBatch"] 
+    resources = ["*"]
+  }
+}
+
+module "service" {
+  source = "git@github.com:stroeer/terraform-aws-ecs-fargate.git"
+
+  alb_listener_priority         = 664  
+  cluster_id                    = "k8"
+  container_port                = 8080  
+  desired_count                 = 1
+  health_check_endpoint         = "/health"
+  service_name                  = local.service_name
+  container_definitions         = <<DOC
+[
+  {
+    "essential": true,
+    "image": "906394416424.dkr.ecr.${data.aws_region.current.name}.amazonaws.com/aws-for-fluent-bit:latest",
+    "name": "log_router",
+    "firelensConfiguration": {
+        "type": "fluentbit",
+        "options": {
+                "config-file-type": "file",
+                "config-file-value": "/fluent-bit/configs/parse-json.conf"
+        }
+    },
+    "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+            "awslogs-group": "firelens-container",
+            "awslogs-region": "${data.aws_region.current.name}",
+            "awslogs-stream-prefix": "firelens"
+        }
+    },
+    "memoryReservation": 50
+  },
+  {
+    "name": "${local.service_name}",
+    "image": "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com/${local.service_name}:production",
+    "cpu": 256,
+    "memory": 512,
+    "essential": true,
+    "portMappings": [ {"containerPort": 8080, "protocol": "tcp"} ],
+    "logConfiguration": {
+      "logDriver": "awsfirelens",
+      "options": {
+        "Name": "firehose",
+        "region": "${data.aws_region.current.name}",
+        "delivery_stream": "${module.service.kinesis_firehose_delivery_stream_name}"
+      }    
+  }
+]
+DOC
+}
+```
 ### Naming Conventions
 
 - Service Names `var.service_name = [a-z-]+`
 
-### Automated Service Deployment
+## Examples
 
-Once `create_deployment_pipeline` is set to `true`, we will create an automated Deployment Pipeline:
+- [public-service](https://github.com/stroeer/terraform-aws-ecs-fargate/tree/master/examples/public-service)
+
+## Documentation
+
+Documentation is generated with `brew install terraform-docs` (see [Makefile](https://github.com/stroeer/terraform-aws-ecs-fargate/blob/master/Makefile)).
+
+## Terraform versions
+
+Only Terraform 0.12+ is supported.
+
+## Automated service deployment
+
+Once `create_deployment_pipeline` is set to `true`, this module will create an automated deployment pipeline:
 
 ![deployment pipeline](docs/ecs_deployer.png)
 
@@ -91,16 +173,61 @@ How it works:
 choice would be `git.sha`. To be specific, we chose a tag that does not `start with container.` and is none 
 of `["local", "production", "staging", "infrastructure"]`
 
-- That CodePipeline will do the heavy lifting (see deployment flow above):
+That CodePipeline will do the heavy lifting (see deployment flow above):
 
 1. Pull the full `imagedefinitions.json` from the ECR registry
 2. Trigger a CodeBuild to transform the `imagedefinitions.json` into a `imagedefinitions.json` for deployment
 3. Update the ECS service's task-definition by replacing the specified `imageUri` for the given `name`.
 
-Todos
------
+## Todos
 
 * [ ] Cognito auth for ALB listeners
 * [x] CodeDeploy with ECR trigger
-* [x] ECR policies
+* [ ] ECR policies
 * [ ] Notification for the deployment pipeline [success/failure] 
+
+## Requirements
+
+No requirements.
+
+## Providers
+
+| Name | Version |
+|------|---------|
+| aws | n/a |
+| terraform | n/a |
+
+## Inputs
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| alb\_listener\_priority | Ordering of listeners, must be unique. | `number` | n/a | yes |
+| assign\_public\_ip | As Fargate does not support IPv6 yet, this is the only way to enable internet access for the service. | `bool` | `false` | no |
+| cluster\_id | The ECS cluster id that should run this service | `string` | n/a | yes |
+| code\_build\_role\_name | Use an existing role for codebuild permissions that can be reused for multiple services. Otherwise a separate role for this service will be created. | `string` | `""` | no |
+| code\_pipeline\_artifact\_bucket | Use an existing bucket for codepipeline artifacts that can be reused for multiple services. Otherwise a separate bucket for each service will be created. | `string` | `""` | no |
+| code\_pipeline\_role\_name | Use an existing role for codepipeline permissions that can be reused for multiple services. Otherwise a separate role for this service will be created. | `string` | `""` | no |
+| container\_definitions | JSON container definition. | `string` | n/a | yes |
+| container\_name | Defaults to var.service\_name, can be overriden if it differs. Used as a target for LB. | `string` | `""` | no |
+| container\_port | The port used by the web app within the container | `number` | n/a | yes |
+| cpu | Amount of CPU required by this service. 1024 == 1 vCPU | `number` | `256` | no |
+| create\_deployment\_pipeline | Creates a deploy pipeline from ECR trigger. | `bool` | `true` | no |
+| create\_log\_streaming | Creates a Kinesis Firehose delivery stream for streaming application logs to an existing Elasticsearch domain. | `bool` | `true` | no |
+| desired\_count | Desired count of services to be started/running. | `number` | `0` | no |
+| ecr | ECR repository configuration. | <pre>object({<br>    image_scanning_configuration = object({<br>      scan_on_push = bool<br>    })<br>    image_tag_mutability = string,<br>  })</pre> | <pre>{<br>  "image_scanning_configuration": {<br>    "scan_on_push": false<br>  },<br>  "image_tag_mutability": "MUTABLE"<br>}</pre> | no |
+| firehose\_delivery\_stream\_s3\_backup\_bucket\_arn | Use an existing S3 bucket to backup log documents which couldn't be streamed to Elasticsearch. Otherwise a separate bucket for this service will be created. | `string` | `""` | no |
+| health\_check\_endpoint | Endpoint (/health) that will be probed by the LB to determine the service's health. | `string` | n/a | yes |
+| memory | Amount of memory [MB] is required by this service. | `number` | `512` | no |
+| policy\_document | AWS Policy JSON describing the permissions required for this service. | `string` | `""` | no |
+| service\_name | The service name. Will also be used as Route53 DNS entry. | `string` | n/a | yes |
+| with\_appmesh | This services should be created with an appmesh proxy. | `bool` | `false` | no |
+
+## Outputs
+
+| Name | Description |
+|------|-------------|
+| ecr\_repository\_arn | Full ARN of the ECR repository |
+| kinesis\_firehose\_delivery\_stream\_name | The name of the Kinesis Firehose delivery stream. |
+| private\_dns | Private DNS entry. |
+| public\_dns | Public DNS entry. |
+
