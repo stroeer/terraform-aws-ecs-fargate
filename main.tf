@@ -117,6 +117,7 @@ module "logs" {
   source  = "./modules/logs"
   enabled = var.create_log_streaming
 
-  service_name = var.service_name
-  tags         = local.default_tags
+  firehose_delivery_stream_s3_backup_bucket_arn = var.firehose_delivery_stream_s3_backup_bucket_arn
+  service_name                                  = var.service_name
+  tags                                          = local.default_tags
 }

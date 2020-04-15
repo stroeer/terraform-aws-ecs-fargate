@@ -25,6 +25,11 @@ variable "enabled" {
   type        = bool
 }
 
+variable "firehose_delivery_stream_s3_backup_bucket_arn" {
+  default     = ""
+  description = "Use an existing S3 bucket to backup log documents which couldn't be streamed to Elasticsearch. Otherwise a separate bucket for this service will be created."
+}
+
 variable "tags" {
   default     = {}
   description = "A mapping of tags to assign to the Kinesis Firehose resource."
