@@ -8,6 +8,11 @@ variable "service_name" {
   type        = string
 }
 
+variable "task_role_name" {
+  description = "Name of the IAM role used by the containers in a task. Firehose and CloudWatch Log policies will be attached to this role."
+  type        = string
+}
+
 # ---------------------------------------------------------------------------------------------------------------------
 # OPTIONAL PARAMETERS
 # These parameters have reasonable defaults.

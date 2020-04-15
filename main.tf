@@ -120,4 +120,5 @@ module "logs" {
   firehose_delivery_stream_s3_backup_bucket_arn = var.firehose_delivery_stream_s3_backup_bucket_arn
   service_name                                  = var.service_name
   tags                                          = local.default_tags
+  task_role_name                                = aws_iam_role.ecs_task_role.name
 }

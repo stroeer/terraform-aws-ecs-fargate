@@ -148,3 +148,22 @@ resource "aws_kinesis_firehose_delivery_stream" "elasticsearch_stream" {
     tf_module = basename(path.module)
   })
 }
+
+data "aws_iam_policy_document" "firehose_task_policy" {
+  count = var.enabled ? 1 : 0
+  statement {
+    actions   = ["firehose:PutRecordBatch"]
+    resources = [aws_kinesis_firehose_delivery_stream.elasticsearch_stream[count.index].arn]
+  }
+}
+
+resource "aws_iam_policy" "firehose_task_policy" {
+  count  = var.enabled ? 1 : 0
+  policy = data.aws_iam_policy_document.firehose_task_policy[count.index].json
+}
+
+resource "aws_iam_role_policy_attachment" "firehose_task_policy_attachment" {
+  count      = var.enabled ? 1 : 0
+  role       = var.task_role_name
+  policy_arn = aws_iam_policy.firehose_task_policy[count.index].arn
+}
