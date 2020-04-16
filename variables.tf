@@ -124,9 +124,22 @@ variable "ecr" {
   }
 }
 
-variable "firehose_delivery_stream_s3_backup_bucket_arn" {
+variable "logs_firehose_delivery_stream_s3_backup_bucket_arn" {
   default     = ""
   description = "Use an existing S3 bucket to backup log documents which couldn't be streamed to Elasticsearch. Otherwise a separate bucket for this service will be created."
+}
+
+variable "logs_fluentbit_cloudwatch_log_group_name" {
+  default     = ""
+  description = "Use an existing CloudWatch log group for storing logs of the fluent-bit sidecar. Otherwise a dedicate log group for this service will be created."
+  type        = string
+}
+
+
+variable "logs_domain_name" {
+  default     = "application-logs"
+  description = "The name of an existing Elasticsearch domain used as destination for the Firehose delivery stream."
+  type        = string
 }
 
 variable "memory" {

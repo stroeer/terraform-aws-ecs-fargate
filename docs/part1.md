@@ -30,10 +30,6 @@ for every service.
 * A shared `IAM::Role` for _CodePipeline_ and _CodeBuild_ can be used. You can specify
 those through the variables `code_pipeline_role_name` and `code_build_role_name`. Otherwise new 
 roles are created for every service. For the permissions required see the [module code](./modules/deployment)
-
-### When using log streaming (optional):
-
-* An Elasticsearch domain with the following name: `application-logs`
  
 ## Usage
 
