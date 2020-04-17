@@ -29,11 +29,6 @@ documentation: ## Generates README.md from static snippets and Terraform variabl
 	terraform-docs markdown table . > docs/part2.md
 	cat docs/*.md > README.md
 
-.PHONY: tag
-tag: ## Create a new git tag to prepare to build a release
-	git tag -a $(VERSION) -m "$(VERSION)"
-	@echo "Run git push origin $(VERSION) to push your new tag to GitHub and trigger a build."
-
 $(SEMBUMP):
 	GO111MODULE=off go get -u github.com/jessfraz/junk/sembump
 
@@ -43,11 +38,16 @@ bump-version: $(SEMBUMP) ## Bump the version in the version file. Set BUMP to [ 
 	$(eval NEW_VERSION = $(shell $(BINDIR)/sembump --kind $(BUMP) $(VERSION)))
 	@echo "Bumping VERSION.txt from $(VERSION) to $(NEW_VERSION)"
 	echo $(NEW_VERSION) > VERSION.txt
-	# @echo "Updating links in README.md"
-	# sed -i '' s/$(subst v,,$(VERSION))/$(subst v,,$(NEW_VERSION))/g README.md
-	git add VERSION.txt
+	@echo "Updating links in README.md"
+	sed -i '' s/$(subst v,,$(VERSION))/$(subst v,,$(NEW_VERSION))/g docs/part1.md
+
+.PHONY: release
+release: bump-version documentation
+	@echo "+ $@"
+	git add VERSION.txt README.md docs/part1.md
 	git commit -vsam "Bump version to $(NEW_VERSION)"
-	@echo "Run make tag to create and push the tag for new version $(NEW_VERSION)"
+	git tag -a $(NEW_VERSION) -m "$(NEW_VERSION)"
+	git push origin $(NEW_VERSION)
 
 .PHONY: help
 help: ## Display this help screen

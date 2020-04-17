@@ -1,6 +1,6 @@
 # AWS Fargate ECS Terraform Module
 
-![CI](https://github.com/stroeer/terraform-aws-buzzgate/workflows/CI/badge.svg?branch=master) ![Terraform Version](https://img.shields.io/badge/Terraform-0.12+-green.svg) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Terraform Registry](https://img.shields.io/badge/Terraform%20Registry-0.0.4-blue.svg)](https://registry.terraform.io/modules/stroeer/ecs-fargate/aws/0.0.4) ![CI](https://github.com/stroeer/terraform-aws-buzzgate/workflows/CI/badge.svg?branch=master) ![Terraform Version](https://img.shields.io/badge/Terraform-0.12+-green.svg) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
 
 A somewhat opinionated Terraform module to create Fargate ECS resources on AWS. 
 
@@ -44,7 +44,8 @@ data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
 module "service" {
-  source = "git@github.com:stroeer/terraform-aws-ecs-fargate.git"
+  source  = "stroeer/ecs-fargate/aws"
+  version = "0.0.4"
 
   alb_listener_priority         = 664  
   cluster_id                    = "k8"
@@ -86,7 +87,8 @@ data "aws_iam_policy_document" "policy" {
 }
 
 module "service" {
-  source = "git@github.com:stroeer/terraform-aws-ecs-fargate.git"
+  source  = "stroeer/ecs-fargate/aws"
+  version = "0.0.4"
 
   alb_listener_priority         = 664  
   cluster_id                    = "k8"
@@ -151,6 +153,15 @@ Documentation is generated with `brew install terraform-docs` (see [Makefile](ht
 ## Terraform versions
 
 Only Terraform 0.12+ is supported.
+
+## Release
+
+Release a new module version to the [Terraform registry](https://registry.terraform.io/modules/stroeer/ecs-fargate/aws/) 
+(`BUMP` defaults to `patch`):
+ 
+```makefile
+make BUMP=(major|minor|patch) release
+```
 
 ## Automated service deployment
 
