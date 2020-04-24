@@ -34,19 +34,19 @@ variable "enabled" {
 }
 
 variable "artifact_bucket" {
-  default = ""
+  default     = ""
   description = "Use an existing bucket for codepipeline artifacts that can be reused for multiple services."
-  type = string
+  type        = string
 }
 
 variable "code_pipeline_role" {
-  default = ""
+  default     = ""
   description = "Use an existing role for codepipeline permissions that can be reused for multiple services."
-  type = string
+  type        = string
 }
 
 variable "code_build_role" {
-  default = ""
+  default     = ""
   description = "Use an existing role for codebuild permissions that can be reused for multiple services."
-  type = string
+  type        = string
 }

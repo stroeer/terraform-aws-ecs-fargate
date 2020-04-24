@@ -7,7 +7,8 @@ resource "aws_iam_role" "code_pipeline_role" {
   name               = "code-pipeline-${var.service_name}"
   path               = local.iam_path
   assume_role_policy = data.aws_iam_policy_document.allow_code_pipeline_assume[count.index].json
-  tags               = merge(var.tags, {
+
+  tags = merge(var.tags, {
     tf_module = basename(path.module)
   })
 }
@@ -40,12 +41,14 @@ data "aws_iam_policy_document" "code_pipepline_permissions" {
   count = local.create_code_pipeline_iam ? 1 : 0
 
   statement {
-    actions   = ["ecr:DescribeImages"]
+    actions = ["ecr:DescribeImages"]
+
     resources = [data.aws_ecr_repository.this.arn]
   }
 
   statement {
-    actions   = ["s3:GetObject", "s3:ListBucket", "s3:PutObject"]
+    actions = ["s3:GetObject", "s3:ListBucket", "s3:PutObject"]
+
     resources = [
       local.artifact_bucket_arn,
       "${local.artifact_bucket_arn}/*"
@@ -54,12 +57,13 @@ data "aws_iam_policy_document" "code_pipepline_permissions" {
 
   statement {
     # start downstream builds and retrieve output artefacts
-    actions   = ["codebuild:StartBuild", "codebuild:BatchGetBuilds"]
+    actions = ["codebuild:StartBuild", "codebuild:BatchGetBuilds"]
+
     resources = [aws_codebuild_project.this[count.index].arn]
   }
 
   statement {
-    actions   = [
+    actions = [
       "autoscaling:Describe*",
       "autoscaling:UpdateAutoScalingGroup",
       "elasticloadbalancing:*",
@@ -68,6 +72,7 @@ data "aws_iam_policy_document" "code_pipepline_permissions" {
       "iam:ListRoles",
       "iam:PassRole"
     ]
+
     resources = ["*"]
   }
 }

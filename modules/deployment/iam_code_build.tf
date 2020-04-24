@@ -1,5 +1,5 @@
 locals {
-  create_code_build_iam    = var.enabled && var.code_build_role == ""
+  create_code_build_iam = var.enabled && var.code_build_role == ""
 }
 
 resource "aws_iam_role" "code_build_role" {
@@ -37,12 +37,15 @@ resource "aws_iam_role_policy_attachment" "codebuild" {
 data "aws_iam_policy_document" "codebuild" {
   count = local.create_code_build_iam ? 1 : 0
   statement {
-    actions   = ["logs:CreateLogStream", "logs:CreateLogGroup", "logs:PutLogEvents"]
+    actions = ["logs:CreateLogStream", "logs:CreateLogGroup", "logs:PutLogEvents"]
+
     resources = [
-      "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:/aws/codebuild/*"]
+      "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:/aws/codebuild/*"
+    ]
   }
   statement {
-    actions   = ["s3:Get*", "s3:PutObject"]
+    actions = ["s3:Get*", "s3:PutObject"]
+
     resources = ["${local.artifact_bucket_arn}/*"]
   }
 }

@@ -16,6 +16,6 @@ data "aws_iam_role" "code_pipeline" {
 }
 
 locals {
-  iam_path = "/ecs/deployment/"
-  artifact_bucket_arn  = var.enabled ? (var.artifact_bucket == "" ? module.s3_bucket.this_s3_bucket_arn : data.aws_s3_bucket.codepipeline[0].arn) : ""
+  iam_path            = "/ecs/deployment/"
+  artifact_bucket_arn = var.enabled ? (var.artifact_bucket == "" ? module.s3_bucket.this_s3_bucket_arn : data.aws_s3_bucket.codepipeline[0].arn) : ""
 }
