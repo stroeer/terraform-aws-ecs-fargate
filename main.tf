@@ -1,8 +1,9 @@
 data "aws_subnet_ids" "selected" {
+  vpc_id = data.aws_vpc.selected.id
+
   tags = {
     Tier = var.assign_public_ip ? "public" : "private"
   }
-  vpc_id = data.aws_vpc.selected.id
 }
 
 ## the VPC's default SG must be attached to allow traffic from/to AWS endpoints like ECR
@@ -71,7 +72,7 @@ resource "aws_ecs_task_definition" "this" {
       type           = "APPMESH"
 
       properties = {
-        AppPorts         = "9000"
+        AppPorts         = var.container_port
         EgressIgnoredIPs = "169.254.170.2,169.254.169.254"
         IgnoredUID       = "1337"
         ProxyEgressPort  = 15001

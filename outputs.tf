@@ -8,6 +8,11 @@ output "fluentbit_cloudwatch_log_group" {
   value       = module.logs.fluentbit_cloudwatch_log_group
 }
 
+output "ecr_repository_url" {
+  description = "URL of the ECR repository"
+  value       = module.ecr.repository_url
+}
+
 output "kinesis_firehose_delivery_stream_name" {
   description = "The name of the Kinesis Firehose delivery stream."
   value       = module.logs.kinesis_firehose_delivery_stream_name

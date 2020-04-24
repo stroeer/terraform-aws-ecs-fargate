@@ -4,7 +4,8 @@ module "s3_bucket" {
 
   bucket        = "codepipeline-bucket-${var.service_name}-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}"
   force_destroy = true
-  tags          = merge(var.tags, {
+
+  tags = merge(var.tags, {
     tf_module = basename(path.module)
   })
 }
