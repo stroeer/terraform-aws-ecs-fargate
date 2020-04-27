@@ -1,4 +1,23 @@
+data "aws_lb" "public" {
+  count = var.alb_attach_public_target_group ? 1 : 0
+  name  = "public"
+}
+
+data "aws_lb_listener" "public" {
+  count             = var.alb_attach_public_target_group ? 1 : 0
+  load_balancer_arn = data.aws_lb.public[count.index].arn
+  port              = 443
+}
+
+data "aws_lb_listener" "public_80" {
+  count             = var.alb_attach_public_target_group ? 1 : 0
+  load_balancer_arn = data.aws_lb.public[count.index].arn
+  port              = 80
+}
+
 resource "aws_alb_target_group" "public" {
+  count = var.alb_attach_public_target_group ? 1 : 0
+
   deregistration_delay = 5
   name                 = "${var.service_name}-public"
   port                 = var.container_port
@@ -7,77 +26,54 @@ resource "aws_alb_target_group" "public" {
   target_type          = "ip"
   vpc_id               = data.aws_vpc.selected.id
 
-  health_check {
-    healthy_threshold   = 2
-    interval            = 30
-    path                = var.health_check_endpoint
-    port                = var.container_port
-    protocol            = "HTTP"
-    unhealthy_threshold = 10
+  dynamic "health_check" {
+    for_each = [var.health_check]
+    content {
+      enabled             = lookup(health_check.value, "enabled", null)
+      healthy_threshold   = lookup(health_check.value, "healthy_threshold", null)
+      interval            = lookup(health_check.value, "interval", null)
+      matcher             = lookup(health_check.value, "matcher", null)
+      path                = lookup(health_check.value, "path", null)
+      port                = lookup(health_check.value, "port", null)
+      protocol            = lookup(health_check.value, "protocol", null)
+      timeout             = lookup(health_check.value, "timeout", null)
+      unhealthy_threshold = lookup(health_check.value, "unhealthy_threshold", null)
+    }
   }
-}
-
-resource "aws_alb_target_group" "private" {
-  deregistration_delay = 5
-  name                 = "${var.service_name}-private"
-  port                 = var.container_port
-  protocol             = "HTTP"
-  tags                 = local.default_tags
-  target_type          = "ip"
-  vpc_id               = data.aws_vpc.selected.id
-
-  health_check {
-    path                = var.health_check_endpoint
-    port                = var.container_port
-    protocol            = "HTTP"
-    interval            = 30
-    healthy_threshold   = 2
-    unhealthy_threshold = 10
-  }
-}
-
-data "aws_lb" "public" {
-  name = "public"
-}
-
-data "aws_lb_listener" "public" {
-  load_balancer_arn = data.aws_lb.public.arn
-  port              = 443
-}
-
-data "aws_lb_listener" "public_80" {
-  load_balancer_arn = data.aws_lb.public.arn
-  port              = 80
 }
 
 resource "aws_alb_listener_rule" "public" {
-  listener_arn = data.aws_lb_listener.public.arn
+  count = var.alb_attach_public_target_group ? 1 : 0
+
+  listener_arn = data.aws_lb_listener.public[count.index].arn
   priority     = var.alb_listener_priority
 
   action {
     type             = "forward"
-    target_group_arn = aws_alb_target_group.public.arn
+    target_group_arn = aws_alb_target_group.public[count.index].arn
   }
 
   condition {
     host_header {
-      values = [trimsuffix("${var.service_name}.${data.aws_route53_zone.external.name}", ".")]
+      values = [trimsuffix("${var.service_name}.${data.aws_route53_zone.external[count.index].name}", ".")]
     }
   }
 }
 
 resource "aws_alb_listener_rule" "public_80" {
-  listener_arn = data.aws_lb_listener.public_80.arn
+  count = var.alb_attach_public_target_group ? 1 : 0
+
+  listener_arn = data.aws_lb_listener.public_80[count.index].arn
   priority     = var.alb_listener_priority
 
   action {
     type             = "forward"
-    target_group_arn = aws_alb_target_group.public.arn
+    target_group_arn = aws_alb_target_group.public[count.index].arn
   }
 
   condition {
     host_header {
-      values = [trimsuffix("${var.service_name}.${data.aws_route53_zone.external.name}", ".")]
+      values = [trimsuffix("${var.service_name}.${data.aws_route53_zone.external[count.index].name}", ".")]
     }
   }
 
@@ -90,26 +86,57 @@ resource "aws_alb_listener_rule" "public_80" {
 }
 
 data "aws_lb" "private" {
-  name = "private"
+  count = var.alb_attach_private_target_group ? 1 : 0
+  name  = "private"
 }
 
 data "aws_lb_listener" "private" {
-  load_balancer_arn = data.aws_lb.private.arn
+  count             = var.alb_attach_private_target_group ? 1 : 0
+  load_balancer_arn = data.aws_lb.private[count.index].arn
   port              = 80
 }
 
+resource "aws_alb_target_group" "private" {
+  count = var.alb_attach_private_target_group ? 1 : 0
+
+  deregistration_delay = 5
+  name                 = "${var.service_name}-private"
+  port                 = var.container_port
+  protocol             = "HTTP"
+  tags                 = local.default_tags
+  target_type          = "ip"
+  vpc_id               = data.aws_vpc.selected.id
+
+  dynamic "health_check" {
+    for_each = [var.health_check]
+    content {
+      enabled             = lookup(health_check.value, "enabled", null)
+      healthy_threshold   = lookup(health_check.value, "healthy_threshold", null)
+      interval            = lookup(health_check.value, "interval", null)
+      matcher             = lookup(health_check.value, "matcher", null)
+      path                = lookup(health_check.value, "path", null)
+      port                = lookup(health_check.value, "port", null)
+      protocol            = lookup(health_check.value, "protocol", null)
+      timeout             = lookup(health_check.value, "timeout", null)
+      unhealthy_threshold = lookup(health_check.value, "unhealthy_threshold", null)
+    }
+  }
+}
+
 resource "aws_alb_listener_rule" "private" {
-  listener_arn = data.aws_lb_listener.private.arn
+  count = var.alb_attach_private_target_group ? 1 : 0
+
+  listener_arn = data.aws_lb_listener.private[count.index].arn
   priority     = var.alb_listener_priority
 
   action {
     type             = "forward"
-    target_group_arn = aws_alb_target_group.private.arn
+    target_group_arn = aws_alb_target_group.private[count.index].arn
   }
 
   condition {
     host_header {
-      values = [trimsuffix("${var.service_name}.${data.aws_route53_zone.internal.name}", ".")]
+      values = [trimsuffix("${var.service_name}.${data.aws_route53_zone.internal[count.index].name}", ".")]
     }
   }
 }
