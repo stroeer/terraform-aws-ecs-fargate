@@ -24,11 +24,6 @@ variable "container_port" {
   type        = number
 }
 
-variable "health_check_endpoint" {
-  description = "Endpoint (/health) that will be probed by the LB to determine the service's health."
-  type        = string
-}
-
 variable "service_name" {
   description = "The service name. Will also be used as Route53 DNS entry."
   type        = string
@@ -38,6 +33,18 @@ variable "service_name" {
 # OPTIONAL PARAMETERS
 # These parameters have reasonable defaults.
 # ---------------------------------------------------------------------------------------------------------------------
+
+variable "alb_attach_public_target_group" {
+  default     = true
+  description = "Attach a target group for this service to the public ALB (requires an ALB with `name=public`)."
+  type        = bool
+}
+
+variable "alb_attach_private_target_group" {
+  default     = true
+  description = "Attach a target group for this service to the private ALB (requires an ALB with `name=private`)."
+  type        = bool
+}
 
 variable "assign_public_ip" {
   default     = false
@@ -122,6 +129,12 @@ variable "ecr" {
     }
     image_tag_mutability = "MUTABLE",
   }
+}
+
+variable "health_check" {
+  description = "A health block containing health check settings for the ALB target groups. See https://www.terraform.io/docs/providers/aws/r/lb_target_group.html#health_check for defaults."
+  default     = {}
+  type        = map(string)
 }
 
 variable "logs_firehose_delivery_stream_s3_backup_bucket_arn" {

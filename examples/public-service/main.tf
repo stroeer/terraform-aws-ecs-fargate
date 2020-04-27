@@ -12,7 +12,6 @@ module "service" {
   create_deployment_pipeline = false
   create_log_streaming       = false
   desired_count              = 1
-  health_check_endpoint      = "/"
   service_name               = local.service_name
   container_definitions      = <<DOC
 [
@@ -45,5 +44,9 @@ DOC
     image_scanning_configuration = {
       scan_on_push = true
     }
+  }
+
+  health_check = {
+    path = "/"
   }
 }

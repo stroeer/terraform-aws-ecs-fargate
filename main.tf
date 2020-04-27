@@ -1,3 +1,8 @@
+locals {
+  alb_public_group  = var.alb_attach_public_target_group && length(aws_alb_target_group.public) == 1 ? list(aws_alb_target_group.public[0].arn) : []
+  alb_private_group = var.alb_attach_private_target_group && length(aws_alb_target_group.private) == 1 ? list(aws_alb_target_group.private[0].arn) : []
+}
+
 data "aws_subnet_ids" "selected" {
   vpc_id = data.aws_vpc.selected.id
 
@@ -31,7 +36,7 @@ resource "aws_ecs_service" "this" {
   task_definition                    = "${aws_ecs_task_definition.this.family}:${max("${aws_ecs_task_definition.this.revision}", "${data.aws_ecs_task_definition.this.revision}")}"
 
   dynamic "load_balancer" {
-    for_each = list(aws_alb_target_group.public.arn, aws_alb_target_group.private.arn)
+    for_each = concat(local.alb_public_group, local.alb_private_group)
     content {
       container_name   = local.container_name
       container_port   = var.container_port

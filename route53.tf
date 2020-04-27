@@ -15,6 +15,7 @@ resource "aws_service_discovery_service" "this" {
 }
 data "aws_region" "current" {}
 data "aws_caller_identity" "current" {}
+
 data "terraform_remote_state" "ecs" {
   backend = "s3"
   config = {
@@ -25,6 +26,7 @@ data "terraform_remote_state" "ecs" {
 }
 
 data "aws_route53_zone" "internal" {
+  count        = var.alb_attach_private_target_group ? 1 : 0
   private_zone = true
   vpc_id       = data.aws_vpc.selected.id
   name         = "vpc.internal."
@@ -32,22 +34,27 @@ data "aws_route53_zone" "internal" {
 
 # service_name.vpc.internal.
 resource "aws_route53_record" "internal" {
+  count = var.alb_attach_private_target_group ? 1 : 0
+
   name    = var.service_name
   type    = "CNAME"
-  zone_id = data.aws_route53_zone.internal.zone_id
+  zone_id = data.aws_route53_zone.internal[count.index].zone_id
   ttl     = 300
-  records = [data.aws_lb.private.dns_name]
+  records = [data.aws_lb.private[count.index].dns_name]
 }
 
 data "aws_route53_zone" "external" {
-  name = "buzz.t-online.delivery."
+  count = var.alb_attach_public_target_group ? 1 : 0
+  name  = "buzz.t-online.delivery."
 }
 
 # service_name.buzz.t-online.delivery
 resource "aws_route53_record" "external" {
+  count = var.alb_attach_public_target_group ? 1 : 0
+
   name    = var.service_name
   type    = "CNAME"
-  zone_id = data.aws_route53_zone.external.zone_id
+  zone_id = data.aws_route53_zone.external[count.index].zone_id
   ttl     = 300
-  records = [data.aws_lb.public.dns_name]
+  records = [data.aws_lb.public[count.index].dns_name]
 }
