@@ -16,11 +16,19 @@ The following resources are referenced from this module and therefore prerequisi
 * Subnets — within this VPC, there must be at least one subnet tagged with `Tier = (public|private)`
 * SG (1) — within this VPC there must be a security group `Name = default`
 * SG (2) — within this VPC there must be a security group to allow traffic from ALB `Name = fargate-allow-alb-traffic`
-* DNS (VPC) — within this VPC there must be a private route53 zone with `name = vpc.internal.`
-* DNS (public) — currently there is a hard-coded route53 zone `name = buzz.t-online.delivery.`
+* IAM role — There should be a role named `ssm_ecs_task_execution_role` that will be used as a task execution role
+
+### Load Balancing
+
+A service will be attached to a `public` and/or `private` target groups per default. In addition Route53 records will be created for those target groups.Therefore the following resources need to be available:
+
 * ALB — there must be ALBs with `name = (public|private)`. 
 * ALB Listeners — Those ALBs should have listeners for HTTP(s) (Port `80` and `443`) configured
-* IAM role — There should be a role named `ssm_ecs_task_execution_role` that will be used as a task execution role
+* DNS (VPC) — within this VPC there must be a private route53 zone with `name = vpc.internal.`
+* DNS (public) — currently there is a hard-coded route53 zone `name = buzz.t-online.delivery.`
+
+
+In order to disable ALB target group attachments (e.g. for services in an App Mesh) set `alb_attach_public_target_group` and/or `alb_attach_private_target_group` to `false`.
 
 ### When using the automated deployment pipeline (optional):
 
