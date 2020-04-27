@@ -5,7 +5,6 @@ locals {
 module "service" {
   source = "../../"
 
-  alb_listener_priority      = 777
   assign_public_ip           = true
   cluster_id                 = "k8"
   container_port             = 80

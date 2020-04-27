@@ -3,11 +3,6 @@
 # You must provide a value for each of these parameters.
 # ---------------------------------------------------------------------------------------------------------------------
 
-variable "alb_listener_priority" {
-  description = "Ordering of listeners, must be unique."
-  type        = number
-}
-
 variable "cluster_id" {
   description = "The ECS cluster id that should run this service"
   type        = string
@@ -44,6 +39,12 @@ variable "alb_attach_private_target_group" {
   default     = true
   description = "Attach a target group for this service to the private ALB (requires an ALB with `name=private`)."
   type        = bool
+}
+
+variable "alb_listener_priority" {
+  default     = null
+  description = "The priority for the ALB listener rule between 1 and 50000. Leaving it unset will automatically set the rule with next available priority after currently existing highest rule."
+  type        = number
 }
 
 variable "assign_public_ip" {
