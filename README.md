@@ -1,6 +1,6 @@
 # AWS Fargate ECS Terraform Module
 
-[![Terraform Registry](https://img.shields.io/badge/Terraform%20Registry-0.1.0-blue.svg)](https://registry.terraform.io/modules/stroeer/ecs-fargate/aws/0.1.0) ![CI](https://github.com/stroeer/terraform-aws-buzzgate/workflows/CI/badge.svg?branch=master) ![Terraform Version](https://img.shields.io/badge/Terraform-0.12+-green.svg) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Terraform Registry](https://img.shields.io/badge/Terraform%20Registry-0.1.1-blue.svg)](https://registry.terraform.io/modules/stroeer/ecs-fargate/aws/0.1.1) ![CI](https://github.com/stroeer/terraform-aws-buzzgate/workflows/CI/badge.svg?branch=master) ![Terraform Version](https://img.shields.io/badge/Terraform-0.12+-green.svg) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
 
 A somewhat opinionated Terraform module to create Fargate ECS resources on AWS. 
 
@@ -45,7 +45,7 @@ data "aws_region" "current" {}
 
 module "service" {
   source  = "stroeer/ecs-fargate/aws"
-  version = "0.1.0"
+  version = "0.1.1"
 
   alb_listener_priority         = 664  
   cluster_id                    = "k8"
@@ -88,7 +88,7 @@ data "aws_iam_policy_document" "policy" {
 
 module "service" {
   source  = "stroeer/ecs-fargate/aws"
-  version = "0.1.0"
+  version = "0.1.1"
 
   alb_listener_priority         = 664  
   cluster_id                    = "k8"
@@ -236,6 +236,7 @@ No requirements.
 | Name | Description |
 |------|-------------|
 | ecr\_repository\_arn | Full ARN of the ECR repository |
+| ecr\_repository\_url | URL of the ECR repository |
 | fluentbit\_cloudwatch\_log\_group | Name of the CloudWatch log group of the fluent-bit sidecar. |
 | kinesis\_firehose\_delivery\_stream\_name | The name of the Kinesis Firehose delivery stream. |
 | private\_dns | Private DNS entry. |
