@@ -55,13 +55,16 @@ module "service" {
   source  = "stroeer/ecs-fargate/aws"
   version = "0.1.1"
 
-  alb_listener_priority         = 664  
   cluster_id                    = "k8"
   container_port                = 8080
   create_log_streaming          = false
   desired_count                 = 1
-  health_check_endpoint         = "/health"
   service_name                  = local.service_name
+
+  health_check = {
+    path = "/health"
+  }
+
   container_definitions         = <<DOC
 [
   {
@@ -98,12 +101,15 @@ module "service" {
   source  = "stroeer/ecs-fargate/aws"
   version = "0.1.1"
 
-  alb_listener_priority         = 664  
-  cluster_id                    = "k8"
+  cluster_id                    = "k8"s
   container_port                = 8080  
   desired_count                 = 1
-  health_check_endpoint         = "/health"
   service_name                  = local.service_name
+
+  health_check = {
+    path = "/health"
+  }
+
   container_definitions         = <<DOC
 [
   {
