@@ -47,6 +47,24 @@ variable "alb_listener_priority" {
   type        = number
 }
 
+variable "alb_cogino_pool_arn" {
+  type        = string
+  default     = null
+  description = "Provide a COGNITO pool ARN if you want to attach COGNITO authentication to the public ALB's HTTPS listener. If not set, there will be no auth."
+}
+
+variable "alb_cogino_pool_client_id" {
+  type        = string
+  default     = null
+  description = "COGNITO client id that will be used for authenticating at the public ALB's HTTPS listener."
+}
+
+variable "alb_cogino_pool_domain" {
+  type        = string
+  default     = null
+  description = "COGNITO pool domain that will be used for authenticating at the public ALB's HTTPS listener."
+}
+
 variable "assign_public_ip" {
   default     = false
   description = "As Fargate does not support IPv6 yet, this is the only way to enable internet access for the service."

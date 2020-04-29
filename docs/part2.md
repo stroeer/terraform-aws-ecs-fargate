@@ -15,6 +15,9 @@ No requirements.
 |------|-------------|------|---------|:--------:|
 | alb\_attach\_private\_target\_group | Attach a target group for this service to the private ALB (requires an ALB with `name=private`). | `bool` | `true` | no |
 | alb\_attach\_public\_target\_group | Attach a target group for this service to the public ALB (requires an ALB with `name=public`). | `bool` | `true` | no |
+| alb\_cogino\_pool\_arn | Provide a COGNITO pool ARN if you want to attach COGNITO authentication to the public ALB's HTTPS listener. If not set, there will be no auth. | `string` | `null` | no |
+| alb\_cogino\_pool\_client\_id | COGNITO client id that will be used for authenticating at the public ALB's HTTPS listener. | `string` | `null` | no |
+| alb\_cogino\_pool\_domain | COGNITO pool domain that will be used for authenticating at the public ALB's HTTPS listener. | `string` | `null` | no |
 | alb\_listener\_priority | The priority for the ALB listener rule between 1 and 50000. Leaving it unset will automatically set the rule with next available priority after currently existing highest rule. | `number` | `null` | no |
 | assign\_public\_ip | As Fargate does not support IPv6 yet, this is the only way to enable internet access for the service. | `bool` | `false` | no |
 | cluster\_id | The ECS cluster id that should run this service | `string` | n/a | yes |
