@@ -49,19 +49,19 @@ variable "alb_listener_priority" {
 
 variable "alb_cogino_pool_arn" {
   type        = string
-  default     = null
+  default     = ""
   description = "Provide a COGNITO pool ARN if you want to attach COGNITO authentication to the public ALB's HTTPS listener. If not set, there will be no auth."
 }
 
 variable "alb_cogino_pool_client_id" {
   type        = string
-  default     = null
+  default     = ""
   description = "COGNITO client id that will be used for authenticating at the public ALB's HTTPS listener."
 }
 
 variable "alb_cogino_pool_domain" {
   type        = string
-  default     = null
+  default     = ""
   description = "COGNITO pool domain that will be used for authenticating at the public ALB's HTTPS listener."
 }
 

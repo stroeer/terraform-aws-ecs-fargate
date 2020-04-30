@@ -49,7 +49,7 @@ resource "aws_alb_listener_rule" "public" {
   priority     = var.alb_listener_priority
 
   dynamic "action" {
-    for_each = var.alb_cogino_pool_arn == null ? [/*noop*/] : ["enabled"]
+    for_each = var.alb_cogino_pool_arn == "" ? [/*noop*/] : ["enabled"]
     content {
       type = "authenticate-cognito"
       authenticate_cognito {
