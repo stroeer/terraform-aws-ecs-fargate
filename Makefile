@@ -1,54 +1,53 @@
-VERSION := $(shell cat VERSION.txt)
-PREFIX?=$(shell pwd)
+DESCRIBE           := $(shell git fetch --all > /dev/null && git describe --match "v*" --always --tags)
+DESCRIBE_PARTS     := $(subst -, ,$(DESCRIBE))
+# 'v0.2.0'
+VERSION_TAG        := $(word 1,$(DESCRIBE_PARTS))
+# '0.2.0'
+VERSION            := $(subst v,,$(VERSION_TAG))
+# '0 2 0'
+VERSION_PARTS      := $(subst ., ,$(VERSION))
 
-## Tools
-BINDIR := $(PREFIX)/bin
-export GOBIN :=$(BINDIR)
-export PATH := $(GOBIN):$(PATH)
-SEMBUMP := $(BINDIR)/sembump
+MAJOR              := $(word 1,$(VERSION_PARTS))
+MINOR              := $(word 2,$(VERSION_PARTS))
+PATCH              := $(word 3,$(VERSION_PARTS))
+
+BUMP := patch
+ifeq ($(BUMP), major)
+NEXT_VERSION		:= $(shell echo $$(($(MAJOR)+1)).0.0)
+else ifeq ($(BUMP), minor)
+NEXT_VERSION		:= $(shell echo $(MAJOR).$$(($(MINOR)+1)).0)
+else
+NEXT_VERSION		:= $(shell echo $(MAJOR).$(MINOR).$$(($(PATCH)+1)))
+endif
+NEXT_TAG 			:= v$(NEXT_VERSION)
 
 all: init fmt validate
 
-.PHONY: init
 init: ## Initialize a Terraform working directory
 	@echo "+ $@"
 	@terraform init
 
-.PHONY: fmt
 fmt: ## Checks config files against canonical format
 	@echo "+ $@"
 	@terraform fmt -check=true -recursive
 
-.PHONY: validate
 validate: ## Validates the Terraform files
 	@echo "+ $@"
 	@AWS_REGION=eu-west-1 terraform validate
 
-.PHONY: documentation
 documentation: ## Generates README.md from static snippets and Terraform variables
 	terraform-docs markdown table . > docs/part2.md
 	cat docs/*.md > README.md
 
-$(SEMBUMP):
-	GO111MODULE=off go get -u github.com/jessfraz/junk/sembump
+bump ::
+	@echo bumping version from $(VERSION_TAG) to $(NEXT_VERSION)
+	@sed -i '' s/$(VERSION)/$(NEXT_VERSION)/g docs/part1.md
 
-.PHONY: bump-version
-BUMP := patch
-bump-version: $(SEMBUMP) ## Bump the version in the version file. Set BUMP to [ patch | major | minor ]
-	$(eval NEW_VERSION = $(shell $(BINDIR)/sembump --kind $(BUMP) $(VERSION)))
-	@echo "Bumping VERSION.txt from $(VERSION) to $(NEW_VERSION)"
-	echo $(NEW_VERSION) > VERSION.txt
-	@echo "Updating links in README.md"
-	sed -i '' s/$(subst v,,$(VERSION))/$(subst v,,$(NEW_VERSION))/g docs/part1.md
+release: bump documentation
+	git add README.md docs/part1.md
+	git commit -vsam "Bump version to $(NEXT_TAG)"
+	git tag -a $(NEXT_TAG) -m "$(NEXT_TAG)"
+	git push origin $(NEXT_TAG)
 
-.PHONY: release
-release: bump-version documentation
-	@echo "+ $@"
-	git add VERSION.txt README.md docs/part1.md
-	git commit -vsam "Bump version to $(NEW_VERSION)"
-	git tag -a $(NEW_VERSION) -m "$(NEW_VERSION)"
-	git push origin $(NEW_VERSION)
-
-.PHONY: help
 help: ## Display this help screen
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'	
