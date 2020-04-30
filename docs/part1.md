@@ -202,7 +202,7 @@ That CodePipeline will do the heavy lifting (see deployment flow above):
 
 ## Todos
 
-* [ ] Cognito auth for ALB listeners
+* [x] Cognito auth for ALB listeners
 * [x] CodeDeploy with ECR trigger
 * [ ] ECR policies
 * [ ] Notification for the deployment pipeline [success/failure] 

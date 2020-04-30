@@ -48,6 +48,18 @@ resource "aws_alb_listener_rule" "public" {
   listener_arn = data.aws_lb_listener.public[count.index].arn
   priority     = var.alb_listener_priority
 
+  dynamic "action" {
+    for_each = var.alb_cogino_pool_arn == "" ? [/*noop*/] : ["enabled"]
+    content {
+      type = "authenticate-cognito"
+      authenticate_cognito {
+        user_pool_arn       = var.alb_cogino_pool_arn
+        user_pool_client_id = var.alb_cogino_pool_client_id
+        user_pool_domain    = var.alb_cogino_pool_domain
+      }
+    }
+  }
+
   action {
     type             = "forward"
     target_group_arn = aws_alb_target_group.public[count.index].arn
