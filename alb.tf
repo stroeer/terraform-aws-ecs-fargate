@@ -67,7 +67,7 @@ resource "aws_alb_listener_rule" "public" {
 
   condition {
     host_header {
-      values = [trimsuffix("${var.service_name}.${data.aws_route53_zone.external[count.index].name}", ".")]
+      values = [trimsuffix("${var.service_name}-${data.aws_region.current.name}.${data.aws_route53_zone.external[count.index].name}", ".")]
     }
   }
 }

@@ -38,7 +38,8 @@ resource "aws_cloudwatch_event_target" "trigger" {
 
 resource "aws_iam_role" "trigger" {
   count              = var.enabled ? 1 : 0
-  name               = "${var.service_name}-ecr-trigger"
+  name               = "${var.service_name}-${data.aws_region.current.name}-ecr-trigger"
+  path               = "/ecs/deployment/"
   assume_role_policy = data.aws_iam_policy_document.trigger-assume-role-policy[count.index].json
 }
 
@@ -57,7 +58,8 @@ data "aws_iam_policy_document" "trigger-assume-role-policy" {
 
 resource "aws_iam_policy" "trigger" {
   count  = var.enabled ? 1 : 0
-  name   = "${var.service_name}-ecr-trigger"
+  name   = "${var.service_name}-${data.aws_region.current.name}-ecr-trigger"
+  path   = "/ecs/deployment/"
   policy = data.aws_iam_policy_document.trigger-permissions[count.index].json
 }
 
