@@ -47,13 +47,11 @@ data "aws_iam_policy_document" "trigger-assume-role-policy" {
   count = var.enabled ? 1 : 0
 
   statement {
-    actions = [
-      "sts:AssumeRole"]
+    actions = ["sts:AssumeRole"]
 
     principals {
       type        = "Service"
-      identifiers = [
-        "events.amazonaws.com"]
+      identifiers = ["events.amazonaws.com"]
     }
   }
 }
@@ -61,17 +59,15 @@ data "aws_iam_policy_document" "trigger-assume-role-policy" {
 resource "aws_iam_policy" "trigger" {
   count  = var.enabled ? 1 : 0
   name   = "${var.service_name}-${data.aws_region.current.name}-ecr-trigger"
-  path = "/ecs/deployment/"
+  path   = "/ecs/deployment/"
   policy = data.aws_iam_policy_document.trigger-permissions[count.index].json
 }
 
 data "aws_iam_policy_document" "trigger-permissions" {
   count = var.enabled ? 1 : 0
   statement {
-    actions   = [
-      "codepipeline:StartPipelineExecution"]
-    resources = [
-      aws_codepipeline.codepipeline[count.index].arn]
+    actions   = ["codepipeline:StartPipelineExecution"]
+    resources = [aws_codepipeline.codepipeline[count.index].arn]
   }
 }
 

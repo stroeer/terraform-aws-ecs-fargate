@@ -43,9 +43,9 @@ resource "aws_route53_record" "internal" {
   records = [data.aws_lb.private[count.index].dns_name]
 }
 
+# todo (mana): make this configurable ?
 data "aws_route53_zone" "external" {
   count = var.alb_attach_public_target_group ? 1 : 0
-  # todo (mana): make this configurable
   name  = "stroeer.engineering."
 }
 
