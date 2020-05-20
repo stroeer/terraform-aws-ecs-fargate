@@ -73,7 +73,7 @@ resource "aws_iam_role" "firehose_role" {
   count              = var.enabled ? 1 : 0
   assume_role_policy = data.aws_iam_policy_document.firehose_policy[count.index].json
   description        = "IAM permissions for ${var.service_name} as Firehose delivery stream to Elasticsearch."
-  name               = "firehose_elasticsearch_role_${var.service_name}"
+  name               = "firehose_ess_role_${var.service_name}-${data.aws_region.current.name}"
   path               = "/ecs/logging/"
 
   tags = merge(var.tags, {

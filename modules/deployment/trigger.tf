@@ -38,7 +38,8 @@ resource "aws_cloudwatch_event_target" "trigger" {
 
 resource "aws_iam_role" "trigger" {
   count              = var.enabled ? 1 : 0
-  name               = "${var.service_name}-ecr-trigger"
+  name               = "${var.service_name}-${data.aws_region.current.name}-ecr-trigger"
+  path               = "/ecs/deployment/"
   assume_role_policy = data.aws_iam_policy_document.trigger-assume-role-policy[count.index].json
 }
 
@@ -46,26 +47,31 @@ data "aws_iam_policy_document" "trigger-assume-role-policy" {
   count = var.enabled ? 1 : 0
 
   statement {
-    actions = ["sts:AssumeRole"]
+    actions = [
+      "sts:AssumeRole"]
 
     principals {
       type        = "Service"
-      identifiers = ["events.amazonaws.com"]
+      identifiers = [
+        "events.amazonaws.com"]
     }
   }
 }
 
 resource "aws_iam_policy" "trigger" {
   count  = var.enabled ? 1 : 0
-  name   = "${var.service_name}-ecr-trigger"
+  name   = "${var.service_name}-${data.aws_region.current.name}-ecr-trigger"
+  path = "/ecs/deployment/"
   policy = data.aws_iam_policy_document.trigger-permissions[count.index].json
 }
 
 data "aws_iam_policy_document" "trigger-permissions" {
   count = var.enabled ? 1 : 0
   statement {
-    actions   = ["codepipeline:StartPipelineExecution"]
-    resources = [aws_codepipeline.codepipeline[count.index].arn]
+    actions   = [
+      "codepipeline:StartPipelineExecution"]
+    resources = [
+      aws_codepipeline.codepipeline[count.index].arn]
   }
 }
 

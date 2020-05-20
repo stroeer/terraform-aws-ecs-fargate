@@ -45,14 +45,15 @@ resource "aws_route53_record" "internal" {
 
 data "aws_route53_zone" "external" {
   count = var.alb_attach_public_target_group ? 1 : 0
-  name  = "buzz.t-online.delivery."
+  # todo (mana): make this configurable
+  name  = "stroeer.engineering."
 }
 
 # service_name.buzz.t-online.delivery
 resource "aws_route53_record" "external" {
   count = var.alb_attach_public_target_group ? 1 : 0
 
-  name    = var.service_name
+  name    = "${var.service_name}-${data.aws_region.current.name}"
   type    = "CNAME"
   zone_id = data.aws_route53_zone.external[count.index].zone_id
   ttl     = 300
