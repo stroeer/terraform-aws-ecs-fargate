@@ -11,6 +11,6 @@ module "s3_bucket" {
 }
 
 data "aws_s3_bucket" "codepipeline" {
-  count  = var.enabled && var.artifact_bucket == "" ? 0 : 1
+  count  = var.enabled && var.artifact_bucket != "" ? 1 : 0
   bucket = var.artifact_bucket
 }
