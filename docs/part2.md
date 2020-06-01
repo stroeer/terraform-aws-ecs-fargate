@@ -47,6 +47,7 @@ No requirements.
 |------|-------------|
 | ecr\_repository\_arn | Full ARN of the ECR repository |
 | ecr\_repository\_url | URL of the ECR repository |
+| ecs\_task\_exec\_role\_name | ECS task role used by this service. |
 | fluentbit\_cloudwatch\_log\_group | Name of the CloudWatch log group of the fluent-bit sidecar. |
 | kinesis\_firehose\_delivery\_stream\_name | The name of the Kinesis Firehose delivery stream. |
 | private\_dns | Private DNS entry. |
