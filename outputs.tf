@@ -27,3 +27,8 @@ output "public_dns" {
   description = "Public DNS entry."
   value       = var.alb_attach_public_target_group ? "${aws_route53_record.external[0].name}.${data.aws_route53_zone.external[0].name}" : ""
 }
+
+output "ecs_task_exec_role_name" {
+  description = "ECS task role used by this service."
+  value       = aws_iam_role.ecs_task_role.name
+}
