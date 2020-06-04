@@ -7,7 +7,7 @@ data "aws_subnet_ids" "selected" {
   vpc_id = data.aws_vpc.selected.id
 
   tags = {
-    Tier = var.assign_public_ip ? "public" : "private"
+    Tier = (var.assign_public_ip || var.requires_internet_access) ? "public" : "private"
   }
 }
 
