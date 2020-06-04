@@ -26,7 +26,7 @@ jobs:
         uses: docker://hashicorp/terraform:0.12.24
         with:
           entrypoint: terraform
-          args: fmt -check=true
+          args: fmt -check=true -recursive -diff
 
       - name: Run a Terraform validate
         uses: docker://hashicorp/terraform:0.12.24

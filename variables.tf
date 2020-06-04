@@ -72,9 +72,9 @@ variable "assign_public_ip" {
 }
 
 variable "requires_internet_access" {
-  default = false
+  default     = false
   description = "As Fargate does not support IPv6 yet, this is the only way to enable internet access for the service by placing it in a public subnet (but not assigning a public IP)."
-  type = bool
+  type        = bool
 }
 
 variable "container_name" {
