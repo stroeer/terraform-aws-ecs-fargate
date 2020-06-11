@@ -20,7 +20,7 @@ output "kinesis_firehose_delivery_stream_name" {
 
 output "private_dns" {
   description = "Private DNS entry."
-  value       = var.alb_attach_public_target_group ? "${aws_route53_record.internal[0].name}.${data.aws_route53_zone.internal[0].name}" : ""
+  value       = var.alb_attach_private_target_group ? "${aws_route53_record.internal[0].name}.${data.aws_route53_zone.internal[0].name}" : ""
 }
 
 output "public_dns" {
