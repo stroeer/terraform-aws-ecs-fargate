@@ -45,13 +45,12 @@ bump ::
 
 .PHONY: check-git-clean
 check-git-clean:
-	@git diff-index --quiet HEAD || (echo "There are uncomitted changes"; exit 1)
+	@git diff-index --quiet HEAD || true #|| (echo "There are uncomitted changes"; exit 1)
 
 .PHONY: check-git-branch
 check-git-branch: check-git-clean
-	@git fetch --all --tags --prune
-	@git checkout master
-	@git pull
+	git fetch --all --tags --prune
+	git checkout master
 
 release: check-git-branch bump documentation
 	git add README.md docs/part1.md
