@@ -45,7 +45,7 @@ bump ::
 
 .PHONY: check-git-clean
 check-git-clean:
-	@git diff-index --quiet HEAD || true #|| (echo "There are uncomitted changes"; exit 1)
+	@git diff-index --quiet HEAD || (echo "There are uncomitted changes"; exit 1)
 
 .PHONY: check-git-branch
 check-git-branch: check-git-clean
