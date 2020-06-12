@@ -43,7 +43,15 @@ bump ::
 	@echo bumping version from $(VERSION_TAG) to $(NEXT_VERSION)
 	@sed -i '' s/$(VERSION)/$(NEXT_VERSION)/g docs/part1.md
 
-release: bump documentation
+.PHONY: check-git-clean
+check-git-clean:
+	git diff-index --quiet HEAD || $(error There are uncomitted changes)
+
+.PHONY: check-git-branch
+check-git-branch: check-git-clean
+	git checkout master
+
+release: check-git-branch bump documentation
 	git add README.md docs/part1.md
 	git commit -vsam "Bump version to $(NEXT_TAG)"
 	git tag -a $(NEXT_TAG) -m "$(NEXT_TAG)"

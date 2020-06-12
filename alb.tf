@@ -21,7 +21,7 @@ resource "aws_alb_target_group" "public" {
   deregistration_delay = 5
   name                 = "${var.service_name}-public"
   port                 = var.container_port
-  protocol             = "HTTP"
+  protocol             = lookup(var.health_check, "protocol", "HTTP")
   tags                 = local.default_tags
   target_type          = "ip"
   vpc_id               = data.aws_vpc.selected.id
@@ -114,7 +114,7 @@ resource "aws_alb_target_group" "private" {
   deregistration_delay = 5
   name                 = "${var.service_name}-private"
   port                 = var.container_port
-  protocol             = "HTTP"
+  protocol             = lookup(var.health_check, "protocol", "HTTP")
   tags                 = local.default_tags
   target_type          = "ip"
   vpc_id               = data.aws_vpc.selected.id
