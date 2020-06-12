@@ -17,8 +17,7 @@ NEXT_VERSION		:= $(shell echo $$(($(MAJOR)+1)).0.0)
 else ifeq ($(BUMP), minor)
 NEXT_VERSION		:= $(shell echo $(MAJOR).$$(($(MINOR)+1)).0)
 else
-NEXT_VERSION		:= 0.3.5
-# $(shell echo $(MAJOR).$(MINOR).$$(($(PATCH)+1)))
+NEXT_VERSION		:= $(shell echo $(MAJOR).$(MINOR).$$(($(PATCH)+1)))
 endif
 NEXT_TAG 			:= v$(NEXT_VERSION)
 
@@ -42,7 +41,7 @@ documentation: ## Generates README.md from static snippets and Terraform variabl
 
 bump ::
 	@echo bumping version from $(VERSION_TAG) to $(NEXT_TAG)
-	sed -i '' s/$(VERSION)/$(NEXT_VERSION)/g docs/part1.md
+	@sed -i '' s/$(VERSION)/$(NEXT_VERSION)/g docs/part1.md
 
 .PHONY: check-git-clean
 check-git-clean:
@@ -54,7 +53,7 @@ check-git-branch: check-git-clean
 	@git checkout master
 	@git pull
 
-release: bump documentation
+release: check-git-branch bump documentation
 	git add README.md docs/part1.md
 	git commit -vsam "Bump version to $(NEXT_TAG)"
 	git tag -a $(NEXT_TAG) -m "$(NEXT_TAG)"
