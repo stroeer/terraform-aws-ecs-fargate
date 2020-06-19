@@ -19,7 +19,7 @@ No requirements.
 | alb\_cogino\_pool\_client\_id | COGNITO client id that will be used for authenticating at the public ALB's HTTPS listener. | `string` | `""` | no |
 | alb\_cogino\_pool\_domain | COGNITO pool domain that will be used for authenticating at the public ALB's HTTPS listener. | `string` | `""` | no |
 | alb\_listener\_priority | The priority for the ALB listener rule between 1 and 50000. Leaving it unset will automatically set the rule with next available priority after currently existing highest rule. | `number` | `null` | no |
-| assign\_public\_ip | As Fargate does not support IPv6 yet, this is the only way to enable internet access for the service. | `bool` | `false` | no |
+| assign\_public\_ip | This services will be placed in a public subnet and be assigned a public routable IP. | `bool` | `false` | no |
 | cluster\_id | The ECS cluster id that should run this service | `string` | n/a | yes |
 | code\_build\_role\_name | Use an existing role for codebuild permissions that can be reused for multiple services. Otherwise a separate role for this service will be created. | `string` | `""` | no |
 | code\_pipeline\_artifact\_bucket | Use an existing bucket for codepipeline artifacts that can be reused for multiple services. Otherwise a separate bucket for each service will be created. | `string` | `""` | no |
@@ -38,6 +38,7 @@ No requirements.
 | logs\_fluentbit\_cloudwatch\_log\_group\_name | Use an existing CloudWatch log group for storing logs of the fluent-bit sidecar. Otherwise a dedicate log group for this service will be created. | `string` | `""` | no |
 | memory | Amount of memory [MB] is required by this service. | `number` | `512` | no |
 | policy\_document | AWS Policy JSON describing the permissions required for this service. | `string` | `""` | no |
+| requires\_internet\_access | As Fargate does not support IPv6 yet, this is the only way to enable internet access for the service by placing it in a public subnet (but not assigning a public IP). | `bool` | `false` | no |
 | service\_name | The service name. Will also be used as Route53 DNS entry. | `string` | n/a | yes |
 | with\_appmesh | This services should be created with an appmesh proxy. | `bool` | `false` | no |
 
