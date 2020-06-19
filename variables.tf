@@ -71,12 +71,6 @@ variable "assign_public_ip" {
   type        = bool
 }
 
-variable "requires_internet_access" {
-  default     = false
-  description = "As Fargate does not support IPv6 yet, this is the only way to enable internet access for the service by placing it in a public subnet (but not assigning a public IP)."
-  type        = bool
-}
-
 variable "container_name" {
   default     = ""
   description = "Defaults to var.service_name, can be overriden if it differs. Used as a target for LB."
@@ -190,6 +184,12 @@ variable "policy_document" {
   default     = ""
   description = "AWS Policy JSON describing the permissions required for this service."
   type        = string
+}
+
+variable "requires_internet_access" {
+  default     = false
+  description = "As Fargate does not support IPv6 yet, this is the only way to enable internet access for the service by placing it in a public subnet (but not assigning a public IP)."
+  type        = bool
 }
 
 variable "with_appmesh" {
