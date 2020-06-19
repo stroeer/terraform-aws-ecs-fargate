@@ -21,7 +21,7 @@ resource "aws_alb_target_group" "public" {
   deregistration_delay = 5
   name                 = "${var.service_name}-public"
   port                 = var.container_port
-  protocol             = "HTTP"
+  protocol             = lookup(var.health_check, "protocol", "HTTP")
   tags                 = local.default_tags
   target_type          = "ip"
   vpc_id               = data.aws_vpc.selected.id
@@ -85,7 +85,7 @@ resource "aws_alb_listener_rule" "public_80" {
 
   condition {
     host_header {
-      values = [trimsuffix("${var.service_name}.${data.aws_route53_zone.external[count.index].name}", ".")]
+      values = [trimsuffix("${var.service_name}-${data.aws_region.current.name}.${data.aws_route53_zone.external[count.index].name}", ".")]
     }
   }
 
@@ -114,7 +114,7 @@ resource "aws_alb_target_group" "private" {
   deregistration_delay = 5
   name                 = "${var.service_name}-private"
   port                 = var.container_port
-  protocol             = "HTTP"
+  protocol             = lookup(var.health_check, "protocol", "HTTP")
   tags                 = local.default_tags
   target_type          = "ip"
   vpc_id               = data.aws_vpc.selected.id

@@ -40,10 +40,19 @@ documentation: ## Generates README.md from static snippets and Terraform variabl
 	cat docs/*.md > README.md
 
 bump ::
-	@echo bumping version from $(VERSION_TAG) to $(NEXT_VERSION)
+	@echo bumping version from $(VERSION_TAG) to $(NEXT_TAG)
 	@sed -i '' s/$(VERSION)/$(NEXT_VERSION)/g docs/part1.md
 
-release: bump documentation
+.PHONY: check-git-clean
+check-git-clean:
+	@git diff-index --quiet HEAD || (echo "There are uncomitted changes"; exit 1)
+
+.PHONY: check-git-branch
+check-git-branch: check-git-clean
+	git fetch --all --tags --prune
+	git checkout master
+
+release: check-git-branch bump documentation
 	git add README.md docs/part1.md
 	git commit -vsam "Bump version to $(NEXT_TAG)"
 	git tag -a $(NEXT_TAG) -m "$(NEXT_TAG)"
