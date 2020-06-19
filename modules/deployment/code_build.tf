@@ -1,3 +1,10 @@
+resource "aws_cloudwatch_log_group" "this" {
+  count             = var.enabled ? 1 : 0
+  name              = "/aws/codebuild/${var.service_name}-deployment"
+  retention_in_days = 7
+  tags              = var.tags
+}
+
 resource "aws_codebuild_project" "this" {
   count        = var.enabled ? 1 : 0
   name         = "${var.service_name}-deployment"
@@ -8,6 +15,17 @@ resource "aws_codebuild_project" "this" {
     type                = "CODEPIPELINE"
     artifact_identifier = "deploy_output"
     location            = "imagedefinitions.json"
+  }
+
+  logs_config {
+    cloudwatch_logs {
+      group_name = aws_cloudwatch_log_group.this[count.index].name
+      status     = "ENABLED"
+    }
+
+    s3_logs {
+      status = "DISABLED"
+    }
   }
 
   environment {
