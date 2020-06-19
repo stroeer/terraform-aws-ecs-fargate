@@ -67,7 +67,7 @@ variable "alb_cogino_pool_domain" {
 
 variable "assign_public_ip" {
   default     = false
-  description = "As Fargate does not support IPv6 yet, this is the only way to enable internet access for the service."
+  description = "This services will be placed in a public subnet and be assigned a public routable IP."
   type        = bool
 }
 
@@ -184,6 +184,12 @@ variable "policy_document" {
   default     = ""
   description = "AWS Policy JSON describing the permissions required for this service."
   type        = string
+}
+
+variable "requires_internet_access" {
+  default     = false
+  description = "As Fargate does not support IPv6 yet, this is the only way to enable internet access for the service by placing it in a public subnet (but not assigning a public IP)."
+  type        = bool
 }
 
 variable "with_appmesh" {
