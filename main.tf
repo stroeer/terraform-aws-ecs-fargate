@@ -110,13 +110,16 @@ module "code_deploy" {
   source  = "./modules/deployment"
   enabled = var.create_deployment_pipeline
 
-  cluster_name        = var.cluster_id
-  ecr_repository_name = module.ecr.name
-  service_name        = var.service_name
-  code_build_role     = var.code_build_role_name
-  code_pipeline_role  = var.code_pipeline_role_name
-  artifact_bucket     = var.code_pipeline_artifact_bucket
-  tags                = local.default_tags
+  cluster_name                          = var.cluster_id
+  codestar_notifications_detail_type    = var.codestar_notifications_detail_type
+  codestar_notifications_event_type_ids = var.codestar_notifications_event_type_ids
+  codestar_notifications_target_arn     = var.codestar_notifications_target_arn
+  ecr_repository_name                   = module.ecr.name
+  service_name                          = var.service_name
+  code_build_role                       = var.code_build_role_name
+  code_pipeline_role                    = var.code_pipeline_role_name
+  artifact_bucket                       = var.code_pipeline_artifact_bucket
+  tags                                  = local.default_tags
 }
 
 module "logs" {
