@@ -50,3 +50,22 @@ variable "code_build_role" {
   description = "Use an existing role for codebuild permissions that can be reused for multiple services."
   type        = string
 }
+
+variable "codestar_notifications_detail_type" {
+  default     = "BASIC"
+  description = "The level of detail to include in the notifications for this resource. Possible values are BASIC and FULL."
+  type        = string
+}
+
+variable "codestar_notifications_event_type_ids" {
+  default     = ["codepipeline-pipeline-pipeline-execution-succeeded", "codepipeline-pipeline-pipeline-execution-failed"]
+  description = "A list of event types associated with this notification rule. For list of allowed events see https://docs.aws.amazon.com/dtconsole/latest/userguide/concepts.html#concepts-api."
+  type        = list(string)
+}
+
+variable "codestar_notifications_target_arn" {
+  default     = ""
+  description = "Use an existing ARN for a notification rule target (for example, a SNS Topic ARN). Otherwise a separate sns topic for this service will be created."
+  type        = string
+}
+

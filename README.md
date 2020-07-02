@@ -233,6 +233,9 @@ No requirements.
 | code\_build\_role\_name | Use an existing role for codebuild permissions that can be reused for multiple services. Otherwise a separate role for this service will be created. | `string` | `""` | no |
 | code\_pipeline\_artifact\_bucket | Use an existing bucket for codepipeline artifacts that can be reused for multiple services. Otherwise a separate bucket for each service will be created. | `string` | `""` | no |
 | code\_pipeline\_role\_name | Use an existing role for codepipeline permissions that can be reused for multiple services. Otherwise a separate role for this service will be created. | `string` | `""` | no |
+| codestar\_notifications\_detail\_type | The level of detail to include in the notifications for this resource. Possible values are BASIC and FULL. | `string` | `"BASIC"` | no |
+| codestar\_notifications\_event\_type\_ids | A list of event types associated with this notification rule. For list of allowed events see https://docs.aws.amazon.com/dtconsole/latest/userguide/concepts.html#concepts-api. | `list(string)` | <pre>[<br>  "codepipeline-pipeline-pipeline-execution-succeeded",<br>  "codepipeline-pipeline-pipeline-execution-failed"<br>]</pre> | no |
+| codestar\_notifications\_target\_arn | Use an existing ARN for a notification rule target (for example, a SNS Topic ARN). Otherwise a separate sns topic for this service will be created. | `string` | `""` | no |
 | container\_definitions | JSON container definition. | `string` | n/a | yes |
 | container\_name | Defaults to var.service\_name, can be overriden if it differs. Used as a target for LB. | `string` | `""` | no |
 | container\_port | The port used by the web app within the container | `number` | n/a | yes |
@@ -301,7 +304,7 @@ Once `create_deployment_pipeline` is set to `true`, we will create an automated 
 
 ![deployment pipeline](docs/ecs_deployer.png)
 
-How it works:
+**How it works**
 
 - You'll need AWS credentials that allow pushing images into the ECR container registry.
 - Once you push an image with `[tag=production]` - a Cloudwatch Event will trigger the start of a CodePipeline
@@ -312,8 +315,17 @@ How it works:
 choice would be `git.sha`. To be specific, we chose a tag that does not `start with container.` and is none 
 of `["local", "production", "staging", "infrastructure"]`
 
-- That CodePipeline will do the heavy lifting (see deployment flow above):
+**That CodePipeline will do the heavy lifting (see deployment flow above)**
 
 1. Pull the full `imagedefinitions.json` from the ECR registry
 2. Trigger a CodeBuild to transform the `imagedefinitions.json` into a `imagedefinitions.json` for deployment
 3. Update the ECS service's task-definition by replacing the specified `imageUri` for the given `name`.
+
+**Notifications**
+
+We will create a notification rule for the pipeline. You can provide your ARN of a notification rule target (e.g. a SNS topic ARN) using
+`codestar_notifications_target_arn`. Otherwise a new SNS topic with required permissions is created for every service. See 
+[aws_codestarnotifications_notification_rule](https://www.terraform.io/docs/providers/aws/r/codestarnotifications_notification_rule.html) for details.
+
+You can then configure an integration between those notifications and [AWS Chatbot](https://docs.aws.amazon.com/dtconsole/latest/userguide/notifications-chatbot.html)
+for example.
