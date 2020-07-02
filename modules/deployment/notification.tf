@@ -25,13 +25,12 @@ resource "aws_codestarnotifications_notification_rule" "notification" {
   target {
     address = var.codestar_notifications_target_arn == "" ? aws_sns_topic.notifications[count.index].arn : var.codestar_notifications_target_arn
   }
-
 }
 
 resource "aws_sns_topic" "notifications" {
   count = var.enabled && var.codestar_notifications_target_arn == "" ? 1 : 0
 
-  name = "${var.service_name}-notifications-${data.aws_region.current.name}"
+  name = "${var.service_name}-notifications"
   tags = var.tags
 }
 
