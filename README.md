@@ -252,6 +252,7 @@ No requirements.
 | policy\_document | AWS Policy JSON describing the permissions required for this service. | `string` | `""` | no |
 | requires\_internet\_access | As Fargate does not support IPv6 yet, this is the only way to enable internet access for the service by placing it in a public subnet (but not assigning a public IP). | `bool` | `false` | no |
 | service\_name | The service name. Will also be used as Route53 DNS entry. | `string` | n/a | yes |
+| tags | Additional tags (\_e.g.\_ { map-migrated : d-example-443255fsf }) | `map(string)` | `{}` | no |
 | with\_appmesh | This services should be created with an appmesh proxy. | `bool` | `false` | no |
 
 ## Outputs

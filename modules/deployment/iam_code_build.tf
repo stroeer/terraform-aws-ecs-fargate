@@ -7,7 +7,10 @@ resource "aws_iam_role" "code_build_role" {
   name               = "code-build-${var.service_name}"
   path               = local.iam_path
   assume_role_policy = data.aws_iam_policy_document.allow_code_build_assume[count.index].json
-  tags               = var.tags
+
+  tags = merge(var.tags, {
+    tf_module = basename(path.module)
+  })
 }
 
 data "aws_iam_policy_document" "allow_code_build_assume" {

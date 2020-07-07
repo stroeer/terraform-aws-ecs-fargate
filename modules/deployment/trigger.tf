@@ -1,7 +1,12 @@
 resource "aws_cloudwatch_event_rule" "this" {
-  count         = var.enabled ? 1 : 0
-  name          = "${var.service_name}-ecr-trigger"
-  description   = "Capture ECR push events."
+  count       = var.enabled ? 1 : 0
+  name        = "${var.service_name}-ecr-trigger"
+  description = "Capture ECR push events."
+
+  tags = merge(var.tags, {
+    tf_module = basename(path.module)
+  })
+
   event_pattern = <<PATTERN
 {
     "detail-type": [
@@ -41,6 +46,10 @@ resource "aws_iam_role" "trigger" {
   name               = "${var.service_name}-${data.aws_region.current.name}-ecr-trigger"
   path               = "/ecs/deployment/"
   assume_role_policy = data.aws_iam_policy_document.trigger-assume-role-policy[count.index].json
+
+  tags = merge(var.tags, {
+    tf_module = basename(path.module)
+  })
 }
 
 data "aws_iam_policy_document" "trigger-assume-role-policy" {

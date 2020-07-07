@@ -215,3 +215,10 @@ variable "with_appmesh" {
   description = "This services should be created with an appmesh proxy."
   type        = bool
 }
+
+variable "tags" {
+  default     = {}
+  description = "Additional tags (_e.g._ { map-migrated : d-example-443255fsf })"
+  type        = map(string)
+}
+

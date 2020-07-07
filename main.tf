@@ -32,7 +32,7 @@ resource "aws_ecs_service" "this" {
   launch_type                        = "FARGATE"
   name                               = var.service_name
   propagate_tags                     = "SERVICE"
-  tags                               = local.default_tags
+  tags                               = local.tags
   task_definition                    = "${aws_ecs_task_definition.this.family}:${max("${aws_ecs_task_definition.this.revision}", "${data.aws_ecs_task_definition.this.revision}")}"
 
   dynamic "load_balancer" {
@@ -67,7 +67,7 @@ resource "aws_ecs_task_definition" "this" {
   family                = var.service_name
   memory                = var.memory
   network_mode          = "awsvpc"
-  tags                  = local.default_tags
+  tags                  = local.tags
   task_role_arn         = aws_iam_role.ecs_task_role.arn
 
   dynamic "proxy_configuration" {
@@ -103,7 +103,7 @@ module "ecr" {
   image_scanning_configuration = var.ecr.image_scanning_configuration
   image_tag_mutability         = var.ecr.image_tag_mutability
   name                         = var.service_name
-  tags                         = local.default_tags
+  tags                         = local.tags
 }
 
 module "code_deploy" {
@@ -119,7 +119,7 @@ module "code_deploy" {
   code_build_role                       = var.code_build_role_name
   code_pipeline_role                    = var.code_pipeline_role_name
   artifact_bucket                       = var.code_pipeline_artifact_bucket
-  tags                                  = local.default_tags
+  tags                                  = local.tags
 }
 
 module "logs" {
@@ -130,6 +130,6 @@ module "logs" {
   firehose_delivery_stream_s3_backup_bucket_arn = var.logs_firehose_delivery_stream_s3_backup_bucket_arn
   fluentbit_cloudwatch_log_group_name           = var.logs_fluentbit_cloudwatch_log_group_name
   service_name                                  = var.service_name
-  tags                                          = local.default_tags
+  tags                                          = local.tags
   task_role_name                                = aws_iam_role.ecs_task_role.name
 }
