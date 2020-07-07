@@ -12,6 +12,8 @@ locals {
     tf_module  = basename(abspath(path.module))
     service    = var.service_name
   }
+
+  tags = merge(local.default_tags, var.tags)
 }
 
 data "aws_vpc" "selected" {

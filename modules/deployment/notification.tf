@@ -20,7 +20,10 @@ resource "aws_codestarnotifications_notification_rule" "notification" {
   event_type_ids = var.codestar_notifications_event_type_ids
   name           = "${var.service_name}-notifications-${data.aws_region.current.name}"
   resource       = aws_codepipeline.codepipeline[count.index].arn
-  tags           = var.tags
+
+  tags = merge(var.tags, {
+    tf_module = basename(path.module)
+  })
 
   target {
     address = var.codestar_notifications_target_arn == "" ? aws_sns_topic.notifications[count.index].arn : var.codestar_notifications_target_arn
@@ -31,7 +34,9 @@ resource "aws_sns_topic" "notifications" {
   count = var.enabled && var.codestar_notifications_target_arn == "" ? 1 : 0
 
   name = "${var.service_name}-notifications"
-  tags = var.tags
+  tags = merge(var.tags, {
+    tf_module = basename(path.module)
+  })
 }
 
 resource "aws_sns_topic_policy" "notifications" {

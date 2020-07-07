@@ -2,14 +2,20 @@ resource "aws_cloudwatch_log_group" "this" {
   count             = var.enabled ? 1 : 0
   name              = "/aws/codebuild/${var.service_name}-deployment"
   retention_in_days = 7
-  tags              = var.tags
+
+  tags = merge(var.tags, {
+    tf_module = basename(path.module)
+  })
 }
 
 resource "aws_codebuild_project" "this" {
   count        = var.enabled ? 1 : 0
   name         = "${var.service_name}-deployment"
   service_role = var.code_build_role == "" ? aws_iam_role.code_build_role[count.index].arn : data.aws_iam_role.code_build[count.index].arn
-  tags         = var.tags
+
+  tags = merge(var.tags, {
+    tf_module = basename(path.module)
+  })
 
   artifacts {
     type                = "CODEPIPELINE"
