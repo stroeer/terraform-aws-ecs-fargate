@@ -4,9 +4,12 @@
 
 A somewhat opinionated Terraform module to create Fargate ECS resources on AWS. 
 
-This module supports [automated service deployment](#Automated-service-deployment)
-and [log routing](https://docs.amazonaws.cn/en_us/AmazonECS/latest/developerguide/using_firelens.html) to an Elasticsearch domain using 
-[Amazon Kinesis Data Firehose delivery streams](https://docs.amazonaws.cn/en_us/AmazonECS/latest/developerguide/using_firelens.html#firelens-example-firehose) and [Fluent-Bit](https://fluentbit.io/).  
+This module does the heavy lifting for: 
+* [ECR](https://docs.aws.amazon.com/AmazonECR/latest/userguide/Registries.html) configuration
+* [automated service deployment](#Automated-service-deployment) including notifications
+* [log routing](https://docs.amazonaws.cn/en_us/AmazonECS/latest/developerguide/using_firelens.html) to an Elasticsearch domain using 
+[Amazon Kinesis Data Firehose delivery streams](https://docs.amazonaws.cn/en_us/AmazonECS/latest/developerguide/using_firelens.html#firelens-example-firehose) and [Fluent-Bit](https://fluentbit.io/)
+* integration with [App Mesh](https://docs.aws.amazon.com/app-mesh/latest/userguide/what-is-app-mesh.html) and [Application Load Balancers](#Load-Balancing) 
 
 ## Requirements
 
@@ -152,6 +155,7 @@ module "service" {
 DOC
 }
 ```
+
 ### Naming Conventions
 
 - Service Names `var.service_name = [a-z-]+`
@@ -177,13 +181,13 @@ Release a new module version to the [Terraform registry](https://registry.terraf
 make BUMP=(major|minor|patch) release
 ```
 
-## Automated service deployment
+## Automated Service Deployment
 
-Once `create_deployment_pipeline` is set to `true`, this module will create an automated deployment pipeline:
+Once `create_deployment_pipeline` is set to `true`, we will create an automated Deployment Pipeline:
 
 ![deployment pipeline](docs/ecs_deployer.png)
 
-How it works:
+**How it works**
 
 - You'll need AWS credentials that allow pushing images into the ECR container registry.
 - Once you push an image with `[tag=production]` - a Cloudwatch Event will trigger the start of a CodePipeline
@@ -194,16 +198,25 @@ How it works:
 choice would be `git.sha`. To be specific, we chose a tag that does not `start with container.` and is none 
 of `["local", "production", "staging", "infrastructure"]`
 
-That CodePipeline will do the heavy lifting (see deployment flow above):
+**That CodePipeline will do the heavy lifting (see deployment flow above)**
 
 1. Pull the full `imagedefinitions.json` from the ECR registry
 2. Trigger a CodeBuild to transform the `imagedefinitions.json` into a `imagedefinitions.json` for deployment
 3. Update the ECS service's task-definition by replacing the specified `imageUri` for the given `name`.
+
+**Notifications**
+
+We will create a notification rule for the pipeline. You can provide your ARN of a notification rule target (e.g. a SNS topic ARN) using
+`codestar_notifications_target_arn`. Otherwise a new SNS topic with required permissions is created for every service. See 
+[aws_codestarnotifications_notification_rule](https://www.terraform.io/docs/providers/aws/r/codestarnotifications_notification_rule.html) for details.
+
+You can then configure an integration between those notifications and [AWS Chatbot](https://docs.aws.amazon.com/dtconsole/latest/userguide/notifications-chatbot.html)
+for example.
 
 ## Todos
 
 * [x] Cognito auth for ALB listeners
 * [x] CodeDeploy with ECR trigger
 * [ ] ECR policies
-* [ ] Notification for the deployment pipeline [success/failure] 
+* [x] Notification for the deployment pipeline [success/failure] 
 

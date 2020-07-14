@@ -28,9 +28,11 @@ resource "aws_ecs_service" "this" {
   deployment_maximum_percent         = 200
   deployment_minimum_healthy_percent = 100
   desired_count                      = var.desired_count
+  force_new_deployment               = var.force_new_deployment
   health_check_grace_period_seconds  = 0
   launch_type                        = "FARGATE"
   name                               = var.service_name
+  platform_version                   = var.platform_version
   propagate_tags                     = "SERVICE"
   tags                               = local.tags
   task_definition                    = "${aws_ecs_task_definition.this.family}:${max("${aws_ecs_task_definition.this.revision}", "${data.aws_ecs_task_definition.this.revision}")}"
