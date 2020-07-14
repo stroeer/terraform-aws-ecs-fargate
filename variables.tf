@@ -144,9 +144,9 @@ variable "create_log_streaming" {
 }
 
 variable "desired_count" {
-  type        = number
   default     = 0
   description = "Desired count of services to be started/running."
+  type        = number
 }
 
 variable "ecr" {
@@ -166,6 +166,12 @@ variable "ecr" {
     }
     image_tag_mutability = "MUTABLE",
   }
+}
+
+variable "force_new_deployment" {
+  default     = false
+  description = "Enable to force a new task deployment of the service. This can be used to update tasks to use a newer Docker image with same image/tag combination (e.g. myimage:latest), roll Fargate tasks onto a newer platform version, or immediately deploy ordered_placement_strategy and placement_constraints updates."
+  type        = bool
 }
 
 variable "health_check" {
@@ -196,6 +202,12 @@ variable "memory" {
   default     = 512
   description = "Amount of memory [MB] is required by this service."
   type        = number
+}
+
+variable "platform_version" {
+  default     = "LATEST"
+  description = "The platform version on which to run your service. Defaults to LATEST."
+  type        = string
 }
 
 variable "policy_document" {

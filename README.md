@@ -4,9 +4,12 @@
 
 A somewhat opinionated Terraform module to create Fargate ECS resources on AWS. 
 
-This module supports [automated service deployment](#Automated-service-deployment)
-and [log routing](https://docs.amazonaws.cn/en_us/AmazonECS/latest/developerguide/using_firelens.html) to an Elasticsearch domain using 
-[Amazon Kinesis Data Firehose delivery streams](https://docs.amazonaws.cn/en_us/AmazonECS/latest/developerguide/using_firelens.html#firelens-example-firehose) and [Fluent-Bit](https://fluentbit.io/).  
+This module does the heavy lifting for: 
+* [ECR](https://docs.aws.amazon.com/AmazonECR/latest/userguide/Registries.html) configuration
+* [automated service deployment](#Automated-service-deployment) including notifications
+* [log routing](https://docs.amazonaws.cn/en_us/AmazonECS/latest/developerguide/using_firelens.html) to an Elasticsearch domain using 
+[Amazon Kinesis Data Firehose delivery streams](https://docs.amazonaws.cn/en_us/AmazonECS/latest/developerguide/using_firelens.html#firelens-example-firehose) and [Fluent-Bit](https://fluentbit.io/)
+* integration with [App Mesh](https://docs.aws.amazon.com/app-mesh/latest/userguide/what-is-app-mesh.html) and [Application Load Balancers](#Load-Balancing) 
 
 ## Requirements
 
@@ -152,6 +155,7 @@ module "service" {
 DOC
 }
 ```
+
 ### Naming Conventions
 
 - Service Names `var.service_name = [a-z-]+`
@@ -177,13 +181,13 @@ Release a new module version to the [Terraform registry](https://registry.terraf
 make BUMP=(major|minor|patch) release
 ```
 
-## Automated service deployment
+## Automated Service Deployment
 
-Once `create_deployment_pipeline` is set to `true`, this module will create an automated deployment pipeline:
+Once `create_deployment_pipeline` is set to `true`, we will create an automated Deployment Pipeline:
 
 ![deployment pipeline](docs/ecs_deployer.png)
 
-How it works:
+**How it works**
 
 - You'll need AWS credentials that allow pushing images into the ECR container registry.
 - Once you push an image with `[tag=production]` - a Cloudwatch Event will trigger the start of a CodePipeline
@@ -194,18 +198,27 @@ How it works:
 choice would be `git.sha`. To be specific, we chose a tag that does not `start with container.` and is none 
 of `["local", "production", "staging", "infrastructure"]`
 
-That CodePipeline will do the heavy lifting (see deployment flow above):
+**That CodePipeline will do the heavy lifting (see deployment flow above)**
 
 1. Pull the full `imagedefinitions.json` from the ECR registry
 2. Trigger a CodeBuild to transform the `imagedefinitions.json` into a `imagedefinitions.json` for deployment
 3. Update the ECS service's task-definition by replacing the specified `imageUri` for the given `name`.
+
+**Notifications**
+
+We will create a notification rule for the pipeline. You can provide your ARN of a notification rule target (e.g. a SNS topic ARN) using
+`codestar_notifications_target_arn`. Otherwise a new SNS topic with required permissions is created for every service. See 
+[aws_codestarnotifications_notification_rule](https://www.terraform.io/docs/providers/aws/r/codestarnotifications_notification_rule.html) for details.
+
+You can then configure an integration between those notifications and [AWS Chatbot](https://docs.aws.amazon.com/dtconsole/latest/userguide/notifications-chatbot.html)
+for example.
 
 ## Todos
 
 * [x] Cognito auth for ALB listeners
 * [x] CodeDeploy with ECR trigger
 * [ ] ECR policies
-* [ ] Notification for the deployment pipeline [success/failure] 
+* [x] Notification for the deployment pipeline [success/failure] 
 
 ## Requirements
 
@@ -244,11 +257,13 @@ No requirements.
 | create\_log\_streaming | Creates a Kinesis Firehose delivery stream for streaming application logs to an existing Elasticsearch domain. | `bool` | `true` | no |
 | desired\_count | Desired count of services to be started/running. | `number` | `0` | no |
 | ecr | ECR repository configuration. | <pre>object({<br>    image_scanning_configuration = object({<br>      scan_on_push = bool<br>    })<br>    image_tag_mutability = string,<br>  })</pre> | <pre>{<br>  "image_scanning_configuration": {<br>    "scan_on_push": false<br>  },<br>  "image_tag_mutability": "MUTABLE"<br>}</pre> | no |
+| force\_new\_deployment | Enable to force a new task deployment of the service. This can be used to update tasks to use a newer Docker image with same image/tag combination (e.g. myimage:latest), roll Fargate tasks onto a newer platform version, or immediately deploy ordered\_placement\_strategy and placement\_constraints updates. | `bool` | `false` | no |
 | health\_check | A health block containing health check settings for the ALB target groups. See https://www.terraform.io/docs/providers/aws/r/lb_target_group.html#health_check for defaults. | `map(string)` | `{}` | no |
 | logs\_domain\_name | The name of an existing Elasticsearch domain used as destination for the Firehose delivery stream. | `string` | `"application-logs"` | no |
 | logs\_firehose\_delivery\_stream\_s3\_backup\_bucket\_arn | Use an existing S3 bucket to backup log documents which couldn't be streamed to Elasticsearch. Otherwise a separate bucket for this service will be created. | `string` | `""` | no |
 | logs\_fluentbit\_cloudwatch\_log\_group\_name | Use an existing CloudWatch log group for storing logs of the fluent-bit sidecar. Otherwise a dedicate log group for this service will be created. | `string` | `""` | no |
 | memory | Amount of memory [MB] is required by this service. | `number` | `512` | no |
+| platform\_version | The platform version on which to run your service. Defaults to LATEST. | `string` | `"LATEST"` | no |
 | policy\_document | AWS Policy JSON describing the permissions required for this service. | `string` | `""` | no |
 | requires\_internet\_access | As Fargate does not support IPv6 yet, this is the only way to enable internet access for the service by placing it in a public subnet (but not assigning a public IP). | `bool` | `false` | no |
 | service\_name | The service name. Will also be used as Route53 DNS entry. | `string` | n/a | yes |
@@ -267,66 +282,3 @@ No requirements.
 | private\_dns | Private DNS entry. |
 | public\_dns | Public DNS entry. |
 
-Requirements
-------------
-
-Documentation is generated with `brew install terraform-docs`
-
-The following resources are referenced from this module and therefore prerequisites:
-
-* VPC — There must be a VPC with the following tag: `Name = main`
-* Subnets — within this VPC, there must be at least one subnet tagged with `Tier = (public|private)`
-* SG (1) — within this VPC there must be a security group `Name = default`
-* SG (2) — within this VPC there must be a security group to allow traffic from ALB `Name = fargate-allow-alb-traffic`
-* DNS (VPC) — within this VPC there must be a private route53 zone with `name = vpc.internal.`
-* DNS (public) — currently there is a hard-coded route53 zone `name = buzz.t-online.delivery.`
-* ALB — there must be ALBs with `name = (public|private)`. 
-* ALB Listeners — Those ALBs should have listeners for HTTP(s) (Port `80` and `443`) configured
-* IAM role — There should be a role named `ssm_ecs_task_execution_role` that will be used as a task execution role
-* Service discovery namespace `apps.local.` 
-
-### When using the automated deployment pipeline (optional):
-
-* A shared S3 bucket for storing artifacts from _CodePipeline_ can be used. You can specify
-it through the variable `code_pipeline_artifact_bucket`. Otherwise a new bucket is created 
-for every service.
-* A shared `IAM::Role` for _CodePipeline_ and _CodeBuild_ can be used. You can specify
-those through the variables `code_pipeline_role_name` and `code_build_role_name`. Otherwise new 
-roles are created for every service. For the permissions required see the [module code](./modules/deployment)
- 
-
-### Naming Conventions
-
-- Service Names `var.service_name = [a-z-]+`
-
-### Automated Service Deployment
-
-Once `create_deployment_pipeline` is set to `true`, we will create an automated Deployment Pipeline:
-
-![deployment pipeline](docs/ecs_deployer.png)
-
-**How it works**
-
-- You'll need AWS credentials that allow pushing images into the ECR container registry.
-- Once you push an image with `[tag=production]` - a Cloudwatch Event will trigger the start of a CodePipeline
-- **⚠ This tag will only trigger the pipeline. You will need a minimum of 3 tags**
-1. `production` will trigger the pipeline
-2. `container.$CONTAINER_NAME` is required to locate the correct container from the service's [task-definition.json](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/create-task-definition.html)
-3.  One more tag that will be unique and used for the actual deployment and the task-definition.json. A good
-choice would be `git.sha`. To be specific, we chose a tag that does not `start with container.` and is none 
-of `["local", "production", "staging", "infrastructure"]`
-
-**That CodePipeline will do the heavy lifting (see deployment flow above)**
-
-1. Pull the full `imagedefinitions.json` from the ECR registry
-2. Trigger a CodeBuild to transform the `imagedefinitions.json` into a `imagedefinitions.json` for deployment
-3. Update the ECS service's task-definition by replacing the specified `imageUri` for the given `name`.
-
-**Notifications**
-
-We will create a notification rule for the pipeline. You can provide your ARN of a notification rule target (e.g. a SNS topic ARN) using
-`codestar_notifications_target_arn`. Otherwise a new SNS topic with required permissions is created for every service. See 
-[aws_codestarnotifications_notification_rule](https://www.terraform.io/docs/providers/aws/r/codestarnotifications_notification_rule.html) for details.
-
-You can then configure an integration between those notifications and [AWS Chatbot](https://docs.aws.amazon.com/dtconsole/latest/userguide/notifications-chatbot.html)
-for example.
