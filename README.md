@@ -153,7 +153,7 @@ module "service" {
           "Aws_Region": "${data.aws_region.current.name}",
           "tls": "On",
           "Logstash_Format": "true",
-          "Logstash_Prefix": "${local.service_name}-app"
+          "Logstash_Prefix": "${local.index_name}"
         }
      }    
   }
