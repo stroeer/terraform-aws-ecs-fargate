@@ -7,8 +7,7 @@ A somewhat opinionated Terraform module to create Fargate ECS resources on AWS.
 This module does the heavy lifting for: 
 * [ECR](https://docs.aws.amazon.com/AmazonECR/latest/userguide/Registries.html) configuration
 * [automated service deployment](#Automated-service-deployment) including notifications
-* [log routing](https://docs.amazonaws.cn/en_us/AmazonECS/latest/developerguide/using_firelens.html) to an Elasticsearch domain using 
-[Amazon Kinesis Data Firehose delivery streams](https://docs.amazonaws.cn/en_us/AmazonECS/latest/developerguide/using_firelens.html#firelens-example-firehose) and [Fluent-Bit](https://fluentbit.io/)
+* IAM permissions for sending logs to an Elasticsearch domain using Firelens with [Fluent-Bit](https://fluentbit.io/)
 * integration with [App Mesh](https://docs.aws.amazon.com/app-mesh/latest/userguide/what-is-app-mesh.html) and [Application Load Balancers](#Load-Balancing) 
 
 ## Requirements
@@ -93,18 +92,19 @@ locals {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-data "aws_iam_policy_document" "policy" {  
-  statement {
-    actions = ["firehose:PutRecordBatch"] 
-    resources = ["*"]
-  }
+data "aws_elasticsearch_domain" "elasticsearch" {
+  domain_name = "application-logs"
+}
+
+data "aws_ssm_parameter" "fluent_bit_image" {
+  name = "/aws/service/aws-for-fluent-bit/latest"
 }
 
 module "service" {
   source  = "stroeer/ecs-fargate/aws"
   version = "0.8.0"
 
-  cluster_id                    = "k8"s
+  cluster_id                    = "k8"
   container_port                = 8080  
   desired_count                 = 1
   service_name                  = local.service_name
@@ -116,9 +116,9 @@ module "service" {
   container_definitions         = <<DOC
 [
   {
-    "essential": true,
-    "image": "906394416424.dkr.ecr.${data.aws_region.current.name}.amazonaws.com/aws-for-fluent-bit:latest",
     "name": "log_router",
+    "essential": true,
+    "image": "${data.aws_ssm_parameter.fluent_bit_image.value}",
     "firelensConfiguration": {
         "type": "fluentbit",
         "options": {
@@ -129,12 +129,12 @@ module "service" {
     "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-            "awslogs-group": "firelens-container",
+            "awslogs-group": "${module.service.fluentbit_cloudwatch_log_group}",
             "awslogs-region": "${data.aws_region.current.name}",
-            "awslogs-stream-prefix": "firelens"
+            "awslogs-stream-prefix": "${local.service_name}-firelens"
         }
-    },
-    "memoryReservation": 50
+     },
+    "user": "0"
   },
   {
     "name": "${local.service_name}",
@@ -144,12 +144,18 @@ module "service" {
     "essential": true,
     "portMappings": [ {"containerPort": 8080, "protocol": "tcp"} ],
     "logConfiguration": {
-      "logDriver": "awsfirelens",
-      "options": {
-        "Name": "firehose",
-        "region": "${data.aws_region.current.name}",
-        "delivery_stream": "${module.service.kinesis_firehose_delivery_stream_name}"
-      }    
+        "logDriver": "awsfirelens",
+        "options": {
+          "Name": "es",
+          "Host": "${data.aws_elasticsearch_domain.elasticsearch.endpoint}",
+          "Port": "443",
+          "Aws_Auth": "On",
+          "Aws_Region": "${data.aws_region.current.name}",
+          "tls": "On",
+          "Logstash_Format": "true",
+          "Logstash_Prefix": "${local.service_name}-app"
+        }
+     }    
   }
 ]
 DOC
@@ -254,13 +260,11 @@ No requirements.
 | container\_port | The port used by the web app within the container | `number` | n/a | yes |
 | cpu | Amount of CPU required by this service. 1024 == 1 vCPU | `number` | `256` | no |
 | create\_deployment\_pipeline | Creates a deploy pipeline from ECR trigger. | `bool` | `true` | no |
-| create\_log\_streaming | Creates a Kinesis Firehose delivery stream for streaming application logs to an existing Elasticsearch domain. | `bool` | `true` | no |
 | desired\_count | Desired count of services to be started/running. | `number` | `0` | no |
 | ecr | ECR repository configuration. | <pre>object({<br>    image_scanning_configuration = object({<br>      scan_on_push = bool<br>    })<br>    image_tag_mutability = string,<br>  })</pre> | <pre>{<br>  "image_scanning_configuration": {<br>    "scan_on_push": false<br>  },<br>  "image_tag_mutability": "MUTABLE"<br>}</pre> | no |
 | force\_new\_deployment | Enable to force a new task deployment of the service. This can be used to update tasks to use a newer Docker image with same image/tag combination (e.g. myimage:latest), roll Fargate tasks onto a newer platform version, or immediately deploy ordered\_placement\_strategy and placement\_constraints updates. | `bool` | `false` | no |
 | health\_check | A health block containing health check settings for the ALB target groups. See https://www.terraform.io/docs/providers/aws/r/lb_target_group.html#health_check for defaults. | `map(string)` | `{}` | no |
-| logs\_domain\_name | The name of an existing Elasticsearch domain used as destination for the Firehose delivery stream. | `string` | `"application-logs"` | no |
-| logs\_firehose\_delivery\_stream\_s3\_backup\_bucket\_arn | Use an existing S3 bucket to backup log documents which couldn't be streamed to Elasticsearch. Otherwise a separate bucket for this service will be created. | `string` | `""` | no |
+| logs\_elasticsearch\_domain\_arn | Amazon Resource Name (ARN) of an existing Elasticsearch domain. IAM permissions for sending logs to this domain will be added. | `string` | `""` | no |
 | logs\_fluentbit\_cloudwatch\_log\_group\_name | Use an existing CloudWatch log group for storing logs of the fluent-bit sidecar. Otherwise a dedicate log group for this service will be created. | `string` | `""` | no |
 | memory | Amount of memory [MB] is required by this service. | `number` | `512` | no |
 | platform\_version | The platform version on which to run your service. Defaults to LATEST. | `string` | `"LATEST"` | no |
@@ -278,7 +282,6 @@ No requirements.
 | ecr\_repository\_url | URL of the ECR repository |
 | ecs\_task\_exec\_role\_name | ECS task role used by this service. |
 | fluentbit\_cloudwatch\_log\_group | Name of the CloudWatch log group of the fluent-bit sidecar. |
-| kinesis\_firehose\_delivery\_stream\_name | The name of the Kinesis Firehose delivery stream. |
 | private\_dns | Private DNS entry. |
 | public\_dns | Public DNS entry. |
 

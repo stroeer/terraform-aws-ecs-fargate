@@ -137,12 +137,6 @@ variable "create_deployment_pipeline" {
   type        = bool
 }
 
-variable "create_log_streaming" {
-  default     = true
-  description = "Creates a Kinesis Firehose delivery stream for streaming application logs to an existing Elasticsearch domain."
-  type        = bool
-}
-
 variable "desired_count" {
   default     = 0
   description = "Desired count of services to be started/running."
@@ -180,21 +174,15 @@ variable "health_check" {
   type        = map(string)
 }
 
-variable "logs_firehose_delivery_stream_s3_backup_bucket_arn" {
+variable "logs_elasticsearch_domain_arn" {
+  description = "Amazon Resource Name (ARN) of an existing Elasticsearch domain. IAM permissions for sending logs to this domain will be added."
   default     = ""
-  description = "Use an existing S3 bucket to backup log documents which couldn't be streamed to Elasticsearch. Otherwise a separate bucket for this service will be created."
+  type        = string
 }
 
 variable "logs_fluentbit_cloudwatch_log_group_name" {
   default     = ""
   description = "Use an existing CloudWatch log group for storing logs of the fluent-bit sidecar. Otherwise a dedicate log group for this service will be created."
-  type        = string
-}
-
-
-variable "logs_domain_name" {
-  default     = "application-logs"
-  description = "The name of an existing Elasticsearch domain used as destination for the Firehose delivery stream."
   type        = string
 }
 

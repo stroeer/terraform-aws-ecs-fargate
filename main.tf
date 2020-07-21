@@ -125,13 +125,11 @@ module "code_deploy" {
 }
 
 module "logs" {
-  source  = "./modules/logs"
-  enabled = var.create_log_streaming
+  source = "./modules/logs"
 
-  domain_name                                   = var.logs_domain_name
-  firehose_delivery_stream_s3_backup_bucket_arn = var.logs_firehose_delivery_stream_s3_backup_bucket_arn
-  fluentbit_cloudwatch_log_group_name           = var.logs_fluentbit_cloudwatch_log_group_name
-  service_name                                  = var.service_name
-  tags                                          = local.tags
-  task_role_name                                = aws_iam_role.ecs_task_role.name
+  elasticsearch_domain_arn            = var.logs_elasticsearch_domain_arn
+  fluentbit_cloudwatch_log_group_name = var.logs_fluentbit_cloudwatch_log_group_name
+  service_name                        = var.service_name
+  tags                                = local.tags
+  task_role_name                      = aws_iam_role.ecs_task_role.name
 }
