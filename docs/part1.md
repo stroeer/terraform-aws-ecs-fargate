@@ -7,8 +7,7 @@ A somewhat opinionated Terraform module to create Fargate ECS resources on AWS.
 This module does the heavy lifting for: 
 * [ECR](https://docs.aws.amazon.com/AmazonECR/latest/userguide/Registries.html) configuration
 * [automated service deployment](#Automated-service-deployment) including notifications
-* [log routing](https://docs.amazonaws.cn/en_us/AmazonECS/latest/developerguide/using_firelens.html) to an Elasticsearch domain using 
-[Amazon Kinesis Data Firehose delivery streams](https://docs.amazonaws.cn/en_us/AmazonECS/latest/developerguide/using_firelens.html#firelens-example-firehose) and [Fluent-Bit](https://fluentbit.io/)
+* IAM permissions for sending logs to an Elasticsearch domain using Firelens with [Fluent-Bit](https://fluentbit.io/)
 * integration with [App Mesh](https://docs.aws.amazon.com/app-mesh/latest/userguide/what-is-app-mesh.html) and [Application Load Balancers](#Load-Balancing) 
 
 ## Requirements
@@ -93,18 +92,19 @@ locals {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-data "aws_iam_policy_document" "policy" {  
-  statement {
-    actions = ["firehose:PutRecordBatch"] 
-    resources = ["*"]
-  }
+data "aws_elasticsearch_domain" "elasticsearch" {
+  domain_name = "application-logs"
+}
+
+data "aws_ssm_parameter" "fluent_bit_image" {
+  name = "/aws/service/aws-for-fluent-bit/latest"
 }
 
 module "service" {
   source  = "stroeer/ecs-fargate/aws"
   version = "0.8.0"
 
-  cluster_id                    = "k8"s
+  cluster_id                    = "k8"
   container_port                = 8080  
   desired_count                 = 1
   service_name                  = local.service_name
@@ -116,9 +116,9 @@ module "service" {
   container_definitions         = <<DOC
 [
   {
-    "essential": true,
-    "image": "906394416424.dkr.ecr.${data.aws_region.current.name}.amazonaws.com/aws-for-fluent-bit:latest",
     "name": "log_router",
+    "essential": true,
+    "image": "${data.aws_ssm_parameter.fluent_bit_image.value}",
     "firelensConfiguration": {
         "type": "fluentbit",
         "options": {
@@ -129,12 +129,12 @@ module "service" {
     "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-            "awslogs-group": "firelens-container",
+            "awslogs-group": "${module.service.fluentbit_cloudwatch_log_group}",
             "awslogs-region": "${data.aws_region.current.name}",
-            "awslogs-stream-prefix": "firelens"
+            "awslogs-stream-prefix": "${local.service_name}-firelens"
         }
-    },
-    "memoryReservation": 50
+     },
+    "user": "0"
   },
   {
     "name": "${local.service_name}",
@@ -144,12 +144,18 @@ module "service" {
     "essential": true,
     "portMappings": [ {"containerPort": 8080, "protocol": "tcp"} ],
     "logConfiguration": {
-      "logDriver": "awsfirelens",
-      "options": {
-        "Name": "firehose",
-        "region": "${data.aws_region.current.name}",
-        "delivery_stream": "${module.service.kinesis_firehose_delivery_stream_name}"
-      }    
+        "logDriver": "awsfirelens",
+        "options": {
+          "Name": "es",
+          "Host": "${data.aws_elasticsearch_domain.elasticsearch.endpoint}",
+          "Port": "443",
+          "Aws_Auth": "On",
+          "Aws_Region": "${data.aws_region.current.name}",
+          "tls": "On",
+          "Logstash_Format": "true",
+          "Logstash_Prefix": "${local.service_name}-app"
+        }
+     }    
   }
 ]
 DOC
