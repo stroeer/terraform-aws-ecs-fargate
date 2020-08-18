@@ -29,6 +29,12 @@ variable "service_name" {
 # These parameters have reasonable defaults.
 # ---------------------------------------------------------------------------------------------------------------------
 
+variable "additional_security_group_ids" {
+  description = "Additional security groups this service should also be added to."
+  default     = []
+  type        = list(string)
+}
+
 variable "alb_attach_public_target_group" {
   default     = true
   description = "Attach a target group for this service to the public ALB (requires an ALB with `name=public`)."

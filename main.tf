@@ -1,6 +1,7 @@
 locals {
   alb_public_group  = var.alb_attach_public_target_group && length(aws_alb_target_group.public) == 1 ? list(aws_alb_target_group.public[0].arn) : []
   alb_private_group = var.alb_attach_private_target_group && length(aws_alb_target_group.private) == 1 ? list(aws_alb_target_group.private[0].arn) : []
+  security_groups   = compact(concat(list(data.aws_security_group.default.id, data.aws_security_group.fargate.id), var.additional_security_group_ids))
 }
 
 data "aws_subnet_ids" "selected" {
@@ -48,7 +49,7 @@ resource "aws_ecs_service" "this" {
 
   network_configuration {
     subnets          = data.aws_subnet_ids.selected.ids
-    security_groups  = [data.aws_security_group.default.id, data.aws_security_group.fargate.id]
+    security_groups  = local.security_groups
     assign_public_ip = var.assign_public_ip
   }
 
