@@ -20,7 +20,7 @@ variable "image_scanning_configuration" {
   })
 
   default = {
-    scan_on_push = false
+    scan_on_push = true
   }
 }
 
