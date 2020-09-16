@@ -1,6 +1,6 @@
 # AWS Fargate ECS Terraform Module
 
-[![Terraform Registry](https://img.shields.io/badge/Terraform%20Registry-0.9.0-blue.svg)](https://registry.terraform.io/modules/stroeer/ecs-fargate/aws/0.9.0) ![CI](https://github.com/stroeer/terraform-aws-buzzgate/workflows/CI/badge.svg?branch=master) ![Terraform Version](https://img.shields.io/badge/Terraform-0.12+-green.svg) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Terraform Registry](https://img.shields.io/badge/Terraform%20Registry-0.10.0-blue.svg)](https://registry.terraform.io/modules/stroeer/ecs-fargate/aws/0.10.0) ![CI](https://github.com/stroeer/terraform-aws-buzzgate/workflows/CI/badge.svg?branch=master) ![Terraform Version](https://img.shields.io/badge/Terraform-0.12+-green.svg) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
 
 A somewhat opinionated Terraform module to create Fargate ECS resources on AWS. 
 
@@ -55,7 +55,7 @@ data "aws_region" "current" {}
 
 module "service" {
   source  = "stroeer/ecs-fargate/aws"
-  version = "0.9.0"
+  version = "0.10.0"
 
   cluster_id                    = "k8"
   container_port                = 8080
@@ -102,7 +102,7 @@ data "aws_ssm_parameter" "fluent_bit_image" {
 
 module "service" {
   source  = "stroeer/ecs-fargate/aws"
-  version = "0.9.0"
+  version = "0.10.0"
 
   cluster_id                    = "k8"
   container_port                = 8080  
@@ -228,13 +228,16 @@ for example.
 
 ## Requirements
 
-No requirements.
+| Name | Version |
+|------|---------|
+| terraform | >= 0.12.17, < 0.14 |
+| aws | >= 3.0, < 4.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| aws | n/a |
+| aws | >= 3.0, < 4.0 |
 | terraform | n/a |
 
 ## Inputs
