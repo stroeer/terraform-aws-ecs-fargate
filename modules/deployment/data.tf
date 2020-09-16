@@ -1,10 +1,6 @@
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-data "aws_ecr_repository" "this" {
-  name = var.ecr_repository_name
-}
-
 data "aws_iam_role" "code_build" {
   count = var.enabled && var.code_build_role != "" ? 1 : 0
   name  = var.code_build_role

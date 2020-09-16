@@ -43,7 +43,8 @@ data "aws_iam_policy_document" "code_pipepline_permissions" {
   statement {
     actions = ["ecr:DescribeImages"]
 
-    resources = [data.aws_ecr_repository.this.arn]
+    resources = [
+    "arn:aws:ecr:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:repository/${var.ecr_repository_name}"]
   }
 
   statement {
