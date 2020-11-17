@@ -23,12 +23,6 @@ variable "task_role_name" {
 # These parameters have reasonable defaults.
 # ---------------------------------------------------------------------------------------------------------------------
 
-variable "fluentbit_cloudwatch_log_group_name" {
-  default     = ""
-  description = "Use an existing CloudWatch log group for storing logs of the fluent-bit sidecar. Otherwise a dedicate log group for this service will be created."
-  type        = string
-}
-
 variable "tags" {
   default     = {}
   description = "A mapping of tags to assign to the created resources."

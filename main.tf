@@ -35,7 +35,7 @@ resource "aws_ecs_service" "this" {
   platform_version                   = var.platform_version
   propagate_tags                     = "SERVICE"
   tags                               = local.tags
-  task_definition                    = "${aws_ecs_task_definition.this.family}:${max("${aws_ecs_task_definition.this.revision}", "${data.aws_ecs_task_definition.this.revision}")}"
+  task_definition                    = "${aws_ecs_task_definition.this.family}:${max(aws_ecs_task_definition.this.revision, data.aws_ecs_task_definition.this.revision)}"
 
   dynamic "load_balancer" {
     for_each = concat(local.alb_public_group, local.alb_private_group)
@@ -127,9 +127,8 @@ module "code_deploy" {
 module "logs" {
   source = "./modules/logs"
 
-  elasticsearch_domain_arn            = var.logs_elasticsearch_domain_arn
-  fluentbit_cloudwatch_log_group_name = var.logs_fluentbit_cloudwatch_log_group_name
-  service_name                        = var.service_name
-  tags                                = local.tags
-  task_role_name                      = aws_iam_role.ecs_task_role.name
+  elasticsearch_domain_arn = var.logs_elasticsearch_domain_arn
+  service_name             = var.service_name
+  tags                     = local.tags
+  task_role_name           = aws_iam_role.ecs_task_role.name
 }
