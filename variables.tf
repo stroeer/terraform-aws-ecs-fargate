@@ -180,12 +180,6 @@ variable "logs_elasticsearch_domain_arn" {
   type        = string
 }
 
-variable "logs_fluentbit_cloudwatch_log_group_name" {
-  default     = ""
-  description = "Use an existing CloudWatch log group for storing logs of the fluent-bit sidecar. Otherwise a dedicate log group for this service will be created."
-  type        = string
-}
-
 variable "memory" {
   default     = 512
   description = "Amount of memory [MB] is required by this service."

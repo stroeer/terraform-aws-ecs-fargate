@@ -8,6 +8,7 @@ This module does the heavy lifting for:
 * [ECR](https://docs.aws.amazon.com/AmazonECR/latest/userguide/Registries.html) configuration
 * [automated service deployment](#Automated-service-deployment) including notifications
 * IAM permissions for sending logs to an Elasticsearch domain using Firelens with [Fluent-Bit](https://fluentbit.io/)
+* CloudWatch log group and IAM permissions for storing container logs (e.g. for sitecars)
 * integration with [App Mesh](https://docs.aws.amazon.com/app-mesh/latest/userguide/what-is-app-mesh.html) and [Application Load Balancers](#Load-Balancing) 
 
 ## Requirements
@@ -59,7 +60,6 @@ module "service" {
 
   cluster_id                    = "k8"
   container_port                = 8080
-  create_log_streaming          = false
   desired_count                 = 1
   service_name                  = local.service_name
 
@@ -129,9 +129,9 @@ module "service" {
     "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-            "awslogs-group": "${module.service.fluentbit_cloudwatch_log_group}",
+            "awslogs-group": "${module.service.cloudwatch_log_group}",
             "awslogs-region": "${data.aws_region.current.name}",
-            "awslogs-stream-prefix": "${local.service_name}-firelens"
+            "awslogs-stream-prefix": "fluent_bit"
         }
      },
     "user": "0"

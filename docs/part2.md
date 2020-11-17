@@ -40,7 +40,6 @@
 | force\_new\_deployment | Enable to force a new task deployment of the service. This can be used to update tasks to use a newer Docker image with same image/tag combination (e.g. myimage:latest), roll Fargate tasks onto a newer platform version, or immediately deploy ordered\_placement\_strategy and placement\_constraints updates. | `bool` | `false` | no |
 | health\_check | A health block containing health check settings for the ALB target groups. See https://www.terraform.io/docs/providers/aws/r/lb_target_group.html#health_check for defaults. | `map(string)` | `{}` | no |
 | logs\_elasticsearch\_domain\_arn | Amazon Resource Name (ARN) of an existing Elasticsearch domain. IAM permissions for sending logs to this domain will be added. | `string` | `""` | no |
-| logs\_fluentbit\_cloudwatch\_log\_group\_name | Use an existing CloudWatch log group for storing logs of the fluent-bit sidecar. Otherwise a dedicate log group for this service will be created. | `string` | `""` | no |
 | memory | Amount of memory [MB] is required by this service. | `number` | `512` | no |
 | platform\_version | The platform version on which to run your service. Defaults to LATEST. | `string` | `"LATEST"` | no |
 | policy\_document | AWS Policy JSON describing the permissions required for this service. | `string` | `""` | no |
@@ -53,10 +52,10 @@
 
 | Name | Description |
 |------|-------------|
+| cloudwatch\_log\_group | Name of the CloudWatch log group for container logs |
 | ecr\_repository\_arn | Full ARN of the ECR repository |
 | ecr\_repository\_url | URL of the ECR repository |
 | ecs\_task\_exec\_role\_name | ECS task role used by this service. |
-| fluentbit\_cloudwatch\_log\_group | Name of the CloudWatch log group of the fluent-bit sidecar. |
 | private\_dns | Private DNS entry. |
 | public\_dns | Public DNS entry. |
 

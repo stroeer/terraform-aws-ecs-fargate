@@ -9,7 +9,6 @@ module "service" {
   cluster_id                 = "k8"
   container_port             = 80
   create_deployment_pipeline = false
-  create_log_streaming       = false
   desired_count              = 1
   service_name               = local.service_name
   container_definitions      = <<DOC
