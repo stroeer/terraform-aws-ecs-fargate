@@ -73,7 +73,7 @@ resource "aws_ecs_task_definition" "this" {
   task_role_arn         = aws_iam_role.ecs_task_role.arn
 
   dynamic "proxy_configuration" {
-    for_each = var.with_appmesh ? [var.with_appmesh] : []
+    for_each = var.app_mesh_configuration.enabled ? [true] : []
     content {
       container_name = "envoy"
       type           = "APPMESH"

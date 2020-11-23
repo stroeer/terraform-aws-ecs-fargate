@@ -1,4 +1,3 @@
-# service_name.service-discovery.vpc.internal.
 resource "aws_service_discovery_service" "this" {
   name = var.service_name
   dns_config {
