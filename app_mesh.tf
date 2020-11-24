@@ -50,7 +50,7 @@ resource "aws_appmesh_virtual_node" "this" {
       }
       port_mapping {
         port     = var.container_port
-        protocol = "grpc"
+        protocol = local.app_mesh_proto
       }
       tls {
         certificate {
