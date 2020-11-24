@@ -21,17 +21,19 @@ NEXT_VERSION		:= $(shell echo $(MAJOR).$(MINOR).$$(($(PATCH)+1)))
 endif
 NEXT_TAG 			:= v$(NEXT_VERSION)
 
-all: init fmt validate
+all: fmt validate
 
 init: ## Initialize a Terraform working directory
 	@echo "+ $@"
-	@terraform init
+	@terraform init -backend=false > /dev/null
 
+.PHONY: fmt
 fmt: ## Checks config files against canonical format
 	@echo "+ $@"
 	@terraform fmt -check=true -recursive
 
-validate: ## Validates the Terraform files
+.PHONY: validate
+validate: init ## Validates the Terraform files
 	@echo "+ $@"
 	@AWS_REGION=eu-west-1 terraform validate
 
