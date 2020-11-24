@@ -7,7 +7,7 @@ data "aws_acm_certificate" "internal" {
 }
 locals {
   health_check_proto = lower(lookup(var.health_check, "protocol", "grpc"))
-  app_mesh_proto = contains(["http", "https"], local.health_check_proto) ? "http" : "grpc"
+  app_mesh_proto     = contains(["http", "https"], local.health_check_proto) ? "http" : "grpc"
 }
 resource "aws_appmesh_virtual_node" "this" {
   count     = var.app_mesh_configuration.enabled ? 1 : 0
@@ -188,11 +188,11 @@ resource "aws_appmesh_route" "http" {
         }
       }
       retry_policy {
-        max_retries       = 3
+        max_retries = 3
         # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appmesh_route#http_retry_events
         http_retry_events = ["gateway-error", "server-error"]
         # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appmesh_route#tcp_retry_events
-        tcp_retry_events  = ["connection-error"]
+        tcp_retry_events = ["connection-error"]
         per_retry_timeout {
           unit  = "ms"
           value = 5000

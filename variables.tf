@@ -120,8 +120,8 @@ variable "codestar_notifications_detail_type" {
 }
 
 variable "codestar_notifications_event_type_ids" {
-  default     = ["codepipeline-pipeline-pipeline-execution-succeeded",
-    "codepipeline-pipeline-pipeline-execution-failed"]
+  default = ["codepipeline-pipeline-pipeline-execution-succeeded",
+  "codepipeline-pipeline-pipeline-execution-failed"]
   description = "A list of event types associated with this notification rule. For list of allowed events see https://docs.aws.amazon.com/dtconsole/latest/userguide/concepts.html#concepts-api."
   type        = list(string)
 }
@@ -146,11 +146,11 @@ variable "desired_count" {
 
 variable "ecr" {
   description = "ECR repository configuration."
-  type        = object({
+  type = object({
     image_scanning_configuration = object({
       scan_on_push = bool
     })
-    image_tag_mutability         = string,
+    image_tag_mutability = string,
   })
 
   # if you change any of the defaults, the whole configuration object needs to be provided. 
@@ -159,7 +159,7 @@ variable "ecr" {
     image_scanning_configuration = {
       scan_on_push = true
     }
-    image_tag_mutability         = "MUTABLE",
+    image_tag_mutability = "MUTABLE",
   }
 }
 
@@ -206,47 +206,47 @@ variable "requires_internet_access" {
 }
 
 variable "app_mesh_configuration" {
-    default     = {
-      enabled             = false
-      # virtual router this service should attach to
-      virtual_router_name = "sample"
-      # used backends, may be relevant for EGRESS_FILTERING
-      backends            = ["foo.example.com", "bar.services.vpc.internal"]
-      # exposed gRPC endpoints
-      grpc_endpoints      = {
-        article = {
-          match    = [{
-            method_name  = "stroeer.pages.article.v1.ArticlePageService"
-            service_name = "GetArticlePage"
-            metadata     = [{
-              name   = "d0gs"
-              invert = true
-              match  = {
-                exact = "b0ll0cks"
-              }
-            }]
+  default = {
+    enabled = false
+    # virtual router this service should attach to
+    virtual_router_name = "sample"
+    # used backends, may be relevant for EGRESS_FILTERING
+    backends = ["foo.example.com", "bar.services.vpc.internal"]
+    # exposed gRPC endpoints
+    grpc_endpoints = {
+      article = {
+        match = [{
+          method_name  = "stroeer.pages.article.v1.ArticlePageService"
+          service_name = "GetArticlePage"
+          metadata = [{
+            name   = "d0gs"
+            invert = true
+            match = {
+              exact = "b0ll0cks"
+            }
           }]
-          priority = 999
-        }
-      }
-      # exposed http endpoints
-      http_endpoints      = {
-        paper = {
-          match = [{
-            prefix = "/"
-            header = [{
-              name   = "d0gs"
-              invert = true
-              match  = {
-                exact = "b0ll0cks"
-              }
-            }]
-            priority = 999
-          }]
-        }
+        }]
+        priority = 999
       }
     }
-  description = "configure app mesh exposed end poitns and backends"
+    # exposed http endpoints
+    http_endpoints = {
+      paper = {
+        match = [{
+          prefix = "/"
+          header = [{
+            name   = "d0gs"
+            invert = true
+            match = {
+              exact = "b0ll0cks"
+            }
+          }]
+          priority = 999
+        }]
+      }
+    }
+  }
+  description = "configure app mesh exposed end points and backends"
 }
 
 variable "tags" {
