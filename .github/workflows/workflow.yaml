@@ -16,8 +16,8 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v2
 
-      - uses: hashicorp/setup-terraform@v1
+      - uses: hashicorp/setup-terraform@v1.3.2
         with:
-          terraform_version: ~0.13.0
+          terraform_version: ~0.14.0
 
       - run: make
