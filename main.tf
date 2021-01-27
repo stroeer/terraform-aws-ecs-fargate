@@ -81,7 +81,7 @@ resource "aws_ecs_task_definition" "this" {
       properties = {
         AppPorts         = var.container_port
         EgressIgnoredIPs = "169.254.170.2,169.254.169.254"
-        IgnoredUID       = "1337"
+        IgnoredGID       = "1337"
         ProxyEgressPort  = 15001
         ProxyIngressPort = 15000
       }
