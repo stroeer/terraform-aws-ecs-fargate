@@ -11,7 +11,7 @@ MAJOR              := $(word 1,$(VERSION_PARTS))
 MINOR              := $(word 2,$(VERSION_PARTS))
 PATCH              := $(word 3,$(VERSION_PARTS))
 
-BUMP := patch
+BUMP ?= patch
 ifeq ($(BUMP), major)
 NEXT_VERSION		:= $(shell echo $$(($(MAJOR)+1)).0.0)
 else ifeq ($(BUMP), minor)
