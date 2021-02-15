@@ -49,13 +49,13 @@ resource "aws_alb_listener_rule" "public" {
   priority     = var.alb_listener_priority
 
   dynamic "action" {
-    for_each = var.alb_cogino_pool_arn == "" ? [/*noop*/] : ["enabled"]
+    for_each = var.alb_cognito_pool_arn == "" ? [/*noop*/] : ["enabled"]
     content {
       type = "authenticate-cognito"
       authenticate_cognito {
-        user_pool_arn       = var.alb_cogino_pool_arn
-        user_pool_client_id = var.alb_cogino_pool_client_id
-        user_pool_domain    = var.alb_cogino_pool_domain
+        user_pool_arn       = var.alb_cognito_pool_arn
+        user_pool_client_id = var.alb_cognito_pool_client_id
+        user_pool_domain    = var.alb_cognito_pool_domain
       }
     }
   }

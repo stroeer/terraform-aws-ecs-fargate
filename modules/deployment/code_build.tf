@@ -36,8 +36,13 @@ resource "aws_codebuild_project" "this" {
 
   environment {
     compute_type = "BUILD_GENERAL1_SMALL"
-    image        = "aws/codebuild/amazonlinux2-x86_64-standard:1.0"
+    image        = "aws/codebuild/amazonlinux2-x86_64-standard:3.0"
     type         = "LINUX_CONTAINER"
+
+    environment_variable {
+      name  = "CONTAINER_NAME"
+      value = var.container_name
+    }
   }
 
   source {
@@ -48,31 +53,17 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      python: 3.7
+      python: 3.8
   build:
     commands:
       - |
-        cat imageDetail.json | python -c 'import sys, json
+        python -c 'import json, os
+        with open("imageDetail.json", "r") as json_file:
+            image_uri = json.load(json_file).get("ImageURI")
+            container_name = os.environ.get("CONTAINER_NAME")
+            with open("imagedefinitions.json", "w") as outfile:
+                json.dump([{"name": container_name, "imageUri": image_uri}], outfile)'
 
-        imgDetail = json.load(sys.stdin)
-
-        repo_uri = imgDetail["ImageURI"].split("@")[0]
-        all_tags = imgDetail["ImageTags"]
-
-        container_tag = [x for x in all_tags if x.startswith("container.")]
-        if container_tag:
-            container = container_tag[0].split(".")[1]
-        else:
-            print("Could not extract container from tags {}. Expected one tag with \"container.CONTAINER_NAME\".".format(all_tags), file=sys.stderr)
-            exit(1)
-
-        deploy_tag = [x for x in all_tags if not x.startswith("container.") and x not in ["local", "production", "staging", "infrastructure"]]
-        if deploy_tag:
-            tag = deploy_tag[0]
-        else:
-            tag = all_tags[0]
-
-        print("""[{{"name":"{}","imageUri":"{}:{}"}}]""".format(container, repo_uri, tag))' > imagedefinitions.json
       - cat imagedefinitions.json
 artifacts:
     files:

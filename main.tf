@@ -113,6 +113,7 @@ module "code_deploy" {
   enabled = var.create_deployment_pipeline
 
   cluster_name                          = var.cluster_id
+  container_name                        = local.container_name
   codestar_notifications_detail_type    = var.codestar_notifications_detail_type
   codestar_notifications_event_type_ids = var.codestar_notifications_event_type_ids
   codestar_notifications_target_arn     = var.codestar_notifications_target_arn
