@@ -65,26 +65,28 @@ data "aws_iam_policy_document" "code_pipepline_permissions" {
 
   statement {
     actions = [
-      "autoscaling:Describe*",
-      "autoscaling:UpdateAutoScalingGroup",
-      "elasticloadbalancing:*",
-      "ecs:*",
-      "iam:ListInstanceProfiles",
-      "iam:ListRoles",
-      "iam:PassRole"
+      # cloudtrail reports that codepipeline actually requires access to `*`
+      "ecs:DescribeTaskDefinition",
+      "ecs:RegisterTaskDefinition"
     ]
-
     resources = ["*"]
+  }
+
+  statement {
+    actions = [
+      "ecs:UpdateService"
+    ]
+    resources = ["arn:aws:ecs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:service/${var.cluster_name}/${var.service_name}"]
   }
 }
 
-resource "aws_iam_role_policy_attachment" "AmazonEC2ContainerServiceFullAccess" {
+resource "aws_iam_role_policy_attachment" "AWSCodeDeployRoleForECS" {
   count      = local.create_code_pipeline_iam ? 1 : 0
   role       = aws_iam_role.code_pipeline_role[count.index].name
-  policy_arn = data.aws_iam_policy.AmazonEC2ContainerServiceFullAccess[count.index].arn
+  policy_arn = data.aws_iam_policy.AWSCodeDeployRoleForECS[count.index].arn
 }
 
-data "aws_iam_policy" "AmazonEC2ContainerServiceFullAccess" {
+data "aws_iam_policy" "AWSCodeDeployRoleForECS" {
   count = local.create_code_pipeline_iam ? 1 : 0
   arn   = "arn:aws:iam::aws:policy/AWSCodeDeployRoleForECS"
 }
