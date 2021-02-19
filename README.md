@@ -1,6 +1,6 @@
 # AWS Fargate ECS Terraform Module
 
-[![Terraform Registry](https://img.shields.io/badge/Terraform%20Registry-0.12.0-blue.svg)](https://registry.terraform.io/modules/stroeer/ecs-fargate/aws/0.12.0) ![CI](https://github.com/stroeer/terraform-aws-buzzgate/workflows/CI/badge.svg?branch=master) ![Terraform Version](https://img.shields.io/badge/Terraform-0.12+-green.svg) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Terraform Registry](https://img.shields.io/badge/Terraform%20Registry-0.13.0-blue.svg)](https://registry.terraform.io/modules/stroeer/ecs-fargate/aws/0.13.0) ![CI](https://github.com/stroeer/terraform-aws-buzzgate/workflows/CI/badge.svg?branch=master) ![Terraform Version](https://img.shields.io/badge/Terraform-0.12+-green.svg) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
 
 A somewhat opinionated Terraform module to create Fargate ECS resources on AWS. 
 
@@ -56,7 +56,7 @@ data "aws_region" "current" {}
 
 module "service" {
   source  = "stroeer/ecs-fargate/aws"
-  version = "0.12.0"
+  version = "0.13.0"
 
   cluster_id                    = "k8"
   container_port                = 8080
@@ -102,7 +102,7 @@ data "aws_ssm_parameter" "fluent_bit_image" {
 
 module "service" {
   source  = "stroeer/ecs-fargate/aws"
-  version = "0.12.0"
+  version = "0.13.0"
 
   cluster_id                    = "k8"
   container_port                = 8080  
@@ -246,9 +246,9 @@ for example.
 |------|-------------|------|---------|:--------:|
 | alb\_attach\_private\_target\_group | Attach a target group for this service to the private ALB (requires an ALB with `name=private`). | `bool` | `true` | no |
 | alb\_attach\_public\_target\_group | Attach a target group for this service to the public ALB (requires an ALB with `name=public`). | `bool` | `true` | no |
-| alb\_cogino\_pool\_arn | Provide a COGNITO pool ARN if you want to attach COGNITO authentication to the public ALB's HTTPS listener. If not set, there will be no auth. | `string` | `""` | no |
-| alb\_cogino\_pool\_client\_id | COGNITO client id that will be used for authenticating at the public ALB's HTTPS listener. | `string` | `""` | no |
-| alb\_cogino\_pool\_domain | COGNITO pool domain that will be used for authenticating at the public ALB's HTTPS listener. | `string` | `""` | no |
+| alb\_cognito\_pool\_arn | Provide a COGNITO pool ARN if you want to attach COGNITO authentication to the public ALB's HTTPS listener. If not set, there will be no auth. | `string` | `""` | no |
+| alb\_cognito\_pool\_client\_id | COGNITO client id that will be used for authenticating at the public ALB's HTTPS listener. | `string` | `""` | no |
+| alb\_cognito\_pool\_domain | COGNITO pool domain that will be used for authenticating at the public ALB's HTTPS listener. | `string` | `""` | no |
 | alb\_listener\_priority | The priority for the ALB listener rule between 1 and 50000. Leaving it unset will automatically set the rule with next available priority after currently existing highest rule. | `number` | `null` | no |
 | assign\_public\_ip | This services will be placed in a public subnet and be assigned a public routable IP. | `bool` | `false` | no |
 | cluster\_id | The ECS cluster id that should run this service | `string` | n/a | yes |
@@ -259,7 +259,7 @@ for example.
 | codestar\_notifications\_event\_type\_ids | A list of event types associated with this notification rule. For list of allowed events see https://docs.aws.amazon.com/dtconsole/latest/userguide/concepts.html#concepts-api. | `list(string)` | <pre>[<br>  "codepipeline-pipeline-pipeline-execution-succeeded",<br>  "codepipeline-pipeline-pipeline-execution-failed"<br>]</pre> | no |
 | codestar\_notifications\_target\_arn | Use an existing ARN for a notification rule target (for example, a SNS Topic ARN). Otherwise a separate sns topic for this service will be created. | `string` | `""` | no |
 | container\_definitions | JSON container definition. | `string` | n/a | yes |
-| container\_name | Defaults to var.service\_name, can be overriden if it differs. Used as a target for LB. | `string` | `""` | no |
+| container\_name | Defaults to var.service\_name, can be overridden if it differs. Used as a target for LB. | `string` | `""` | no |
 | container\_port | The port used by the web app within the container | `number` | n/a | yes |
 | cpu | Amount of CPU required by this service. 1024 == 1 vCPU | `number` | `256` | no |
 | create\_deployment\_pipeline | Creates a deploy pipeline from ECR trigger. | `bool` | `true` | no |
