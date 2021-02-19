@@ -47,19 +47,19 @@ variable "alb_listener_priority" {
   type        = number
 }
 
-variable "alb_cogino_pool_arn" {
+variable "alb_cognito_pool_arn" {
   type        = string
   default     = ""
   description = "Provide a COGNITO pool ARN if you want to attach COGNITO authentication to the public ALB's HTTPS listener. If not set, there will be no auth."
 }
 
-variable "alb_cogino_pool_client_id" {
+variable "alb_cognito_pool_client_id" {
   type        = string
   default     = ""
   description = "COGNITO client id that will be used for authenticating at the public ALB's HTTPS listener."
 }
 
-variable "alb_cogino_pool_domain" {
+variable "alb_cognito_pool_domain" {
   type        = string
   default     = ""
   description = "COGNITO pool domain that will be used for authenticating at the public ALB's HTTPS listener."
@@ -73,7 +73,7 @@ variable "assign_public_ip" {
 
 variable "container_name" {
   default     = ""
-  description = "Defaults to var.service_name, can be overriden if it differs. Used as a target for LB."
+  description = "Defaults to var.service_name, can be overridden if it differs. Used as a target for LB."
   type        = string
 }
 

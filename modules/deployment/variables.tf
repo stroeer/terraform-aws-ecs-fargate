@@ -18,6 +18,11 @@ variable "service_name" {
   description = "The service's name to create the pipeline resources."
 }
 
+variable "container_name" {
+  type        = string
+  description = "The service's main container to create the pipeline resources."
+}
+
 variable "tags" {
   type = map(string)
 }

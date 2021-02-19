@@ -39,7 +39,7 @@ resource "aws_codepipeline" "codepipeline" {
       provider         = "CodeBuild"
       version          = "1"
       input_artifacts  = ["ecr_source"]
-      output_artifacts = ["build_source"]
+      output_artifacts = ["image_definitions_json"]
 
       configuration = {
         "ProjectName" : aws_codebuild_project.this[count.index].name
@@ -55,7 +55,7 @@ resource "aws_codepipeline" "codepipeline" {
       category        = "Deploy"
       owner           = "AWS"
       provider        = "ECS"
-      input_artifacts = ["build_source"]
+      input_artifacts = ["image_definitions_json"]
       version         = "1"
 
       configuration = {
