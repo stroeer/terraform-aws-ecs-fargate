@@ -25,7 +25,7 @@ all: fmt validate
 
 init: ## Initialize a Terraform working directory
 	@echo "+ $@"
-	@terraform init -backend=false > /dev/null
+	@terraform init -backend=false
 
 .PHONY: fmt
 fmt: ## Checks config files against canonical format

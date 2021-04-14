@@ -7,11 +7,10 @@ data "aws_iam_policy_document" "es_policy" {
 
   statement {
     actions = [
-      "es:*"
+      "es:ESHttp*"
     ]
     resources = [
-      var.elasticsearch_domain_arn,
-      "${var.elasticsearch_domain_arn}/*"
+      "${var.elasticsearch_domain_arn}/_bulk"
     ]
   }
 }
