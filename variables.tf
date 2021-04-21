@@ -66,14 +66,11 @@ variable "alb_cognito_pool_domain" {
 }
 
 variable "alb_header_condition" {
-  type        = list(object({
+  type = list(object({
     header_name  = string
     header_value = list(string)
   }))
-  default     = [{
-    header_name  = "x-cf-alb-token",
-    header_value = ["kiey1sie4Aen2eek"]
-  }]
+  default     = []
   description = "header match condition for alb target group"
 }
 
@@ -132,9 +129,9 @@ variable "codestar_notifications_detail_type" {
 }
 
 variable "codestar_notifications_event_type_ids" {
-  default     = [
+  default = [
     "codepipeline-pipeline-pipeline-execution-succeeded",
-    "codepipeline-pipeline-pipeline-execution-failed"]
+  "codepipeline-pipeline-pipeline-execution-failed"]
   description = "A list of event types associated with this notification rule. For list of allowed events see https://docs.aws.amazon.com/dtconsole/latest/userguide/concepts.html#concepts-api."
   type        = list(string)
 }
@@ -159,11 +156,11 @@ variable "desired_count" {
 
 variable "ecr" {
   description = "ECR repository configuration."
-  type        = object({
+  type = object({
     image_scanning_configuration = object({
       scan_on_push = bool
     })
-    image_tag_mutability         = string,
+    image_tag_mutability = string,
   })
 
   # if you change any of the defaults, the whole configuration object needs to be provided. 
@@ -172,7 +169,7 @@ variable "ecr" {
     image_scanning_configuration = {
       scan_on_push = true
     }
-    image_tag_mutability         = "MUTABLE",
+    image_tag_mutability = "MUTABLE",
   }
 }
 
