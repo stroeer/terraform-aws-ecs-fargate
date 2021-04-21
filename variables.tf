@@ -157,12 +157,6 @@ variable "health_check" {
   type        = map(string)
 }
 
-variable "logs_elasticsearch_domain_arn" {
-  description = "Amazon Resource Name (ARN) of an existing Elasticsearch domain. IAM permissions for sending logs to this domain will be added."
-  default     = ""
-  type        = string
-}
-
 variable "memory" {
   default     = 512
   description = "Amount of memory [MB] is required by this service."

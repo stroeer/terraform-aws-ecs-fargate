@@ -1,15 +1,15 @@
 output "cloudwatch_log_group" {
-  description = "Name of the CloudWatch log group for container logs"
-  value       = module.logs.cloudwatch_log_group_name
+  description = "Name of the CloudWatch log group for container logs."
+  value       = aws_cloudwatch_log_group.containers.name
 }
 
 output "ecr_repository_arn" {
-  description = "Full ARN of the ECR repository"
+  description = "Full ARN of the ECR repository."
   value       = module.ecr.arn
 }
 
 output "ecr_repository_url" {
-  description = "URL of the ECR repository"
+  description = "URL of the ECR repository."
   value       = module.ecr.repository_url
 }
 
