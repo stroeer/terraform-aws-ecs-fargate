@@ -17,13 +17,3 @@ output "ecs_task_exec_role_name" {
   description = "ECS task role used by this service."
   value       = aws_iam_role.ecs_task_role.name
 }
-
-output "private_dns" {
-  description = "Private DNS entry."
-  value       = var.alb_attach_private_target_group ? "${aws_route53_record.internal[0].name}.${data.aws_route53_zone.internal[0].name}" : ""
-}
-
-output "public_dns" {
-  description = "Public DNS entry."
-  value       = var.alb_attach_public_target_group ? "${aws_route53_record.external[0].name}.${data.aws_route53_zone.external[0].name}" : ""
-}
