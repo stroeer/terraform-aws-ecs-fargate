@@ -2,17 +2,13 @@
 * https://github.com/terraform-aws-modules/terraform-aws-alb
 */
 
-data "aws_lb" "public" {
-  name = "public"
-}
-
 resource "aws_alb_target_group" "main" {
   count = length(var.target_groups)
 
   name        = lookup(var.target_groups[count.index], "name", null)
   name_prefix = lookup(var.target_groups[count.index], "name_prefix", null)
 
-  vpc_id           = data.aws_vpc.selected.id
+  vpc_id           = var.vpc_id
   port             = lookup(var.target_groups[count.index], "backend_port", null)
   protocol         = lookup(var.target_groups[count.index], "backend_protocol", null) != null ? upper(lookup(var.target_groups[count.index], "backend_protocol")) : null
   protocol_version = lookup(var.target_groups[count.index], "protocol_version", null) != null ? upper(lookup(var.target_groups[count.index], "protocol_version")) : null
@@ -45,7 +41,7 @@ resource "aws_alb_target_group" "main" {
 resource "aws_alb_listener_rule" "public" {
   count = length(var.https_listener_rules)
 
-  listener_arn = lookup(var.https_listener_rules[count.index], "aws_alb_listener_rule_arn", null)
+  listener_arn = lookup(var.https_listener_rules[count.index], "listener_arn", null)
   priority     = lookup(var.https_listener_rules[count.index], "priority", null)
 
   # authenticate-cognito actions

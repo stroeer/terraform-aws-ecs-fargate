@@ -1,5 +1,5 @@
 data "aws_subnet_ids" "selected" {
-  vpc_id = data.aws_vpc.selected.id
+  vpc_id = var.vpc_id
 
   tags = {
     Tier = (var.assign_public_ip || var.requires_internet_access) ? "public" : "private"
@@ -9,13 +9,13 @@ data "aws_subnet_ids" "selected" {
 ## the VPC's default SG must be attached to allow traffic from/to AWS endpoints like ECR
 data "aws_security_group" "default" {
   name   = "default"
-  vpc_id = data.aws_vpc.selected.id
+  vpc_id = var.vpc_id
 }
 
 # The SG that allows ingress traffic from ALB
 data "aws_security_group" "fargate" {
   name   = "fargate-allow-alb-traffic"
-  vpc_id = data.aws_vpc.selected.id
+  vpc_id = var.vpc_id
 }
 
 resource "aws_ecs_service" "this" {

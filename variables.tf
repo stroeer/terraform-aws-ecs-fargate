@@ -24,6 +24,12 @@ variable "service_name" {
   type        = string
 }
 
+variable "vpc_id" {
+  description = "VPC id where the load balancer and other resources will be deployed."
+  type        = string
+  default     = null
+}
+
 # ---------------------------------------------------------------------------------------------------------------------
 # OPTIONAL PARAMETERS
 # These parameters have reasonable defaults.
