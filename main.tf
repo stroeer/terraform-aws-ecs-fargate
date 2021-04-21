@@ -1,6 +1,6 @@
 locals {
-  alb_public_group  = var.alb_attach_public_target_group && length(aws_alb_target_group.public) == 1 ? list(aws_alb_target_group.public[0].arn) : []
-  alb_private_group = var.alb_attach_private_target_group && length(aws_alb_target_group.private) == 1 ? list(aws_alb_target_group.private[0].arn) : []
+  alb_public_group  = var.alb_attach_public_target_group && length(aws_alb_target_group.public) == 1 ? [aws_alb_target_group.public[0].arn] : []
+  alb_private_group = var.alb_attach_private_target_group && length(aws_alb_target_group.private) == 1 ? [aws_alb_target_group.private[0].arn] : []
 }
 
 data "aws_subnet_ids" "selected" {
