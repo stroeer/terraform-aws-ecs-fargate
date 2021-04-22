@@ -119,12 +119,3 @@ module "code_deploy" {
   artifact_bucket                       = var.code_pipeline_artifact_bucket
   tags                                  = local.tags
 }
-
-module "logs" {
-  source = "./modules/logs"
-
-  elasticsearch_domain_arn = var.logs_elasticsearch_domain_arn
-  service_name             = var.service_name
-  tags                     = local.tags
-  task_role_name           = aws_iam_role.ecs_task_role.name
-}
