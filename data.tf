@@ -15,9 +15,3 @@ locals {
 
   tags = merge(local.default_tags, var.tags)
 }
-
-data "aws_vpc" "selected" {
-  tags = {
-    Name = "main"
-  }
-}

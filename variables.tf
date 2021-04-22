@@ -24,45 +24,26 @@ variable "service_name" {
   type        = string
 }
 
+variable "vpc_id" {
+  description = "VPC id where the load balancer and other resources will be deployed."
+  type        = string
+}
+
 # ---------------------------------------------------------------------------------------------------------------------
 # OPTIONAL PARAMETERS
 # These parameters have reasonable defaults.
 # ---------------------------------------------------------------------------------------------------------------------
 
-variable "alb_attach_public_target_group" {
-  default     = true
-  description = "Attach a target group for this service to the public ALB (requires an ALB with `name=public`)."
-  type        = bool
+variable "https_listener_rules" {
+  description = "A list of maps describing the Listener Rules for this ALB. Required key/values: actions, conditions. Optional key/values: priority, https_listener_index (default to https_listeners[count.index])"
+  type        = any
+  default     = []
 }
 
-variable "alb_attach_private_target_group" {
-  default     = true
-  description = "Attach a target group for this service to the private ALB (requires an ALB with `name=private`)."
-  type        = bool
-}
-
-variable "alb_listener_priority" {
-  default     = null
-  description = "The priority for the ALB listener rule between 1 and 50000. Leaving it unset will automatically set the rule with next available priority after currently existing highest rule."
-  type        = number
-}
-
-variable "alb_cognito_pool_arn" {
-  type        = string
-  default     = ""
-  description = "Provide a COGNITO pool ARN if you want to attach COGNITO authentication to the public ALB's HTTPS listener. If not set, there will be no auth."
-}
-
-variable "alb_cognito_pool_client_id" {
-  type        = string
-  default     = ""
-  description = "COGNITO client id that will be used for authenticating at the public ALB's HTTPS listener."
-}
-
-variable "alb_cognito_pool_domain" {
-  type        = string
-  default     = ""
-  description = "COGNITO pool domain that will be used for authenticating at the public ALB's HTTPS listener."
+variable "target_groups" {
+  description = "A list of maps containing key/value pairs that define the target groups to be created. Order of these maps is important and the index of these are to be referenced in listener definitions. Required key/values: name, backend_protocol, backend_port"
+  type        = any
+  default     = []
 }
 
 variable "assign_public_ip" {
@@ -120,7 +101,9 @@ variable "codestar_notifications_detail_type" {
 }
 
 variable "codestar_notifications_event_type_ids" {
-  default     = ["codepipeline-pipeline-pipeline-execution-succeeded", "codepipeline-pipeline-pipeline-execution-failed"]
+  default = [
+    "codepipeline-pipeline-pipeline-execution-succeeded",
+  "codepipeline-pipeline-pipeline-execution-failed"]
   description = "A list of event types associated with this notification rule. For list of allowed events see https://docs.aws.amazon.com/dtconsole/latest/userguide/concepts.html#concepts-api."
   type        = list(string)
 }
