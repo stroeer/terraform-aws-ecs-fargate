@@ -34,18 +34,6 @@ variable "vpc_id" {
 # These parameters have reasonable defaults.
 # ---------------------------------------------------------------------------------------------------------------------
 
-variable "https_listener_rules" {
-  description = "A list of maps describing the Listener Rules for this ALB. Required key/values: actions, conditions. Optional key/values: priority, https_listener_index (default to https_listeners[count.index])"
-  type        = any
-  default     = []
-}
-
-variable "target_groups" {
-  description = "A list of maps containing key/value pairs that define the target groups to be created. Order of these maps is important and the index of these are to be referenced in listener definitions. Required key/values: name, backend_protocol, backend_port"
-  type        = any
-  default     = []
-}
-
 variable "assign_public_ip" {
   default     = false
   description = "This services will be placed in a public subnet and be assigned a public routable IP."
@@ -157,6 +145,12 @@ variable "health_check" {
   type        = map(string)
 }
 
+variable "https_listener_rules" {
+  description = "A list of maps describing the Listener Rules for this ALB. Required key/values: actions, conditions. Optional key/values: priority, https_listener_index (default to https_listeners[count.index])"
+  type        = any
+  default     = []
+}
+
 variable "memory" {
   default     = 512
   description = "Amount of memory [MB] is required by this service."
@@ -192,4 +186,11 @@ variable "tags" {
   description = "Additional tags (_e.g._ { map-migrated : d-example-443255fsf })"
   type        = map(string)
 }
+
+variable "target_groups" {
+  description = "A list of maps containing key/value pairs that define the target groups to be created. Order of these maps is important and the index of these are to be referenced in listener definitions. Required key/values: name, backend_protocol, backend_port"
+  type        = any
+  default     = []
+}
+
 

@@ -8,8 +8,7 @@ This module does the heavy lifting for:
 
 * [ECR](https://docs.aws.amazon.com/AmazonECR/latest/userguide/Registries.html) configuration
 * [automated service deployment](#Automated-service-deployment) including notifications
-* IAM permissions for sending logs to an Elasticsearch domain using Firelens with [Fluent-Bit](https://fluentbit.io/)
-* CloudWatch log group and IAM permissions for storing container logs (e.g. for sitecars)
+* CloudWatch log group and IAM permissions for storing container logs (e.g. for sidecars)
 * integration with [App Mesh](https://docs.aws.amazon.com/app-mesh/latest/userguide/what-is-app-mesh.html)
   and [Application Load Balancers](#Load-Balancing)
 
@@ -163,82 +162,6 @@ module "service" {
     }
   }
 }
-``` 
-
-with log streaming to Elasticsearch using Fluent-Bit and Kinesis Firehose Delivery Streams:
-
-```hcl-terraform
-locals {
-  service_name = "example"
-}
-
-data "aws_caller_identity" "current" {}
-data "aws_region" "current" {}
-
-data "aws_elasticsearch_domain" "elasticsearch" {
-  domain_name = "application-logs"
-}
-
-data "aws_ssm_parameter" "fluent_bit_image" {
-  name = "/aws/service/aws-for-fluent-bit/latest"
-}
-
-module "service" {
-  source  = "stroeer/ecs-fargate/aws"
-  version = "0.13.0"
-
-  cluster_id     = "k8"
-  container_port = 8080
-  desired_count  = 1
-  service_name   = local.service_name
-
-  container_definitions = jsondecode([
-    {
-      name                  = "log_router",
-      essential             = true,
-      image                 = "${data.aws_ssm_parameter.fluent_bit_image.value}",
-      firelensConfiguration = {
-        type    = "fluentbit",
-        options = {
-          "config-file-type"  = "file",
-          "config-file-value" = "/fluent-bit/configs/parse-json.conf"
-        }
-      },
-      logConfiguration      = {
-        logDriver = "awslogs",
-        options   = {
-          "awslogs-group"         = "${module.service.cloudwatch_log_group}",
-          "awslogs-region"        = "${data.aws_region.current.name}",
-          "awslogs-stream-prefix" = "fluent_bit"
-        }
-      },
-      user                  = "0"
-    },
-    {
-      name             = "${local.service_name}",
-      image            = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com/${local.service_name}:production",
-      cpu              = 256,
-      memory           = 512,
-      essential        = true,
-      portMappings     = [{
-        containerPort = 8080, protocol = "tcp"
-      }],
-      logConfiguration = {
-        logDriver = "awsfirelens",
-        options   = {
-          Name            = "es",
-          Host            = "${data.aws_elasticsearch_domain.elasticsearch.endpoint}",
-          Port            = "443",
-          Aws_Auth        = "On",
-          Aws_Region      = "${data.aws_region.current.name}",
-          tls             = "On",
-          Logstash_Format = "true",
-          Logstash_Prefix = "${local.index_name}"
-        }
-      }
-    }
-  ])
-}
 ```
 
 ### Naming Conventions
@@ -332,7 +255,6 @@ for example.
 |------|--------|---------|
 | <a name="module_code_deploy"></a> [code\_deploy](#module\_code\_deploy) | ./modules/deployment |  |
 | <a name="module_ecr"></a> [ecr](#module\_ecr) | ./modules/ecr |  |
-| <a name="module_logs"></a> [logs](#module\_logs) | ./modules/logs |  |
 
 ## Resources
 
@@ -340,13 +262,17 @@ for example.
 |------|------|
 | [aws_alb_listener_rule.public](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/alb_listener_rule) | resource |
 | [aws_alb_target_group.main](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/alb_target_group) | resource |
+| [aws_cloudwatch_log_group.containers](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_group) | resource |
 | [aws_ecs_service.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_service) | resource |
 | [aws_ecs_task_definition.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_task_definition) | resource |
+| [aws_iam_policy.cloudwatch_logs_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_role.ecs_task_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role_policy.ecs_task_role_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
+| [aws_iam_role_policy_attachment.cloudwatch_logs_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_service_discovery_service.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/service_discovery_service) | resource |
 | [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
 | [aws_ecs_task_definition.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ecs_task_definition) | data source |
+| [aws_iam_policy_document.cloudwatch_logs_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.ecs_task_assume_role_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.nothing_is_allowed](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_role.task_execution_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_role) | data source |
@@ -378,7 +304,6 @@ for example.
 | <a name="input_force_new_deployment"></a> [force\_new\_deployment](#input\_force\_new\_deployment) | Enable to force a new task deployment of the service. This can be used to update tasks to use a newer Docker image with same image/tag combination (e.g. myimage:latest), roll Fargate tasks onto a newer platform version, or immediately deploy ordered\_placement\_strategy and placement\_constraints updates. | `bool` | `false` | no |
 | <a name="input_health_check"></a> [health\_check](#input\_health\_check) | A health block containing health check settings for the ALB target groups. See https://www.terraform.io/docs/providers/aws/r/lb_target_group.html#health_check for defaults. | `map(string)` | `{}` | no |
 | <a name="input_https_listener_rules"></a> [https\_listener\_rules](#input\_https\_listener\_rules) | A list of maps describing the Listener Rules for this ALB. Required key/values: actions, conditions. Optional key/values: priority, https\_listener\_index (default to https\_listeners[count.index]) | `any` | `[]` | no |
-| <a name="input_logs_elasticsearch_domain_arn"></a> [logs\_elasticsearch\_domain\_arn](#input\_logs\_elasticsearch\_domain\_arn) | Amazon Resource Name (ARN) of an existing Elasticsearch domain. IAM permissions for sending logs to this domain will be added. | `string` | `""` | no |
 | <a name="input_memory"></a> [memory](#input\_memory) | Amount of memory [MB] is required by this service. | `number` | `512` | no |
 | <a name="input_platform_version"></a> [platform\_version](#input\_platform\_version) | The platform version on which to run your service. Defaults to LATEST. | `string` | `"LATEST"` | no |
 | <a name="input_policy_document"></a> [policy\_document](#input\_policy\_document) | AWS Policy JSON describing the permissions required for this service. | `string` | `""` | no |
@@ -386,14 +311,14 @@ for example.
 | <a name="input_service_name"></a> [service\_name](#input\_service\_name) | The service name. Will also be used as Route53 DNS entry. | `string` | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | Additional tags (\_e.g.\_ { map-migrated : d-example-443255fsf }) | `map(string)` | `{}` | no |
 | <a name="input_target_groups"></a> [target\_groups](#input\_target\_groups) | A list of maps containing key/value pairs that define the target groups to be created. Order of these maps is important and the index of these are to be referenced in listener definitions. Required key/values: name, backend\_protocol, backend\_port | `any` | `[]` | no |
-| <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | VPC id where the load balancer and other resources will be deployed. | `string` | `null` | no |
+| <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | VPC id where the load balancer and other resources will be deployed. | `string` | n/a | yes |
 | <a name="input_with_appmesh"></a> [with\_appmesh](#input\_with\_appmesh) | This services should be created with an appmesh proxy. | `bool` | `false` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| <a name="output_cloudwatch_log_group"></a> [cloudwatch\_log\_group](#output\_cloudwatch\_log\_group) | Name of the CloudWatch log group for container logs |
-| <a name="output_ecr_repository_arn"></a> [ecr\_repository\_arn](#output\_ecr\_repository\_arn) | Full ARN of the ECR repository |
-| <a name="output_ecr_repository_url"></a> [ecr\_repository\_url](#output\_ecr\_repository\_url) | URL of the ECR repository |
+| <a name="output_cloudwatch_log_group"></a> [cloudwatch\_log\_group](#output\_cloudwatch\_log\_group) | Name of the CloudWatch log group for container logs. |
+| <a name="output_ecr_repository_arn"></a> [ecr\_repository\_arn](#output\_ecr\_repository\_arn) | Full ARN of the ECR repository. |
+| <a name="output_ecr_repository_url"></a> [ecr\_repository\_url](#output\_ecr\_repository\_url) | URL of the ECR repository. |
 | <a name="output_ecs_task_exec_role_name"></a> [ecs\_task\_exec\_role\_name](#output\_ecs\_task\_exec\_role\_name) | ECS task role used by this service. |

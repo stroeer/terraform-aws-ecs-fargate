@@ -8,8 +8,7 @@ This module does the heavy lifting for:
 
 * [ECR](https://docs.aws.amazon.com/AmazonECR/latest/userguide/Registries.html) configuration
 * [automated service deployment](#Automated-service-deployment) including notifications
-* IAM permissions for sending logs to an Elasticsearch domain using Firelens with [Fluent-Bit](https://fluentbit.io/)
-* CloudWatch log group and IAM permissions for storing container logs (e.g. for sitecars)
+* CloudWatch log group and IAM permissions for storing container logs (e.g. for sidecars)
 * integration with [App Mesh](https://docs.aws.amazon.com/app-mesh/latest/userguide/what-is-app-mesh.html)
   and [Application Load Balancers](#Load-Balancing)
 
@@ -162,82 +161,6 @@ module "service" {
       scan_on_push = true
     }
   }
-}
-``` 
-
-with log streaming to Elasticsearch using Fluent-Bit and Kinesis Firehose Delivery Streams:
-
-```hcl-terraform
-locals {
-  service_name = "example"
-}
-
-data "aws_caller_identity" "current" {}
-data "aws_region" "current" {}
-
-data "aws_elasticsearch_domain" "elasticsearch" {
-  domain_name = "application-logs"
-}
-
-data "aws_ssm_parameter" "fluent_bit_image" {
-  name = "/aws/service/aws-for-fluent-bit/latest"
-}
-
-module "service" {
-  source  = "stroeer/ecs-fargate/aws"
-  version = "0.13.0"
-
-  cluster_id     = "k8"
-  container_port = 8080
-  desired_count  = 1
-  service_name   = local.service_name
-
-  container_definitions = jsondecode([
-    {
-      name                  = "log_router",
-      essential             = true,
-      image                 = "${data.aws_ssm_parameter.fluent_bit_image.value}",
-      firelensConfiguration = {
-        type    = "fluentbit",
-        options = {
-          "config-file-type"  = "file",
-          "config-file-value" = "/fluent-bit/configs/parse-json.conf"
-        }
-      },
-      logConfiguration      = {
-        logDriver = "awslogs",
-        options   = {
-          "awslogs-group"         = "${module.service.cloudwatch_log_group}",
-          "awslogs-region"        = "${data.aws_region.current.name}",
-          "awslogs-stream-prefix" = "fluent_bit"
-        }
-      },
-      user                  = "0"
-    },
-    {
-      name             = "${local.service_name}",
-      image            = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com/${local.service_name}:production",
-      cpu              = 256,
-      memory           = 512,
-      essential        = true,
-      portMappings     = [{
-        containerPort = 8080, protocol = "tcp"
-      }],
-      logConfiguration = {
-        logDriver = "awsfirelens",
-        options   = {
-          Name            = "es",
-          Host            = "${data.aws_elasticsearch_domain.elasticsearch.endpoint}",
-          Port            = "443",
-          Aws_Auth        = "On",
-          Aws_Region      = "${data.aws_region.current.name}",
-          tls             = "On",
-          Logstash_Format = "true",
-          Logstash_Prefix = "${local.index_name}"
-        }
-      }
-    }
-  ])
 }
 ```
 
