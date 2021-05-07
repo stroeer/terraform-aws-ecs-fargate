@@ -169,6 +169,12 @@ variable "policy_document" {
   type        = string
 }
 
+variable "requires_compatibilities" {
+  default     = ["EC2", "FARGATE"]
+  description = "The launch type the task is using. This enables a check to ensure that all of the parameters used in the task definition meet the requirements of the launch type."
+  type        = set(string)
+}
+
 variable "requires_internet_access" {
   default     = false
   description = "As Fargate does not support IPv6 yet, this is the only way to enable internet access for the service by placing it in a public subnet (but not assigning a public IP)."
