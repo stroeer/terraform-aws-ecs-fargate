@@ -58,14 +58,15 @@ data "aws_iam_role" "task_execution_role" {
 }
 
 resource "aws_ecs_task_definition" "this" {
-  container_definitions = var.container_definitions
-  cpu                   = var.cpu
-  execution_role_arn    = data.aws_iam_role.task_execution_role.arn
-  family                = var.service_name
-  memory                = var.memory
-  network_mode          = "awsvpc"
-  tags                  = local.tags
-  task_role_arn         = aws_iam_role.ecs_task_role.arn
+  container_definitions    = var.container_definitions
+  cpu                      = var.cpu
+  execution_role_arn       = data.aws_iam_role.task_execution_role.arn
+  family                   = var.service_name
+  memory                   = var.memory
+  network_mode             = "awsvpc"
+  requires_compatibilities = var.requires_compatibilities
+  tags                     = local.tags
+  task_role_arn            = aws_iam_role.ecs_task_role.arn
 
   dynamic "proxy_configuration" {
     for_each = var.with_appmesh ? [var.with_appmesh] : []
