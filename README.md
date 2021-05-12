@@ -1,6 +1,6 @@
 # AWS Fargate ECS Terraform Module
 
-[![Terraform Registry](https://img.shields.io/badge/Terraform%20Registry-0.14.0-blue.svg)](https://registry.terraform.io/modules/stroeer/ecs-fargate/aws/0.14.0) ![CI](https://github.com/stroeer/terraform-aws-buzzgate/workflows/CI/badge.svg?branch=master) ![Terraform Version](https://img.shields.io/badge/Terraform-0.12+-green.svg) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Terraform Registry](https://img.shields.io/badge/Terraform%20Registry-0.14.1-blue.svg)](https://registry.terraform.io/modules/stroeer/ecs-fargate/aws/0.14.1) ![CI](https://github.com/stroeer/terraform-aws-buzzgate/workflows/CI/badge.svg?branch=master) ![Terraform Version](https://img.shields.io/badge/Terraform-0.12+-green.svg) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
 
 A somewhat opinionated Terraform module to create Fargate ECS resources on AWS.
 
@@ -100,7 +100,7 @@ data "aws_region" "current" {}
 
 module "service" {
   source  = "stroeer/ecs-fargate/aws"
-  version = "0.14.0"
+  version = "0.14.1"
 
   assign_public_ip           = true
   cluster_id                 = aws_ecs_cluster.main.id
@@ -307,6 +307,7 @@ for example.
 | <a name="input_memory"></a> [memory](#input\_memory) | Amount of memory [MB] is required by this service. | `number` | `512` | no |
 | <a name="input_platform_version"></a> [platform\_version](#input\_platform\_version) | The platform version on which to run your service. Defaults to LATEST. | `string` | `"LATEST"` | no |
 | <a name="input_policy_document"></a> [policy\_document](#input\_policy\_document) | AWS Policy JSON describing the permissions required for this service. | `string` | `""` | no |
+| <a name="input_requires_compatibilities"></a> [requires\_compatibilities](#input\_requires\_compatibilities) | The launch type the task is using. This enables a check to ensure that all of the parameters used in the task definition meet the requirements of the launch type. | `set(string)` | <pre>[<br>  "EC2",<br>  "FARGATE"<br>]</pre> | no |
 | <a name="input_requires_internet_access"></a> [requires\_internet\_access](#input\_requires\_internet\_access) | As Fargate does not support IPv6 yet, this is the only way to enable internet access for the service by placing it in a public subnet (but not assigning a public IP). | `bool` | `false` | no |
 | <a name="input_service_name"></a> [service\_name](#input\_service\_name) | The service name. Will also be used as Route53 DNS entry. | `string` | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | Additional tags (\_e.g.\_ { map-migrated : d-example-443255fsf }) | `map(string)` | `{}` | no |
