@@ -17,7 +17,7 @@ NEXT_VERSION		:= $(shell echo $$(($(MAJOR)+1)).0.0)
 else ifeq ($(BUMP), minor)
 NEXT_VERSION		:= $(shell echo $(MAJOR).$$(($(MINOR)+1)).0)
 else
-NEXT_VERSION		:= $(shell echo $(MAJOR).$(MINOR).$$(($(PATCH)+1)))
+NEXT_VERSION		:= $(shell echo $(MAJOR).$(MINOR).$$(($(PATCH)+0)))
 endif
 NEXT_TAG 			:= v$(NEXT_VERSION)
 
@@ -59,6 +59,16 @@ release: check-git-branch bump documentation
 	git commit -vsam "Bump version to $(NEXT_TAG)"
 	git tag -a $(NEXT_TAG) -m "$(NEXT_TAG)"
 	git push origin $(NEXT_TAG)
+	git push
+	# create GH release if GITHUB_TOKEN is set
+	if [ ! -z "${GITHUB_TOKEN}" ] ; then 												\
+    		curl 																		\
+    			-H "Authorization: token ${GITHUB_TOKEN}" 								\
+    			-X POST 																\
+    			-H "Accept: application/vnd.github.v3+json"								\
+    			https://api.github.com/repos/stroeer/terraform-aws-ecs-fargate/releases \
+    			-d "{\"tag_name\":\"$(NEXT_TAG)\"}"; 									\
+      	fi;
 
 help: ## Display this help screen
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'	
