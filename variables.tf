@@ -40,6 +40,21 @@ variable "assign_public_ip" {
   type        = bool
 }
 
+variable "autoscaling_configuration" {
+  default     = null
+  description = "Autoscaling stuff"
+  type = object({
+    target_value           = number
+    max_capacity           = number
+    min_capacity           = number
+    disable_scale_in       = bool
+    scale_in_cooldown      = number
+    scale_out_cooldown     = number
+    predefined_metric_type = string
+  })
+
+}
+
 variable "container_name" {
   default     = ""
   description = "Defaults to var.service_name, can be overridden if it differs. Used as a target for LB."

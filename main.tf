@@ -51,6 +51,10 @@ resource "aws_ecs_service" "this" {
     registry_arn   = aws_service_discovery_service.this.arn
     container_name = var.container_name
   }
+
+  lifecycle {
+    ignore_changes = [desired_count]
+  }
 }
 
 data "aws_iam_role" "task_execution_role" {
@@ -119,4 +123,39 @@ module "code_deploy" {
   code_pipeline_role                    = var.code_pipeline_role_name
   artifact_bucket                       = var.code_pipeline_artifact_bucket
   tags                                  = local.tags
+}
+
+##############
+# AUTOSCALING
+##############
+
+resource "aws_appautoscaling_target" "ecs_target" {
+  count = var.autoscaling_configuration != {} ? 1 : 0
+
+  max_capacity       = lookup(var.autoscaling_configuration, "max_capacity", var.desired_count)
+  min_capacity       = lookup(var.autoscaling_configuration, "min_capacity", var.desired_count)
+  resource_id        = "service/${var.cluster_id}/${var.service_name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace  = "ecs"
+}
+
+resource "aws_appautoscaling_policy" "ecs_policy" {
+  count = var.autoscaling_configuration != {} ? 1 : 0
+
+  name               = "auto-scaling"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.ecs_target[count.index].resource_id
+  scalable_dimension = aws_appautoscaling_target.ecs_target[count.index].scalable_dimension
+  service_namespace  = aws_appautoscaling_target.ecs_target[count.index].service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    target_value     = lookup(var.autoscaling_configuration, "target_value")
+    disable_scale_in = lookup(var.autoscaling_configuration, "disable_scale_in", false)
+    // cool down in [seconds]
+    scale_in_cooldown  = lookup(var.autoscaling_configuration, "scale_in_cooldown", 300)
+    scale_out_cooldown = lookup(var.autoscaling_configuration, "scale_out_cooldown", 30)
+    predefined_metric_specification {
+      predefined_metric_type = lookup(var.autoscaling_configuration, "predefined_metric_type", "ECSServiceAverageCPUUtilization")
+    }
+  }
 }
