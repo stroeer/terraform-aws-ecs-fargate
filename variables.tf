@@ -40,18 +40,10 @@ variable "assign_public_ip" {
   type        = bool
 }
 
-variable "autoscaling_configuration" {
+variable "appautoscaling_settings" {
   default     = null
-  description = "Autoscaling stuff"
-  type = object({
-    target_value           = number
-    max_capacity           = number
-    min_capacity           = number
-    disable_scale_in       = bool
-    scale_in_cooldown      = number
-    scale_out_cooldown     = number
-    predefined_metric_type = string
-  })
+  description = "rovides an Application AutoScaling Policy resources for this service"
+  type        = map(any)
 
 }
 

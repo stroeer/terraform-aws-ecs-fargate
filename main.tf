@@ -129,33 +129,32 @@ module "code_deploy" {
 # AUTOSCALING
 ##############
 
-resource "aws_appautoscaling_target" "ecs_target" {
-  count = var.autoscaling_configuration != {} ? 1 : 0
+resource "aws_appautoscaling_target" "ecs" {
+  count = var.appautoscaling_settings != {} ? 1 : 0
 
-  max_capacity       = lookup(var.autoscaling_configuration, "max_capacity", var.desired_count)
-  min_capacity       = lookup(var.autoscaling_configuration, "min_capacity", var.desired_count)
+  max_capacity       = lookup(var.appautoscaling_settings, "max_capacity", var.desired_count)
+  min_capacity       = lookup(var.appautoscaling_settings, "min_capacity", var.desired_count)
   resource_id        = "service/${var.cluster_id}/${var.service_name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
 }
 
-resource "aws_appautoscaling_policy" "ecs_policy" {
-  count = var.autoscaling_configuration != {} ? 1 : 0
+resource "aws_appautoscaling_policy" "ecs" {
+  count = var.appautoscaling_settings != {} ? 1 : 0
 
-  name               = "auto-scaling"
+  name               = "${var.service_name}-auto-scaling"
   policy_type        = "TargetTrackingScaling"
-  resource_id        = aws_appautoscaling_target.ecs_target[count.index].resource_id
-  scalable_dimension = aws_appautoscaling_target.ecs_target[count.index].scalable_dimension
-  service_namespace  = aws_appautoscaling_target.ecs_target[count.index].service_namespace
+  resource_id        = aws_appautoscaling_target.ecs[count.index].resource_id
+  scalable_dimension = aws_appautoscaling_target.ecs[count.index].scalable_dimension
+  service_namespace  = aws_appautoscaling_target.ecs[count.index].service_namespace
 
   target_tracking_scaling_policy_configuration {
-    target_value     = lookup(var.autoscaling_configuration, "target_value")
-    disable_scale_in = lookup(var.autoscaling_configuration, "disable_scale_in", false)
-    // cool down in [seconds]
-    scale_in_cooldown  = lookup(var.autoscaling_configuration, "scale_in_cooldown", 300)
-    scale_out_cooldown = lookup(var.autoscaling_configuration, "scale_out_cooldown", 30)
+    target_value       = lookup(var.appautoscaling_settings, "target_value")
+    disable_scale_in   = lookup(var.appautoscaling_settings, "disable_scale_in", false)
+    scale_in_cooldown  = lookup(var.appautoscaling_settings, "scale_in_cooldown", 300)
+    scale_out_cooldown = lookup(var.appautoscaling_settings, "scale_out_cooldown", 30)
     predefined_metric_specification {
-      predefined_metric_type = lookup(var.autoscaling_configuration, "predefined_metric_type", "ECSServiceAverageCPUUtilization")
+      predefined_metric_type = lookup(var.appautoscaling_settings, "predefined_metric_type", "ECSServiceAverageCPUUtilization")
     }
   }
 }
