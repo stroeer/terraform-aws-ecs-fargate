@@ -78,6 +78,40 @@ this should point to your ALB. If TLS/HTTPS will be used an ACM certificate is a
 
 In order to disable ALB target group attachments (e.g. for services in an App Mesh) set `target_groups = []`.
 
+### AppAutoscaling
+
+```terraform
+module "service" {
+  source = "..."
+  
+  appautoscaling_settings = {
+    predefined_metric_type = "ECSServiceAverageCPUUtilization"
+    target_value           = 30
+    max_capacity           = 8
+    min_capacity           = 2
+    disable_scale_in       = true
+    scale_in_cooldown      = 120
+    scale_out_cooldown     = 15
+  }
+}
+```
+
+Use this configuration map to enable and alter the autoscaling
+settings for this app.
+
+|key|description|
+|---|---|
+|`target_value`| (mandatory) the target value, refers to `predefined_metric_type` |
+|`predefined_metric_type`| see [docs for possible values](https://docs.aws.amazon.com/autoscaling/application/APIReference/API_PredefinedMetricSpecification.html)|
+|`max_capacity`| upper threshold for scale out |
+|`min_capacity`| lower threshold for scale in |
+|`disable_scale_in`| prevent scale in if set to `true` |
+|`scale_in_cooldown`| delay (in seconds) between scale in events |
+|`scale_out_cooldown`| delay (in seconds) between scale out events |
+
+
+
+
 ### When using the automated deployment pipeline (optional):
 
 * A shared S3 bucket for storing artifacts from _CodePipeline_ can be used. You can specify it through the
@@ -246,15 +280,15 @@ for example.
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 3.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 3.61.0 |
 | <a name="provider_terraform"></a> [terraform](#provider\_terraform) | n/a |
 
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_code_deploy"></a> [code\_deploy](#module\_code\_deploy) | ./modules/deployment |  |
-| <a name="module_ecr"></a> [ecr](#module\_ecr) | ./modules/ecr |  |
+| <a name="module_code_deploy"></a> [code\_deploy](#module\_code\_deploy) | ./modules/deployment | n/a |
+| <a name="module_ecr"></a> [ecr](#module\_ecr) | ./modules/ecr | n/a |
 
 ## Resources
 
@@ -262,6 +296,8 @@ for example.
 |------|------|
 | [aws_alb_listener_rule.public](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/alb_listener_rule) | resource |
 | [aws_alb_target_group.main](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/alb_target_group) | resource |
+| [aws_appautoscaling_policy.ecs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_policy) | resource |
+| [aws_appautoscaling_target.ecs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_target) | resource |
 | [aws_cloudwatch_log_group.containers](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_group) | resource |
 | [aws_ecs_service.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_service) | resource |
 | [aws_ecs_task_definition.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_task_definition) | resource |
@@ -286,6 +322,7 @@ for example.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_appautoscaling_settings"></a> [appautoscaling\_settings](#input\_appautoscaling\_settings) | rovides an Application AutoScaling Policy resources for this service | `map(any)` | `null` | no |
 | <a name="input_assign_public_ip"></a> [assign\_public\_ip](#input\_assign\_public\_ip) | This services will be placed in a public subnet and be assigned a public routable IP. | `bool` | `false` | no |
 | <a name="input_cluster_id"></a> [cluster\_id](#input\_cluster\_id) | The ECS cluster id that should run this service | `string` | n/a | yes |
 | <a name="input_code_build_role_name"></a> [code\_build\_role\_name](#input\_code\_build\_role\_name) | Use an existing role for codebuild permissions that can be reused for multiple services. Otherwise a separate role for this service will be created. | `string` | `""` | no |

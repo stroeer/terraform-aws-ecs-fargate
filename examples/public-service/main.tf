@@ -83,6 +83,13 @@ module "service" {
   service_name               = local.service_name
   vpc_id                     = module.vpc.vpc_id
 
+  appautoscaling_settings = {
+    max_capacity           = 4
+    min_capacity           = 1
+    predefined_metric_type = "ECSServiceAverageCPUUtilization"
+    target_value           = 25
+  }
+
   target_groups = [
     {
       name             = "${local.service_name}-public"

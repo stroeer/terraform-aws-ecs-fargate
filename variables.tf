@@ -44,7 +44,6 @@ variable "appautoscaling_settings" {
   default     = null
   description = "rovides an Application AutoScaling Policy resources for this service"
   type        = map(any)
-
 }
 
 variable "container_name" {
