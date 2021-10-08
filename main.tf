@@ -130,7 +130,7 @@ module "code_deploy" {
 ##############
 
 resource "aws_appautoscaling_target" "ecs" {
-  count = var.appautoscaling_settings != {} ? 1 : 0
+  count = var.appautoscaling_settings != null ? 1 : 0
 
   max_capacity       = lookup(var.appautoscaling_settings, "max_capacity", var.desired_count)
   min_capacity       = lookup(var.appautoscaling_settings, "min_capacity", var.desired_count)
@@ -140,7 +140,7 @@ resource "aws_appautoscaling_target" "ecs" {
 }
 
 resource "aws_appautoscaling_policy" "ecs" {
-  count = var.appautoscaling_settings != {} ? 1 : 0
+  count = var.appautoscaling_settings != null ? 1 : 0
 
   name               = "${var.service_name}-auto-scaling"
   policy_type        = "TargetTrackingScaling"

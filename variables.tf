@@ -42,7 +42,7 @@ variable "assign_public_ip" {
 
 variable "appautoscaling_settings" {
   default     = null
-  description = "rovides an Application AutoScaling Policy resources for this service"
+  description = "Autoscaling configuration for this service."
   type        = map(any)
 }
 
