@@ -40,6 +40,12 @@ variable "assign_public_ip" {
   type        = bool
 }
 
+variable "appautoscaling_settings" {
+  default     = null
+  description = "Autoscaling configuration for this service."
+  type        = map(any)
+}
+
 variable "container_name" {
   default     = ""
   description = "Defaults to var.service_name, can be overridden if it differs. Used as a target for LB."
