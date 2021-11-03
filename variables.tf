@@ -40,6 +40,18 @@ variable "assign_public_ip" {
   type        = bool
 }
 
+variable "create_cloudwatch_alerts" {
+  default     = false
+  description = "This services will be created with cloudwatch alerts."
+  type        = bool
+}
+
+variable "cloudwatch_sns_notification_arn" {
+  default     = null
+  description = "SNS ARN for cloudwatch alert notifications."
+  type        = string
+}
+
 variable "appautoscaling_settings" {
   default     = null
   description = "Autoscaling configuration for this service."
@@ -204,5 +216,3 @@ variable "target_groups" {
   type        = any
   default     = []
 }
-
-

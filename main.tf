@@ -158,3 +158,115 @@ resource "aws_appautoscaling_policy" "ecs" {
     }
   }
 }
+
+##############
+# Cloudwatch Alerts
+##############
+
+resource "aws_cloudwatch_metric_alarm" "desired_tasks" {
+  count = var.create_cloudwatch_alerts == true ? 1 : 0
+
+  alarm_actions       = [var.cloudwatch_sns_notification_arn]
+  ok_actions          = [var.cloudwatch_sns_notification_arn]
+  alarm_name          = "${var.service_name}-desired-state-not-reachable"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = "2"
+
+  threshold                 = "0"
+  alarm_description         = "${var.service_name} could not reach desired state"
+  insufficient_data_actions = []
+
+  metric_query {
+    id          = "e1"
+    expression  = "desired - running"
+    label       = "Diff"
+    return_data = "true"
+  }
+
+  metric_query {
+    id = "desired"
+
+    metric {
+      metric_name = "DesiredTaskCount"
+      namespace   = "ECS/ContainerInsights"
+      period      = 10
+      stat        = "Average"
+      unit        = "Count"
+
+      dimensions = {
+        ServiceName = var.service_name
+        ClusterName = var.cluster_id
+      }
+    }
+  }
+
+  metric_query {
+    id = "running"
+
+    metric {
+      metric_name = "RunningTaskCount"
+      namespace   = "ECS/ContainerInsights"
+      period      = 10
+      stat        = "Average"
+      unit        = "Count"
+
+      dimensions = {
+        ServiceName = var.service_name
+        ClusterName = var.cluster_id
+      }
+    }
+  }
+  treat_missing_data = "notBreaching"
+}
+
+resource "aws_cloudwatch_metric_alarm" "memory_high" {
+  count = var.create_cloudwatch_alerts == true ? 1 : 0
+
+  alarm_actions       = [var.cloudwatch_sns_notification_arn]
+  ok_actions          = [var.cloudwatch_sns_notification_arn]
+  alarm_name          = "${var.service_name}-memory-consumption-high"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = "2"
+
+  threshold                 = "95"
+  alarm_description         = "${var.service_name} memory consumption high"
+  insufficient_data_actions = []
+  metric_name               = "MemoryUtilization"
+  namespace                 = "AWS/ECS"
+  period                    = 30
+  statistic                 = "Average"
+  unit                      = "Percent"
+
+  dimensions         = {
+    ServiceName = var.service_name
+    ClusterName = var.cluster_id
+  }
+
+  treat_missing_data = "notBreaching"
+}
+
+resource "aws_cloudwatch_metric_alarm" "cpu_high" {
+  count = var.create_cloudwatch_alerts == true ? 1 : 0
+
+  alarm_actions       = [var.cloudwatch_sns_notification_arn]
+  ok_actions          = [var.cloudwatch_sns_notification_arn]
+  alarm_name          = "${var.service_name}-desired-state-not-reached"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = "2"
+
+  threshold                 = "95"
+  alarm_description         = "${var.service_name} cpu consumption high"
+  insufficient_data_actions = []
+  metric_name               = "CPUUtilization"
+  namespace                 = "AWS/ECS"
+  period                    = 30
+  statistic                 = "Average"
+  unit                      = "Percent"
+
+  dimensions         = {
+    ServiceName = var.service_name
+    ClusterName = var.cluster_id
+  }
+
+  treat_missing_data = "notBreaching"
+}
