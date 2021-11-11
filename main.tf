@@ -164,16 +164,16 @@ resource "aws_appautoscaling_policy" "ecs" {
 ##############
 
 resource "aws_cloudwatch_metric_alarm" "desired_tasks" {
-  count = var.create_cloudwatch_alerts == true ? 1 : 0
+  count = var.cloudwatch_alarms.desired_state.create == true ? 1 : 0
 
   alarm_actions       = [var.cloudwatch_sns_notification_arn]
   ok_actions          = [var.cloudwatch_sns_notification_arn]
-  alarm_name          = "${var.service_name}-desired-state-not-reachable"
+  alarm_name          = lookup(var.cloudwatch_alarms.desired_state.alarm_name, "${var.service_name}-desired-state-not-reachable")
   comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = "2"
+  evaluation_periods  = lookup(var.cloudwatch_alarms.desired_state.evaluation_periods, 4)
 
   threshold                 = "0"
-  alarm_description         = "${var.service_name} could not reach desired state"
+  alarm_description         = lookup(var.cloudwatch_alarms.desired_state.alarm_description, "${var.service_name} could not reach desired state")
   insufficient_data_actions = []
 
   metric_query {
@@ -189,7 +189,7 @@ resource "aws_cloudwatch_metric_alarm" "desired_tasks" {
     metric {
       metric_name = "DesiredTaskCount"
       namespace   = "ECS/ContainerInsights"
-      period      = 10
+      period      = lookup(var.cloudwatch_alarms.desired_state.evaluation_periods, 60)
       stat        = "Average"
       unit        = "Count"
 
@@ -206,7 +206,7 @@ resource "aws_cloudwatch_metric_alarm" "desired_tasks" {
     metric {
       metric_name = "RunningTaskCount"
       namespace   = "ECS/ContainerInsights"
-      period      = 10
+      period      = lookup(var.cloudwatch_alarms.desired_state.evaluation_periods, 60)
       stat        = "Average"
       unit        = "Count"
 
@@ -216,57 +216,6 @@ resource "aws_cloudwatch_metric_alarm" "desired_tasks" {
       }
     }
   }
-  treat_missing_data = "notBreaching"
-}
 
-resource "aws_cloudwatch_metric_alarm" "memory_high" {
-  count = var.create_cloudwatch_alerts == true ? 1 : 0
-
-  alarm_actions       = [var.cloudwatch_sns_notification_arn]
-  ok_actions          = [var.cloudwatch_sns_notification_arn]
-  alarm_name          = "${var.service_name}-memory-consumption-high"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = "2"
-
-  threshold                 = "95"
-  alarm_description         = "${var.service_name} memory consumption high"
-  insufficient_data_actions = []
-  metric_name               = "MemoryUtilization"
-  namespace                 = "AWS/ECS"
-  period                    = 30
-  statistic                 = "Average"
-  unit                      = "Percent"
-
-  dimensions         = {
-    ServiceName = var.service_name
-    ClusterName = var.cluster_id
-  }
-
-  treat_missing_data = "notBreaching"
-}
-
-resource "aws_cloudwatch_metric_alarm" "cpu_high" {
-  count = var.create_cloudwatch_alerts == true ? 1 : 0
-
-  alarm_actions       = [var.cloudwatch_sns_notification_arn]
-  ok_actions          = [var.cloudwatch_sns_notification_arn]
-  alarm_name          = "${var.service_name}-desired-state-not-reached"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = "2"
-
-  threshold                 = "95"
-  alarm_description         = "${var.service_name} cpu consumption high"
-  insufficient_data_actions = []
-  metric_name               = "CPUUtilization"
-  namespace                 = "AWS/ECS"
-  period                    = 30
-  statistic                 = "Average"
-  unit                      = "Percent"
-
-  dimensions         = {
-    ServiceName = var.service_name
-    ClusterName = var.cluster_id
-  }
-
-  treat_missing_data = "notBreaching"
+  treat_missing_data = lookup(var.cloudwatch_alarms.desired_state.treat_missing_data, "notBreaching")
 }

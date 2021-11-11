@@ -40,16 +40,34 @@ variable "assign_public_ip" {
   type        = bool
 }
 
-variable "create_cloudwatch_alerts" {
-  default     = false
-  description = "This services will be created with cloudwatch alerts."
-  type        = bool
-}
-
 variable "cloudwatch_sns_notification_arn" {
   default     = null
   description = "SNS ARN for cloudwatch alert notifications."
   type        = string
+}
+
+variable "cloudwatch_alarms" {
+  type    = object({
+    desired_state: object({
+      create: bool
+      evaluation_periods: string
+      alarm_name: string
+      alarm_description: string
+      metric_period: number
+      treat_missing_data: string
+    })
+  })
+  description = "Configures common AWS/ECS cloudwatch alerts."
+  default = {
+    desired_state = {
+      create = false
+      evaluation_periods = "4"
+      alarm_name = "desired-state-not-reached"
+      alarm_description = "Desired Task count was not reached."
+      metric_period = 60
+      treat_missing_data = "notBreaching"
+    }
+  }
 }
 
 variable "appautoscaling_settings" {
