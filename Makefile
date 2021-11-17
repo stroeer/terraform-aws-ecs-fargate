@@ -17,7 +17,7 @@ NEXT_VERSION		:= $(shell echo $$(($(MAJOR)+1)).0.0)
 else ifeq ($(BUMP), minor)
 NEXT_VERSION		:= $(shell echo $(MAJOR).$$(($(MINOR)+1)).0)
 else
-NEXT_VERSION		:= $(shell echo $(MAJOR).$(MINOR).$$(($(PATCH)+0)))
+NEXT_VERSION		:= $(shell echo $(MAJOR).$(MINOR).$$(($(PATCH)+1)))
 endif
 NEXT_TAG 			:= v$(NEXT_VERSION)
 
