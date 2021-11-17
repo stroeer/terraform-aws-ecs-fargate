@@ -48,7 +48,7 @@ data "aws_iam_policy_document" "code_pipepline_permissions" {
   }
 
   statement {
-    actions = ["s3:GetObject", "s3:ListBucket", "s3:PutObject"]
+    actions = ["s3:GetObject", "s3:ListBucket", "s3:PutObject", "s3:PutObjectAcl"]
 
     resources = [
       local.artifact_bucket_arn,
