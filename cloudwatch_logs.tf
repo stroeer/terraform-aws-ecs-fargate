@@ -1,10 +1,7 @@
 resource "aws_cloudwatch_log_group" "containers" {
   name              = "/aws/ecs/${var.service_name}"
   retention_in_days = 7
-
-  tags = merge(var.tags, {
-    tf_module = basename(path.module)
-  })
+  tags              = var.tags
 }
 
 data "aws_iam_policy_document" "cloudwatch_logs_policy" {

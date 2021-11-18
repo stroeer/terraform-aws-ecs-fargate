@@ -3,7 +3,7 @@ resource "aws_iam_role" "ecs_task_role" {
   description        = "ECS Task Role for service ${var.service_name}"
   name               = "${var.service_name}-${data.aws_region.current.name}"
   path               = "/ecs/task-role/"
-  tags               = local.default_tags
+  tags               = var.tags
 }
 
 resource "aws_iam_role_policy" "ecs_task_role_policy" {

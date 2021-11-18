@@ -29,7 +29,7 @@ resource "aws_ecs_service" "this" {
   name                               = var.service_name
   platform_version                   = var.platform_version
   propagate_tags                     = "SERVICE"
-  tags                               = local.tags
+  tags                               = var.tags
   task_definition                    = "${aws_ecs_task_definition.this.family}:${max(aws_ecs_task_definition.this.revision, data.aws_ecs_task_definition.this.revision)}"
 
   dynamic "load_balancer" {
@@ -69,7 +69,7 @@ resource "aws_ecs_task_definition" "this" {
   memory                   = var.memory
   network_mode             = "awsvpc"
   requires_compatibilities = var.requires_compatibilities
-  tags                     = local.tags
+  tags                     = var.tags
   task_role_arn            = aws_iam_role.ecs_task_role.arn
 
   dynamic "proxy_configuration" {
@@ -105,7 +105,7 @@ module "ecr" {
   image_scanning_configuration = var.ecr.image_scanning_configuration
   image_tag_mutability         = var.ecr.image_tag_mutability
   name                         = var.service_name
-  tags                         = local.tags
+  tags                         = var.tags
 }
 
 module "code_deploy" {
@@ -122,7 +122,7 @@ module "code_deploy" {
   code_build_role                       = var.code_build_role_name
   code_pipeline_role                    = var.code_pipeline_role_name
   artifact_bucket                       = var.code_pipeline_artifact_bucket
-  tags                                  = local.tags
+  tags                                  = var.tags
 }
 
 ##############
