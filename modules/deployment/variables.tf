@@ -23,10 +23,6 @@ variable "container_name" {
   description = "The service's main container to create the pipeline resources."
 }
 
-variable "tags" {
-  type = map(string)
-}
-
 # ---------------------------------------------------------------------------------------------------------------------
 # OPTIONAL PARAMETERS
 # These parameters have reasonable defaults.
@@ -73,4 +69,11 @@ variable "codestar_notifications_target_arn" {
   description = "Use an existing ARN for a notification rule target (for example, a SNS Topic ARN). Otherwise a separate sns topic for this service will be created."
   type        = string
 }
+
+variable "tags" {
+  default     = {}
+  description = "Additional tags (_e.g._ { map-migrated : d-example-443255fsf })"
+  type        = map(string)
+}
+
 
