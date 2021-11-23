@@ -62,13 +62,13 @@ release: check-git-branch bump documentation
 	git push
 	# create GH release if GITHUB_TOKEN is set
 	if [ ! -z "${GITHUB_TOKEN}" ] ; then 												\
-    		curl 																		\
-    			-H "Authorization: token ${GITHUB_TOKEN}" 								\
-    			-X POST 																\
-    			-H "Accept: application/vnd.github.v3+json"								\
-    			https://api.github.com/repos/stroeer/terraform-aws-ecs-fargate/releases \
-    			-d "{\"tag_name\":\"$(NEXT_TAG)\"}"; 									\
-      	fi;
+    	curl 																		\
+    		-H "Authorization: token ${GITHUB_TOKEN}" 								\
+    		-X POST 																\
+    		-H "Accept: application/vnd.github.v3+json"								\
+    		https://api.github.com/repos/stroeer/terraform-aws-ecs-fargate/releases \
+    		-d "{\"tag_name\":\"$(NEXT_TAG)\",\"generate_release_notes\":true}"; 									\
+	fi;
 
 help: ## Display this help screen
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'	
