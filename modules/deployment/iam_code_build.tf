@@ -47,7 +47,7 @@ data "aws_iam_policy_document" "codebuild" {
     ]
   }
   statement {
-    actions = ["s3:Get*", "s3:PutObject"]
+    actions = ["s3:Get*", "s3:PutObject", "s3:PutObjectAcl"]
 
     resources = ["${local.artifact_bucket_arn}/*"]
   }
