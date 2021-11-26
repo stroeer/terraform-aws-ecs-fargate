@@ -43,12 +43,16 @@ data "aws_iam_policy_document" "code_pipepline_permissions" {
   statement {
     actions = ["ecr:DescribeImages"]
 
-    resources = [
-    "arn:aws:ecr:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:repository/${var.ecr_repository_name}"]
+    resources = ["arn:aws:ecr:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:repository/${var.ecr_repository_name}"]
   }
 
   statement {
-    actions = ["s3:GetObject", "s3:ListBucket", "s3:PutObject", "s3:PutObjectAcl"]
+    actions = [
+      "s3:GetObject",
+      "s3:ListBucket",
+      "s3:PutObject",
+      "s3:PutObjectAcl"
+    ]
 
     resources = [
       local.artifact_bucket_arn,
