@@ -33,7 +33,8 @@ resource "aws_codestarnotifications_notification_rule" "notification" {
 resource "aws_sns_topic" "notifications" {
   count = var.enabled && var.codestar_notifications_target_arn == "" ? 1 : 0
 
-  name = "${var.service_name}-notifications"
+  name              = "${var.service_name}-notifications"
+  kms_master_key_id = var.codestar_notification_kms_master_key_id
   tags = merge(var.tags, {
     tf_module = basename(path.module)
   })

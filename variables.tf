@@ -76,6 +76,12 @@ variable "code_pipeline_artifact_bucket" {
   type        = string
 }
 
+variable "code_pipeline_artifact_bucket_sse" {
+  default     = {}
+  description = "AWS KMS master key id for server-side encryption."
+  type        = any
+}
+
 variable "code_pipeline_role_name" {
   default     = ""
   description = "Use an existing role for codepipeline permissions that can be reused for multiple services. Otherwise a separate role for this service will be created."
@@ -107,6 +113,13 @@ variable "codestar_notifications_target_arn" {
   description = "Use an existing ARN for a notification rule target (for example, a SNS Topic ARN). Otherwise a separate sns topic for this service will be created."
   type        = string
 }
+
+variable "codestar_notifications_kms_master_key_id" {
+  default     = null
+  description = "AWS KMS master key id for server-side encryption."
+  type        = string
+}
+
 
 variable "create_deployment_pipeline" {
   default     = true
@@ -204,5 +217,3 @@ variable "target_groups" {
   type        = any
   default     = []
 }
-
-
