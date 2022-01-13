@@ -40,6 +40,12 @@ variable "artifact_bucket" {
   type        = string
 }
 
+variable "artifact_bucket_server_side_encryption" {
+  default     = {}
+  description = "AWS KMS master key id for server-side encryption."
+  type        = any
+}
+
 variable "code_pipeline_role" {
   default     = ""
   description = "Use an existing role for codepipeline permissions that can be reused for multiple services."
@@ -70,10 +76,14 @@ variable "codestar_notifications_target_arn" {
   type        = string
 }
 
+variable "codestar_notification_kms_master_key_id" {
+  default     = null
+  description = "AWS KMS master key id for server-side encryption."
+  type        = string
+}
+
 variable "tags" {
   default     = {}
   description = "Additional tags (_e.g._ { map-migrated : d-example-443255fsf })"
   type        = map(string)
 }
-
-

@@ -6,6 +6,15 @@ module "s3_bucket" {
   bucket        = "codepipeline-bucket-${var.service_name}-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}"
   force_destroy = true
 
+  # S3 bucket-level Public Access Block configuration
+  block_public_acls                     = true
+  block_public_policy                   = true
+  ignore_public_acls                    = true
+  restrict_public_buckets               = true
+  attach_deny_insecure_transport_policy = true
+
+  server_side_encryption_configuration = var.artifact_bucket_server_side_encryption
+
   tags = merge(var.tags, {
     tf_module = basename(path.module)
   })
