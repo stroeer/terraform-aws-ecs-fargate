@@ -1,3 +1,24 @@
+locals {
+  ingress_targets = [
+    for target in var.target_groups : {
+      from_port                = lookup(target, "backend_port")
+      to_port                  = lookup(target, "backend_port")
+      protocol                 = "tcp"
+      source_security_group_id = tolist(data.aws_lb.public[lookup(target, "load_balancer_arn")].security_groups)[0]
+    }
+  ]
+}
+
+data "aws_security_group" "fargate_app" {
+  name   = "fargate-allow-internal-traffic"
+  vpc_id = var.vpc_id
+}
+
+data "aws_security_group" "all_outbound_tcp" {
+  name   = "allow-outbound-tcp"
+  vpc_id = var.vpc_id
+}
+
 data "aws_subnet_ids" "selected" {
   vpc_id = var.vpc_id
 
@@ -6,16 +27,33 @@ data "aws_subnet_ids" "selected" {
   }
 }
 
-## the VPC's default SG must be attached to allow traffic from/to AWS endpoints like ECR
-data "aws_security_group" "default" {
-  name   = "default"
-  vpc_id = var.vpc_id
+data "aws_lb" "public" {
+  for_each = toset([for target in var.target_groups : lookup(target, "load_balancer_arn", "")])
+  arn      = each.value
 }
 
-# The SG that allows ingress traffic from ALB
-data "aws_security_group" "fargate" {
-  name   = "fargate-allow-alb-traffic"
-  vpc_id = var.vpc_id
+module "sg" {
+  count   = length(local.ingress_targets) == 0 ? 0 : 1
+  source  = "terraform-aws-modules/security-group/aws"
+  version = "~> 3.0"
+
+  name            = "${var.service_name}-inbound-from-target-groups"
+  description     = "Allow TCP from target groups to port"
+  use_name_prefix = false
+  vpc_id          = var.vpc_id
+
+  ingress_with_source_security_group_id = local.ingress_targets
+}
+
+resource "aws_security_group_rule" "trusted_egress_attachment" {
+  for_each                 = { for route in local.ingress_targets : route["source_security_group_id"] => route }
+  type                     = "egress"
+  from_port                = each.value["from_port"]
+  to_port                  = each.value["to_port"]
+  protocol                 = "tcp"
+  description              = "Attached from ${module.sg[0].this_security_group_name}"
+  source_security_group_id = module.sg[0].this_security_group_id
+  security_group_id        = each.key
 }
 
 resource "aws_ecs_service" "this" {
@@ -42,8 +80,10 @@ resource "aws_ecs_service" "this" {
   }
 
   network_configuration {
-    subnets          = data.aws_subnet_ids.selected.ids
-    security_groups  = [data.aws_security_group.default.id, data.aws_security_group.fargate.id]
+    subnets = data.aws_subnet_ids.selected.ids
+    security_groups = concat(concat(var.security_groups, [for sg in module.sg : sg.this_security_group_id]), [
+      data.aws_security_group.fargate_app.id, data.aws_security_group.all_outbound_tcp.id
+    ])
     assign_public_ip = var.assign_public_ip
   }
 

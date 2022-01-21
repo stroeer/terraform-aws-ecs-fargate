@@ -217,3 +217,9 @@ variable "target_groups" {
   type        = any
   default     = []
 }
+
+variable "security_groups" {
+  description = "A list of security group ids that will be attached to the ecs deployment."
+  type        = list(string)
+  default     = []
+}
