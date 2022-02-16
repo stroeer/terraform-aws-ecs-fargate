@@ -127,6 +127,18 @@ variable "create_deployment_pipeline" {
   type        = bool
 }
 
+variable "deployment_maximum_percent" {
+  description = "Upper limit (as a percentage of the service's desiredCount) of the number of running tasks that can be running in a service during a deployment. Not valid when using the `DAEMON` scheduling strategy."
+  default     = 200
+  type        = number
+}
+
+variable "deployment_minimum_healthy_percent" {
+  description = "Lower limit (as a percentage of the service's desiredCount) of the number of running tasks that must remain running and healthy in a service during a deployment."
+  default     = 100
+  type        = number
+}
+
 variable "desired_count" {
   default     = 0
   description = "Desired count of services to be started/running."
