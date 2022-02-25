@@ -39,6 +39,7 @@ resource "aws_iam_role_policy_attachment" "codebuild" {
 
 data "aws_iam_policy_document" "codebuild" {
   count = local.create_code_build_iam ? 1 : 0
+
   statement {
     actions = [
       "logs:CreateLogStream",
@@ -48,12 +49,14 @@ data "aws_iam_policy_document" "codebuild" {
 
     resources = ["arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:/aws/codebuild/*"]
   }
+
   statement {
     actions = [
-      "s3:Get*",
+      "s3:GetObject",
+      "s3:GetObjectVersion",
       "s3:PutObject"
     ]
 
-    resources = ["${local.artifact_bucket_arn}/*"]
+    resources = ["${local.artifact_bucket_arn}/*"] #tfsec:ignore:aws-iam-no-policy-wildcards
   }
 }
