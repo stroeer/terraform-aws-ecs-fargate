@@ -21,7 +21,7 @@ NEXT_VERSION		:= $(shell echo $(MAJOR).$(MINOR).$$(($(PATCH)+1)))
 endif
 NEXT_TAG 			:= v$(NEXT_VERSION)
 
-all: fmt validate
+all: fmt validate tfsec
 
 init: ## Initialize a Terraform working directory
 	@echo "+ $@"
@@ -36,6 +36,11 @@ fmt: ## Checks config files against canonical format
 validate: init ## Validates the Terraform files
 	@echo "+ $@"
 	@AWS_REGION=eu-west-1 terraform validate
+
+.PHONY: tfsec
+tfsec: ## Runs tfsec on all Terraform files
+	@echo "+ $@"
+	@tfsec . --exclude-downloaded-modules --concise-output || exit 2
 
 documentation: ## Generates README.md from static snippets and Terraform variables
 	terraform-docs markdown table . > docs/part2.md
