@@ -17,3 +17,8 @@ output "ecs_task_exec_role_name" {
   description = "ECS task role used by this service."
   value       = aws_iam_role.ecs_task_role.name
 }
+
+output "autoscaling_target" {
+  description = "ECS auto scaling targets if auto scaling enabled."
+  value       = try(aws_appautoscaling_target.ecs[0], null)
+}
