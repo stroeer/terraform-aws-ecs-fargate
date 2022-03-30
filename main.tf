@@ -58,8 +58,8 @@ resource "aws_security_group_rule" "trusted_egress_attachment" {
 
 resource "aws_ecs_service" "this" {
   cluster                            = var.cluster_id
-  deployment_maximum_percent         = 200
-  deployment_minimum_healthy_percent = 100
+  deployment_maximum_percent         = var.deployment_maximum_percent
+  deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent
   desired_count                      = var.desired_count
   force_new_deployment               = var.force_new_deployment
   health_check_grace_period_seconds  = 0

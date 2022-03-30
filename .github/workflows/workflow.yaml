@@ -19,8 +19,13 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v2
 
-      - uses: hashicorp/setup-terraform@v1.3.2
+      - uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: ${{ matrix.terraform }}
 
-      - run: make
+      - run: make fmt validate
+
+      - name: Terraform security scan
+        uses: aquasecurity/tfsec-pr-commenter-action@v1.0.5
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}

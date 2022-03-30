@@ -61,8 +61,10 @@ data "aws_iam_policy_document" "code_pipepline_permissions" {
   }
 
   statement {
-    # start downstream builds and retrieve output artefacts
-    actions = ["codebuild:StartBuild", "codebuild:BatchGetBuilds"]
+    actions = [
+      "codebuild:BatchGetBuilds",
+      "codebuild:StartBuild"
+    ]
 
     resources = [aws_codebuild_project.this[count.index].arn]
   }
