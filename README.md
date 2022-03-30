@@ -1,6 +1,6 @@
 # AWS Fargate ECS Terraform Module
 
-[![Terraform Registry](https://img.shields.io/badge/Terraform%20Registry-0.19.0-blue.svg)](https://registry.terraform.io/modules/stroeer/ecs-fargate/aws/0.19.0) ![CI](https://github.com/stroeer/terraform-aws-buzzgate/workflows/CI/badge.svg?branch=master) ![Terraform Version](https://img.shields.io/badge/Terraform-0.12+-green.svg) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Terraform Registry](https://img.shields.io/badge/Terraform%20Registry-0.19.1-blue.svg)](https://registry.terraform.io/modules/stroeer/ecs-fargate/aws/0.19.1) ![CI](https://github.com/stroeer/terraform-aws-buzzgate/workflows/CI/badge.svg?branch=master) ![Terraform Version](https://img.shields.io/badge/Terraform-0.12+-green.svg) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
 
 A somewhat opinionated Terraform module to create Fargate ECS resources on AWS.
 
@@ -134,7 +134,7 @@ data "aws_region" "current" {}
 
 module "service" {
   source  = "stroeer/ecs-fargate/aws"
-  version = "0.19.0"
+  version = "0.19.1"
 
   assign_public_ip           = true
   cluster_id                 = aws_ecs_cluster.main.id
@@ -280,7 +280,7 @@ for example.
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 3.65.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 3.71.0 |
 | <a name="provider_terraform"></a> [terraform](#provider\_terraform) | n/a |
 
 ## Modules
@@ -364,6 +364,7 @@ for example.
 
 | Name | Description |
 |------|-------------|
+| <a name="output_autoscaling_target"></a> [autoscaling\_target](#output\_autoscaling\_target) | ECS auto scaling targets if auto scaling enabled. |
 | <a name="output_cloudwatch_log_group"></a> [cloudwatch\_log\_group](#output\_cloudwatch\_log\_group) | Name of the CloudWatch log group for container logs. |
 | <a name="output_ecr_repository_arn"></a> [ecr\_repository\_arn](#output\_ecr\_repository\_arn) | Full ARN of the ECR repository. |
 | <a name="output_ecr_repository_url"></a> [ecr\_repository\_url](#output\_ecr\_repository\_url) | URL of the ECR repository. |
