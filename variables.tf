@@ -154,7 +154,7 @@ variable "ecr" {
     image_tag_mutability = string,
   })
 
-  # if you change any of the defaults, the whole configuration object needs to be provided. 
+  # if you change any of the defaults, the whole configuration object needs to be provided.
   # https://github.com/hashicorp/terraform/issues/19898 will probably change this
   default = {
     image_scanning_configuration = {

@@ -21,7 +21,7 @@ NEXT_VERSION		:= $(shell echo $(MAJOR).$(MINOR).$$(($(PATCH)+1)))
 endif
 NEXT_TAG 			:= v$(NEXT_VERSION)
 
-all: fmt validate tfsec
+all: fmt validate tfsec tflint
 
 init: ## Initialize a Terraform working directory
 	@echo "+ $@"
@@ -37,10 +37,15 @@ validate: init ## Validates the Terraform files
 	@echo "+ $@"
 	@AWS_REGION=eu-west-1 terraform validate
 
+.PHONY: tflint
+tflint: ## Runs tflint on all Terraform files
+	@echo "+ $@"
+	@tflint -f compact || exit 1
+
 .PHONY: tfsec
 tfsec: ## Runs tfsec on all Terraform files
 	@echo "+ $@"
-	@tfsec . --exclude-downloaded-modules --concise-output || exit 2
+	@tfsec --exclude-downloaded-modules --config-file=.tfsec.json || exit 1
 
 documentation: ## Generates README.md from static snippets and Terraform variables
 	terraform-docs markdown table . > docs/part2.md
@@ -76,4 +81,4 @@ release: check-git-branch bump documentation
 	fi;
 
 help: ## Display this help screen
-	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'	
+	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

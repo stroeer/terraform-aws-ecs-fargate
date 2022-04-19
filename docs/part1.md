@@ -83,7 +83,7 @@ In order to disable ALB target group attachments (e.g. for services in an App Me
 ```terraform
 module "service" {
   source = "..."
-  
+
   appautoscaling_settings = {
     predefined_metric_type = "ECSServiceAverageCPUUtilization"
     target_value           = 30
@@ -267,5 +267,4 @@ for example.
 * [x] Cognito auth for ALB listeners
 * [x] CodeDeploy with ECR trigger
 * [ ] ECR policies
-* [x] Notification for the deployment pipeline [success/failure] 
-
+* [x] Notification for the deployment pipeline [success/failure]
