@@ -83,7 +83,7 @@ In order to disable ALB target group attachments (e.g. for services in an App Me
 ```terraform
 module "service" {
   source = "..."
-  
+
   appautoscaling_settings = {
     predefined_metric_type = "ECSServiceAverageCPUUtilization"
     target_value           = 30
@@ -267,20 +267,19 @@ for example.
 * [x] Cognito auth for ALB listeners
 * [x] CodeDeploy with ECR trigger
 * [ ] ECR policies
-* [x] Notification for the deployment pipeline [success/failure] 
-
+* [x] Notification for the deployment pipeline [success/failure]
 ## Requirements
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.12.17 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 3.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.13.1 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 3.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 3.71.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 3.0 |
 | <a name="provider_terraform"></a> [terraform](#provider\_terraform) | n/a |
 
 ## Modules

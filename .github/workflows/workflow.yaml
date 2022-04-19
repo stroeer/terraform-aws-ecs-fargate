@@ -17,15 +17,21 @@ jobs:
         terraform: [ ~0.13.0, ~0.14.0 , ~0.15.0, ~1.0.0 ]
     steps:
       - name: Check out code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - uses: hashicorp/setup-terraform@v1
+      - uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: ${{ matrix.terraform }}
 
-      - run: make fmt validate
+      - uses: terraform-linters/setup-tflint@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - run: |
+          tflint --init
+          make fmt validate tflint
 
       - name: Terraform security scan
-        uses: aquasecurity/tfsec-pr-commenter-action@v1.0.5
+        uses: aquasecurity/tfsec-pr-commenter-action@v1.2.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
