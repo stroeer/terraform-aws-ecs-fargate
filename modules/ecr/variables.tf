@@ -30,6 +30,18 @@ variable "image_tag_mutability" {
   type        = string
 }
 
+variable "custom_lifecycle_policy" {
+  default     = null
+  description = "json policy for aws_ecr_lifecycle_policy"
+  type        = string
+}
+
+variable "enable_default_lifecycle_policy" {
+  default     = false
+  description = "Expires all images excepct for the last 30."
+  type        = bool
+}
+
 variable "tags" {
   default     = {}
   description = "A mapping of tags to assign to the repository."

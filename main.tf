@@ -146,6 +146,9 @@ module "ecr" {
   image_tag_mutability         = var.ecr.image_tag_mutability
   name                         = var.service_name
   tags                         = var.tags
+
+  enable_default_lifecycle_policy = var.ecr_enable_default_lifecycle_policy
+  custom_lifecycle_policy         = var.ecr_custom_lifecycle_policy
 }
 
 module "code_deploy" {
