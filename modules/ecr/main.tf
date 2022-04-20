@@ -9,14 +9,14 @@ resource "aws_ecr_repository" "this" {
 }
 
 resource "aws_ecr_lifecycle_policy" "custom_lifecycle_policy" {
-  count      = var.custom_lifecycle_policy == null ? 0 : 1
+  count      = var.custom_lifecycle_policy != null ? 1 : 0
   repository = var.name
 
   policy = var.custom_lifecycle_policy
 }
 
 resource "aws_ecr_lifecycle_policy" "default_lifecycle_policy" {
-  count      = var.enable_default_lifecycle_policy ? 0 : 1
+  count      = var.enable_default_lifecycle_policy ? 1 : 0
   repository = var.name
 
   policy = jsonencode({

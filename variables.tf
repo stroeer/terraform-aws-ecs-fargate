@@ -171,7 +171,7 @@ variable "ecr" {
 }
 
 variable "ecr_enable_default_lifecycle_policy" {
-  default     = false
+  default     = null
   description = "Default JSON policy for the ecr registry used in aws_ecr_lifecycle_policy. Expires all images except for the last 30."
   type        = bool
 }
