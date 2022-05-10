@@ -127,12 +127,6 @@ variable "create_deployment_pipeline" {
   type        = bool
 }
 
-variable "ecr_custom_lifecycle_policy" {
-  default     = null
-  description = "JSON policy for the ecr registry used in aws_ecr_lifecycle_policy."
-  type        = string
-}
-
 variable "deployment_maximum_percent" {
   description = "Upper limit (as a percentage of the service's desiredCount) of the number of running tasks that can be running in a service during a deployment. Not valid when using the `DAEMON` scheduling strategy."
   default     = 200
@@ -170,11 +164,18 @@ variable "ecr" {
   }
 }
 
-variable "ecr_enable_default_lifecycle_policy" {
+variable "ecr_custom_lifecycle_policy" {
   default     = null
-  description = "Default JSON policy for the ecr registry used in aws_ecr_lifecycle_policy. Expires all images except for the last 30."
+  description = "JSON formatted ECR lifecycle policy used for this repository (disabled the default lifecycle policy), see https://docs.aws.amazon.com/AmazonECR/latest/userguide/LifecyclePolicies.html#lifecycle_policy_parameters for details."
+  type        = string
+}
+
+variable "ecr_enable_default_lifecycle_policy" {
+  default     = true
+  description = "Enables an ECR lifecycle policy for this repository which expires all images except for the last 30."
   type        = bool
 }
+
 
 variable "force_new_deployment" {
   default     = false

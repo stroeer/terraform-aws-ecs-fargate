@@ -142,13 +142,13 @@ locals {
 module "ecr" {
   source = "./modules/ecr"
 
-  image_scanning_configuration = var.ecr.image_scanning_configuration
-  image_tag_mutability         = var.ecr.image_tag_mutability
-  name                         = var.service_name
-  tags                         = var.tags
-
-  enable_default_lifecycle_policy = var.ecr_enable_default_lifecycle_policy
   custom_lifecycle_policy         = var.ecr_custom_lifecycle_policy
+  enable_default_lifecycle_policy = var.ecr_enable_default_lifecycle_policy
+  image_scanning_configuration    = var.ecr.image_scanning_configuration
+  image_tag_mutability            = var.ecr.image_tag_mutability
+  name                            = var.service_name
+  tags                            = var.tags
+
 }
 
 module "code_deploy" {
