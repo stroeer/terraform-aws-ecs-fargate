@@ -38,7 +38,7 @@ validate: init ## Validates the Terraform files
 	@AWS_REGION=eu-west-1 terraform validate
 
 .PHONY: tflint
-tflint: ## Runs tflint on all Terraform files
+tflint: init ## Runs tflint on all Terraform files
 	@echo "+ $@"
 	@tflint -f compact || exit 1
 

@@ -14,20 +14,20 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        terraform: [ ~0.13.0, ~0.14.0 , ~0.15.0, ~1.0.0, ~1.1.0 ]
+        terraform: [ ~1.0.0 ]
     steps:
-      - name: Check out code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: ${{ matrix.terraform }}
 
-      - uses: terraform-linters/setup-tflint@v1
+      - uses: terraform-linters/setup-tflint@v2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - run: |
+      - name: check
+        run: |
           tflint --init
           make fmt validate tflint
 
