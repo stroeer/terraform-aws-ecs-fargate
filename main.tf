@@ -1,12 +1,27 @@
 locals {
-  ingress_targets = [
-    for target in var.target_groups : {
-      from_port                = lookup(target, "backend_port")
-      to_port                  = lookup(target, "backend_port")
-      protocol                 = "tcp"
-      source_security_group_id = tolist(data.aws_lb.public[lookup(target, "load_balancer_arn")].security_groups)[0]
-    }
-  ]
+  ingress_targets = flatten([
+    for target in var.target_groups : [
+      {
+        # allow backend_port traffic
+        from_port                = lookup(target, "backend_port")
+        to_port                  = lookup(target, "backend_port")
+        protocol                 = "tcp"
+        source_security_group_id = tolist(data.aws_lb.public[lookup(target, "load_balancer_arn")].security_groups)[0]
+        prefix                   = "backend_port"
+      },
+      lookup(target, "health_check", null) != null
+      && lookup(target["health_check"], "port", "traffic-port") != lookup(target, "backend_port", )
+      && lookup(target["health_check"], "port", "traffic-port") != "traffic-port"
+      ? {
+        # if health_check_port set and different from backend_port, also allow traffic
+        from_port                = target["health_check"]["port"]
+        to_port                  = target["health_check"]["port"]
+        protocol                 = "tcp"
+        source_security_group_id = tolist(data.aws_lb.public[lookup(target, "load_balancer_arn")].security_groups)[0]
+        prefix                   = "health_check_port"
+      } : {}
+    ]
+  ])
 }
 
 data "aws_security_group" "fargate_app" {
@@ -34,7 +49,7 @@ data "aws_lb" "public" {
 
 module "sg" {
   count   = length(local.ingress_targets) == 0 ? 0 : 1
-  source  = "terraform-aws-modules/security-group/aws"
+  source  = "registry.terraform.io/terraform-aws-modules/security-group/aws"
   version = "~> 3.0"
 
   name            = "${var.service_name}-inbound-from-target-groups"
@@ -46,14 +61,14 @@ module "sg" {
 }
 
 resource "aws_security_group_rule" "trusted_egress_attachment" {
-  for_each                 = { for route in local.ingress_targets : route["source_security_group_id"] => route }
+  for_each                 = { for route in local.ingress_targets : "${route["prefix"]}-${route["source_security_group_id"]}" => route }
   type                     = "egress"
   from_port                = each.value["from_port"]
   to_port                  = each.value["to_port"]
   protocol                 = "tcp"
-  description              = "Attached from ${module.sg[0].this_security_group_name}"
+  description              = "Attached from ${module.sg[0].this_security_group_name} (${each.value["prefix"]})"
   source_security_group_id = module.sg[0].this_security_group_id
-  security_group_id        = each.key
+  security_group_id        = each.value["source_security_group_id"]
 }
 
 resource "aws_ecs_service" "this" {
