@@ -9,7 +9,7 @@
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 4.13.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 3.61.0 |
 | <a name="provider_terraform"></a> [terraform](#provider\_terraform) | n/a |
 
 ## Modules
@@ -18,7 +18,7 @@
 |------|--------|---------|
 | <a name="module_code_deploy"></a> [code\_deploy](#module\_code\_deploy) | ./modules/deployment | n/a |
 | <a name="module_ecr"></a> [ecr](#module\_ecr) | ./modules/ecr | n/a |
-| <a name="module_sg"></a> [sg](#module\_sg) | terraform-aws-modules/security-group/aws | ~> 3.0 |
+| <a name="module_sg"></a> [sg](#module\_sg) | registry.terraform.io/terraform-aws-modules/security-group/aws | ~> 3.0 |
 
 ## Resources
 

@@ -1,6 +1,6 @@
 # AWS Fargate ECS Terraform Module
 
-[![Terraform Registry](https://img.shields.io/badge/Terraform%20Registry-0.20.3-blue.svg)](https://registry.terraform.io/modules/stroeer/ecs-fargate/aws/0.20.3) ![CI](https://github.com/stroeer/terraform-aws-buzzgate/workflows/CI/badge.svg?branch=master) ![Terraform Version](https://img.shields.io/badge/Terraform-0.12+-green.svg) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Terraform Registry](https://img.shields.io/badge/Terraform%20Registry-0.20.4-blue.svg)](https://registry.terraform.io/modules/stroeer/ecs-fargate/aws/0.20.4) ![CI](https://github.com/stroeer/terraform-aws-buzzgate/workflows/CI/badge.svg?branch=master) ![Terraform Version](https://img.shields.io/badge/Terraform-0.12+-green.svg) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
 
 A somewhat opinionated Terraform module to create Fargate ECS resources on AWS.
 
@@ -134,7 +134,7 @@ data "aws_region" "current" {}
 
 module "service" {
   source  = "stroeer/ecs-fargate/aws"
-  version = "0.20.3"
+  version = "0.20.4"
 
   assign_public_ip           = true
   cluster_id                 = aws_ecs_cluster.main.id
@@ -279,7 +279,7 @@ for example.
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 4.13.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 3.61.0 |
 | <a name="provider_terraform"></a> [terraform](#provider\_terraform) | n/a |
 
 ## Modules
@@ -288,7 +288,7 @@ for example.
 |------|--------|---------|
 | <a name="module_code_deploy"></a> [code\_deploy](#module\_code\_deploy) | ./modules/deployment | n/a |
 | <a name="module_ecr"></a> [ecr](#module\_ecr) | ./modules/ecr | n/a |
-| <a name="module_sg"></a> [sg](#module\_sg) | terraform-aws-modules/security-group/aws | ~> 3.0 |
+| <a name="module_sg"></a> [sg](#module\_sg) | registry.terraform.io/terraform-aws-modules/security-group/aws | ~> 3.0 |
 
 ## Resources
 
