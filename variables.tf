@@ -120,10 +120,21 @@ variable "codestar_notifications_kms_master_key_id" {
   type        = string
 }
 
+variable "create_ecr_repo" {
+  default     = true
+  description = "Creates a deploy pipeline from ECR trigger."
+  type        = bool
+}
+
+variable "ecr_repository_name" {
+  default     = ""
+  description = "Existing repo to register to use with this service module, e.g. creating deployment pipelines."
+  type        = string
+}
 
 variable "create_deployment_pipeline" {
   default     = true
-  description = "Creates a deploy pipeline from ECR trigger."
+  description = "Creates a deploy pipeline from ECR trigger if `create_ecr_repo == true`."
   type        = bool
 }
 

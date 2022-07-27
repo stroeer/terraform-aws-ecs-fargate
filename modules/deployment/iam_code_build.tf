@@ -1,9 +1,5 @@
-locals {
-  create_code_build_iam = var.enabled && var.code_build_role == ""
-}
-
 resource "aws_iam_role" "code_build_role" {
-  count              = local.create_code_build_iam ? 1 : 0
+  count              = var.code_build_role == "" ? 1 : 0
   name               = "code-build-${var.service_name}"
   path               = local.iam_path
   assume_role_policy = data.aws_iam_policy_document.allow_code_build_assume[count.index].json
@@ -14,7 +10,7 @@ resource "aws_iam_role" "code_build_role" {
 }
 
 data "aws_iam_policy_document" "allow_code_build_assume" {
-  count = local.create_code_build_iam ? 1 : 0
+  count = var.code_build_role == "" ? 1 : 0
   statement {
     actions = ["sts:AssumeRole"]
     principals {
@@ -25,20 +21,20 @@ data "aws_iam_policy_document" "allow_code_build_assume" {
 }
 
 resource "aws_iam_policy" "codebuild" {
-  count  = local.create_code_build_iam ? 1 : 0
+  count  = var.code_build_role == "" ? 1 : 0
   name   = "codebuild-${var.service_name}"
   path   = local.iam_path
   policy = data.aws_iam_policy_document.codebuild[count.index].json
 }
 
 resource "aws_iam_role_policy_attachment" "codebuild" {
-  count      = local.create_code_build_iam ? 1 : 0
+  count      = var.code_build_role == "" ? 1 : 0
   role       = aws_iam_role.code_build_role[count.index].name
   policy_arn = aws_iam_policy.codebuild[count.index].arn
 }
 
 data "aws_iam_policy_document" "codebuild" {
-  count = local.create_code_build_iam ? 1 : 0
+  count = var.code_build_role == "" ? 1 : 0
 
   statement {
     actions = [
