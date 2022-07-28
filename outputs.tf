@@ -20,5 +20,5 @@ output "ecs_task_exec_role_name" {
 
 output "autoscaling_target" {
   description = "ECS auto scaling targets if auto scaling enabled."
-  value       = join("", aws_appautoscaling_target.ecs[*])
+  value       = try(aws_appautoscaling_target.ecs[0], null)
 }
