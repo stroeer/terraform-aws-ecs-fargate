@@ -170,16 +170,14 @@ variable "ecr_enable_default_lifecycle_policy" {
 }
 
 variable "ecr_image_scanning_configuration" {
-  type = object({
-    scan_on_push = bool
-  })
+  type = map(any)
   default = {
     scan_on_push = true
   }
 }
 
 variable "ecr_image_tag_mutability" {
-  type = string
+  type    = string
   default = "MUTABLE"
 }
 
