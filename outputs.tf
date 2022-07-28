@@ -5,12 +5,12 @@ output "cloudwatch_log_group" {
 
 output "ecr_repository_arn" {
   description = "Full ARN of the ECR repository."
-  value       = module.ecr[*].arn
+  value       = join("", module.ecr[*].arn)
 }
 
 output "ecr_repository_url" {
   description = "URL of the ECR repository."
-  value       = module.ecr[*].repository_url
+  value       = join("", module.ecr[*].repository_url)
 }
 
 output "ecs_task_exec_role_name" {
@@ -20,5 +20,5 @@ output "ecs_task_exec_role_name" {
 
 output "autoscaling_target" {
   description = "ECS auto scaling targets if auto scaling enabled."
-  value       = try(aws_appautoscaling_target.ecs[0], null)
+  value       = join("", aws_appautoscaling_target.ecs[*])
 }

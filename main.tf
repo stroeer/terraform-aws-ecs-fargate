@@ -159,19 +159,19 @@ locals {
 
 module "ecr" {
   source = "./modules/ecr"
-  count  = var.create_ecr_repo ? 1 : 0
+  count  = var.create_ecr_repository ? 1 : 0
 
   custom_lifecycle_policy         = var.ecr_custom_lifecycle_policy
   enable_default_lifecycle_policy = var.ecr_enable_default_lifecycle_policy
-  image_scanning_configuration    = var.ecr.image_scanning_configuration
-  image_tag_mutability            = var.ecr.image_tag_mutability
+  image_scanning_configuration    = var.ecr_image_scanning_configuration
+  image_tag_mutability            = var.ecr_image_tag_mutability
   name                            = var.service_name
   tags                            = var.tags
 }
 
 module "code_deploy" {
   source = "./modules/deployment"
-  count  = var.create_deployment_pipeline && (var.create_ecr_repo || var.ecr_repository_name != "") ? 1 : 0
+  count  = var.create_deployment_pipeline && (var.create_ecr_repository || var.ecr_repository_name != "") ? 1 : 0
 
   cluster_name                            = var.cluster_id
   container_name                          = local.container_name
@@ -179,7 +179,7 @@ module "code_deploy" {
   codestar_notifications_event_type_ids   = var.codestar_notifications_event_type_ids
   codestar_notifications_target_arn       = var.codestar_notifications_target_arn
   codestar_notification_kms_master_key_id = var.codestar_notifications_kms_master_key_id
-  ecr_repository_name                     = var.create_ecr_repo ? module.ecr[count.index].name : var.ecr_repository_name
+  ecr_repository_name                     = var.create_ecr_repository ? module.ecr[count.index].name : var.ecr_repository_name
   service_name                            = var.service_name
   code_build_role                         = var.code_build_role_name
   code_pipeline_role                      = var.code_pipeline_role_name
