@@ -103,7 +103,8 @@ variable "codestar_notifications_detail_type" {
 variable "codestar_notifications_event_type_ids" {
   default = [
     "codepipeline-pipeline-pipeline-execution-succeeded",
-  "codepipeline-pipeline-pipeline-execution-failed"]
+    "codepipeline-pipeline-pipeline-execution-failed"
+  ]
   description = "A list of event types associated with this notification rule. For list of allowed events see https://docs.aws.amazon.com/dtconsole/latest/userguide/concepts.html#concepts-api."
   type        = list(string)
 }
@@ -120,10 +121,21 @@ variable "codestar_notifications_kms_master_key_id" {
   type        = string
 }
 
+variable "create_ecr_repository" {
+  default     = true
+  description = "Create an ECR repository for this service."
+  type        = bool
+}
+
+variable "ecr_repository_name" {
+  default     = ""
+  description = "Existing repo to register to use with this service module, e.g. creating deployment pipelines."
+  type        = string
+}
 
 variable "create_deployment_pipeline" {
   default     = true
-  description = "Creates a deploy pipeline from ECR trigger."
+  description = "Creates a deploy pipeline from ECR trigger if `create_ecr_repo == true`."
   type        = bool
 }
 
@@ -145,25 +157,6 @@ variable "desired_count" {
   type        = number
 }
 
-variable "ecr" {
-  description = "ECR repository configuration."
-  type = object({
-    image_scanning_configuration = object({
-      scan_on_push = bool
-    })
-    image_tag_mutability = string,
-  })
-
-  # if you change any of the defaults, the whole configuration object needs to be provided.
-  # https://github.com/hashicorp/terraform/issues/19898 will probably change this
-  default = {
-    image_scanning_configuration = {
-      scan_on_push = true
-    }
-    image_tag_mutability = "MUTABLE",
-  }
-}
-
 variable "ecr_custom_lifecycle_policy" {
   default     = null
   description = "JSON formatted ECR lifecycle policy used for this repository (disabled the default lifecycle policy), see https://docs.aws.amazon.com/AmazonECR/latest/userguide/LifecyclePolicies.html#lifecycle_policy_parameters for details."
@@ -176,6 +169,19 @@ variable "ecr_enable_default_lifecycle_policy" {
   type        = bool
 }
 
+variable "ecr_image_scanning_configuration" {
+  type = object({
+    scan_on_push = bool
+  })
+  default = {
+    scan_on_push = true
+  }
+}
+
+variable "ecr_image_tag_mutability" {
+  type = string
+  default = "MUTABLE"
+}
 
 variable "force_new_deployment" {
   default     = false

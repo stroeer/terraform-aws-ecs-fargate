@@ -1,5 +1,5 @@
 locals {
-  create_code_pipeline_iam = var.enabled && var.code_pipeline_role == ""
+  create_code_pipeline_iam = var.code_pipeline_role == ""
 }
 
 resource "aws_iam_role" "code_pipeline_role" {
@@ -66,7 +66,7 @@ data "aws_iam_policy_document" "code_pipepline_permissions" {
       "codebuild:StartBuild"
     ]
 
-    resources = [aws_codebuild_project.this[count.index].arn]
+    resources = [aws_codebuild_project.this.arn]
   }
 
   statement {

@@ -34,8 +34,11 @@ data "aws_security_group" "all_outbound_tcp" {
   vpc_id = var.vpc_id
 }
 
-data "aws_subnet_ids" "selected" {
-  vpc_id = var.vpc_id
+data "aws_subnets" "selected" {
+  filter {
+    name   = "vpc-id"
+    values = [var.vpc_id]
+  }
 
   tags = {
     Tier = (var.assign_public_ip || var.requires_internet_access) ? "public" : "private"
@@ -95,7 +98,7 @@ resource "aws_ecs_service" "this" {
   }
 
   network_configuration {
-    subnets = data.aws_subnet_ids.selected.ids
+    subnets = data.aws_subnets.selected.ids
     security_groups = concat(concat(var.security_groups, [for sg in module.sg : sg.this_security_group_id]), [
       data.aws_security_group.fargate_app.id, data.aws_security_group.all_outbound_tcp.id
     ])
@@ -156,19 +159,19 @@ locals {
 
 module "ecr" {
   source = "./modules/ecr"
+  count  = var.create_ecr_repository ? 1 : 0
 
   custom_lifecycle_policy         = var.ecr_custom_lifecycle_policy
   enable_default_lifecycle_policy = var.ecr_enable_default_lifecycle_policy
-  image_scanning_configuration    = var.ecr.image_scanning_configuration
-  image_tag_mutability            = var.ecr.image_tag_mutability
+  image_scanning_configuration    = var.ecr_image_scanning_configuration
+  image_tag_mutability            = var.ecr_image_tag_mutability
   name                            = var.service_name
   tags                            = var.tags
-
 }
 
 module "code_deploy" {
-  source  = "./modules/deployment"
-  enabled = var.create_deployment_pipeline
+  source = "./modules/deployment"
+  count  = var.create_deployment_pipeline && (var.create_ecr_repository || var.ecr_repository_name != "") ? 1 : 0
 
   cluster_name                            = var.cluster_id
   container_name                          = local.container_name
@@ -176,7 +179,7 @@ module "code_deploy" {
   codestar_notifications_event_type_ids   = var.codestar_notifications_event_type_ids
   codestar_notifications_target_arn       = var.codestar_notifications_target_arn
   codestar_notification_kms_master_key_id = var.codestar_notifications_kms_master_key_id
-  ecr_repository_name                     = module.ecr.name
+  ecr_repository_name                     = var.create_ecr_repository ? module.ecr[count.index].name : var.ecr_repository_name
   service_name                            = var.service_name
   code_build_role                         = var.code_build_role_name
   code_pipeline_role                      = var.code_pipeline_role_name
