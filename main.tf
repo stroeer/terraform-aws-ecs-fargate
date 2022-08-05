@@ -1,26 +1,26 @@
 locals {
   ingress_targets = flatten([
-    for target in var.target_groups : [
-      {
+    for target in var.target_groups : flatten([
+      [{
         # allow backend_port traffic
         from_port                = lookup(target, "backend_port")
         to_port                  = lookup(target, "backend_port")
         protocol                 = "tcp"
         source_security_group_id = tolist(data.aws_lb.public[lookup(target, "load_balancer_arn")].security_groups)[0]
         prefix                   = "backend_port"
-      },
+      }],
       lookup(target, "health_check", null) != null
       && lookup(target["health_check"], "port", "traffic-port") != lookup(target, "backend_port", )
       && lookup(target["health_check"], "port", "traffic-port") != "traffic-port"
-      ? {
+      ? [{
         # if health_check_port set and different from backend_port, also allow traffic
         from_port                = target["health_check"]["port"]
         to_port                  = target["health_check"]["port"]
-        protocol                 = "tcp"
+        protocol                 = lookup(target["health_check"], "protocol", "tcp")
         source_security_group_id = tolist(data.aws_lb.public[lookup(target, "load_balancer_arn")].security_groups)[0]
         prefix                   = "health_check_port"
-      } : {}
-    ]
+      }] : []
+    ])
   ])
 }
 
