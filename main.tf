@@ -20,7 +20,7 @@ locals {
         source_security_group_id = tolist(data.aws_lb.public[lookup(target, "load_balancer_arn")].security_groups)[0]
         prefix                   = "health_check_port"
       }] : []
-    ])
+    ]) if lookup(target, "is_nlb", false) == false
   ])
 }
 

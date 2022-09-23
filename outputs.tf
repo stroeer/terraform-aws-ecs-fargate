@@ -22,3 +22,7 @@ output "autoscaling_target" {
   description = "ECS auto scaling targets if auto scaling enabled."
   value       = try(aws_appautoscaling_target.ecs[0], null)
 }
+
+output "target_group_arns" {
+  value = aws_alb_target_group.main.*.arn
+}
