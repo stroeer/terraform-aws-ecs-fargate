@@ -24,6 +24,12 @@ variable "service_name" {
   type        = string
 }
 
+variable "subnet_tags" {
+  description = "The subnet tags where the ecs service will be deployed. If not specified all subnets will be used."
+  type        = map(string)
+  default     = null
+}
+
 variable "vpc_id" {
   description = "VPC id where the load balancer and other resources will be deployed."
   type        = string
@@ -187,12 +193,6 @@ variable "force_new_deployment" {
   type        = bool
 }
 
-variable "health_check" {
-  description = "A health block containing health check settings for the ALB target groups. See https://www.terraform.io/docs/providers/aws/r/lb_target_group.html#health_check for defaults."
-  default     = {}
-  type        = map(string)
-}
-
 variable "https_listener_rules" {
   description = "A list of maps describing the Listener Rules for this ALB. Required key/values: actions, conditions. Optional key/values: priority, https_listener_index (default to https_listeners[count.index])"
   type        = any
@@ -248,7 +248,7 @@ variable "target_groups" {
 }
 
 variable "security_groups" {
-  description = "A list of security group ids that will be attached to the ecs deployment."
+  description = "A list of security group ids that will be attached additionally to the ecs deployment."
   type        = list(string)
   default     = []
 }

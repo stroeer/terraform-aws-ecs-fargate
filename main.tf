@@ -24,23 +24,13 @@ locals {
   ])
 }
 
-data "aws_security_group" "fargate_app" {
-  name   = "fargate-allow-internal-traffic"
-  vpc_id = var.vpc_id
-}
-
-data "aws_security_group" "all_outbound_tcp" {
-  name   = "allow-outbound-tcp"
-  vpc_id = var.vpc_id
-}
-
 data "aws_subnets" "selected" {
   filter {
     name   = "vpc-id"
     values = [var.vpc_id]
   }
 
-  tags = {
+  tags = var.subnet_tags != null ? var.subnet_tags : {
     Tier = (var.assign_public_ip || var.requires_internet_access) ? "public" : "private"
   }
 }
@@ -98,10 +88,8 @@ resource "aws_ecs_service" "this" {
   }
 
   network_configuration {
-    subnets = data.aws_subnets.selected.ids
-    security_groups = concat(concat(var.security_groups, [for sg in module.sg : sg.this_security_group_id]), [
-      data.aws_security_group.fargate_app.id, data.aws_security_group.all_outbound_tcp.id
-    ])
+    subnets          = data.aws_subnets.selected.ids
+    security_groups  = concat(concat(var.security_groups, [for sg in module.sg : sg.this_security_group_id]), [])
     assign_public_ip = var.assign_public_ip
   }
 
