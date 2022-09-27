@@ -193,12 +193,6 @@ variable "force_new_deployment" {
   type        = bool
 }
 
-variable "health_check" {
-  description = "A health block containing health check settings for the ALB target groups. See https://www.terraform.io/docs/providers/aws/r/lb_target_group.html#health_check for defaults."
-  default     = {}
-  type        = map(string)
-}
-
 variable "https_listener_rules" {
   description = "A list of maps describing the Listener Rules for this ALB. Required key/values: actions, conditions. Optional key/values: priority, https_listener_index (default to https_listeners[count.index])"
   type        = any
