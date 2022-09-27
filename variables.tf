@@ -24,6 +24,12 @@ variable "service_name" {
   type        = string
 }
 
+variable "subnet_tags" {
+  description = "The subnet tags where the ecs service will be deployed. If not specified all subnets will be used."
+  type        = map(string)
+  default     = null
+}
+
 variable "vpc_id" {
   description = "VPC id where the load balancer and other resources will be deployed."
   type        = string
@@ -248,7 +254,7 @@ variable "target_groups" {
 }
 
 variable "security_groups" {
-  description = "A list of security group ids that will be attached to the ecs deployment."
+  description = "A list of security group ids that will be attached additionally to the ecs deployment."
   type        = list(string)
   default     = []
 }
