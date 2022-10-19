@@ -252,3 +252,15 @@ variable "security_groups" {
   type        = list(string)
   default     = []
 }
+
+variable "efsname" {
+  type        = string
+}
+
+variable "efsid" {
+  type		= string
+}
+
+variable "efsroot" {
+  type          = string
+}

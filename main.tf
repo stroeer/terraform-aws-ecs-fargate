@@ -77,6 +77,7 @@ resource "aws_ecs_service" "this" {
   propagate_tags                     = "SERVICE"
   tags                               = var.tags
   task_definition                    = "${aws_ecs_task_definition.this.family}:${max(aws_ecs_task_definition.this.revision, data.aws_ecs_task_definition.this.revision)}"
+  enable_execute_command             = true
 
   dynamic "load_balancer" {
     for_each = aws_alb_target_group.main
@@ -117,7 +118,13 @@ resource "aws_ecs_task_definition" "this" {
   requires_compatibilities = var.requires_compatibilities
   tags                     = var.tags
   task_role_arn            = aws_iam_role.ecs_task_role.arn
-
+  volume {
+    name = var.efsname
+    efs_volume_configuration {
+      file_system_id          = var.efsid
+      root_directory	      = var.efsroot
+    }
+  }
   dynamic "proxy_configuration" {
     for_each = var.with_appmesh ? [var.with_appmesh] : []
     content {
