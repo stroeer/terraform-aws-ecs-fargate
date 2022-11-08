@@ -19,7 +19,7 @@ resource "aws_alb_target_group" "main" {
   proxy_protocol_v2                  = lookup(var.target_groups[count.index], "proxy_protocol_v2", false)
   lambda_multi_value_headers_enabled = lookup(var.target_groups[count.index], "lambda_multi_value_headers_enabled", false)
   load_balancing_algorithm_type      = lookup(var.target_groups[count.index], "load_balancing_algorithm_type", null)
-  connection_termination	     = true
+  connection_termination             = lookup(var.target_groups[count.index], "connection_termination", false)
 
   dynamic "health_check" {
     for_each = length(keys(lookup(var.target_groups[count.index], "health_check", {}))) == 0 ? [] : [
