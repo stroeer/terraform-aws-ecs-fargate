@@ -62,7 +62,7 @@ check-git-clean:
 .PHONY: check-git-branch
 check-git-branch: check-git-clean
 	git fetch --all --tags --prune
-	git checkout master
+	git checkout main
 
 release: check-git-branch bump documentation
 	git add README.md docs/part1.md

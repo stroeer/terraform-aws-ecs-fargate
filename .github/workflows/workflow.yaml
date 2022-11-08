@@ -3,10 +3,10 @@ name: CI
 on:
   pull_request:
     branches:
-      - master
+      - main
   push:
     branches:
-      - master
+      - main
 
 jobs:
   validate:
@@ -32,6 +32,6 @@ jobs:
           make fmt validate tflint
 
       - name: Terraform security scan
-        uses: aquasecurity/tfsec-pr-commenter-action@v1.2.0
+        uses: aquasecurity/tfsec-pr-commenter-action@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

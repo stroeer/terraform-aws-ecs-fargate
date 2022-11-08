@@ -204,12 +204,12 @@ module "service" {
 
 ## Examples
 
-- [public-service](https://github.com/stroeer/terraform-aws-ecs-fargate/tree/master/examples/public-service)
+- [public-service](https://github.com/stroeer/terraform-aws-ecs-fargate/tree/main/examples/public-service)
 
 ## Documentation
 
 Documentation is generated with `brew install terraform-docs` (
-see [Makefile](https://github.com/stroeer/terraform-aws-ecs-fargate/blob/master/Makefile)).
+see [Makefile](https://github.com/stroeer/terraform-aws-ecs-fargate/blob/main/Makefile)).
 
 ## Terraform versions
 
@@ -279,7 +279,7 @@ for example.
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 4.32.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 4.13.0 |
 | <a name="provider_terraform"></a> [terraform](#provider\_terraform) | n/a |
 
 ## Modules
