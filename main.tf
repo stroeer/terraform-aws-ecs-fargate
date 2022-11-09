@@ -1,27 +1,40 @@
+data "aws_lb" "public" {
+  for_each = toset([for target in var.target_groups : lookup(target, "load_balancer_arn", "")])
+  arn      = each.value
+}
+
 locals {
-  ingress_targets = flatten([
-    for target in var.target_groups : flatten([
-      [{
-        # allow backend_port traffic
-        from_port                = lookup(target, "backend_port")
-        to_port                  = lookup(target, "backend_port")
-        protocol                 = "tcp"
-        source_security_group_id = tolist(data.aws_lb.public[lookup(target, "load_balancer_arn")].security_groups)[0]
-        prefix                   = "backend_port"
-      }],
-      lookup(target, "health_check", null) != null
-      && lookup(target["health_check"], "port", "traffic-port") != lookup(target, "backend_port", )
-      && lookup(target["health_check"], "port", "traffic-port") != "traffic-port"
-      ? [{
-        # if health_check_port set and different from backend_port, also allow traffic
-        from_port                = target["health_check"]["port"]
-        to_port                  = target["health_check"]["port"]
-        protocol                 = lookup(target["health_check"], "protocol", "tcp")
-        source_security_group_id = tolist(data.aws_lb.public[lookup(target, "load_balancer_arn")].security_groups)[0]
-        prefix                   = "health_check_port"
-      }] : []
-    ])
-  ])
+  ingress_targets = flatten(
+    [
+      for target in var.target_groups : flatten(
+        [
+          [
+            {
+              # allow backend_port traffic
+              from_port                = lookup(target, "backend_port")
+              to_port                  = lookup(target, "backend_port")
+              protocol                 = "tcp"
+              source_security_group_id = tolist(data.aws_lb.public[lookup(target, "load_balancer_arn")].security_groups)[0]
+              prefix                   = "backend_port"
+            }
+          ],
+          lookup(target, "health_check", null) != null &&
+          lookup(target["health_check"], "port", "traffic-port") != lookup(target, "backend_port", ) &&
+          lookup(target["health_check"], "port", "traffic-port") != "traffic-port"
+          ? [
+            {
+              # if health_check_port set and different from backend_port, also allow traffic
+              from_port                = target["health_check"]["port"]
+              to_port                  = target["health_check"]["port"]
+              protocol                 = lookup(target["health_check"], "protocol", "tcp")
+              source_security_group_id = tolist(data.aws_lb.public[lookup(target, "load_balancer_arn")].security_groups)[0]
+              prefix                   = "health_check_port"
+            }
+          ] : []
+        ]
+      ) if var.create_ingress_security_group
+    ]
+  )
 }
 
 data "aws_subnets" "selected" {
@@ -35,22 +48,16 @@ data "aws_subnets" "selected" {
   }
 }
 
-data "aws_lb" "public" {
-  for_each = toset([for target in var.target_groups : lookup(target, "load_balancer_arn", "")])
-  arn      = each.value
-}
-
 module "sg" {
-  count   = length(local.ingress_targets) == 0 ? 0 : 1
+  count   = var.create_ingress_security_group && length(local.ingress_targets) > 0 ? 1 : 0
   source  = "registry.terraform.io/terraform-aws-modules/security-group/aws"
   version = "~> 3.0"
 
-  name            = "${var.service_name}-inbound-from-target-groups"
-  description     = "Allow TCP from target groups to port"
-  use_name_prefix = false
-  vpc_id          = var.vpc_id
-
+  name                                  = "${var.service_name}-inbound-from-target-groups"
+  description                           = "Allow TCP from target groups to port"
   ingress_with_source_security_group_id = local.ingress_targets
+  use_name_prefix                       = false
+  vpc_id                                = var.vpc_id
 }
 
 resource "aws_security_group_rule" "trusted_egress_attachment" {
@@ -69,6 +76,7 @@ resource "aws_ecs_service" "this" {
   deployment_maximum_percent         = var.deployment_maximum_percent
   deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent
   desired_count                      = var.desired_count
+  enable_execute_command             = var.enable_execute_command
   force_new_deployment               = var.force_new_deployment
   health_check_grace_period_seconds  = 0
   launch_type                        = "FARGATE"
@@ -117,6 +125,29 @@ resource "aws_ecs_task_definition" "this" {
   requires_compatibilities = var.requires_compatibilities
   tags                     = var.tags
   task_role_arn            = aws_iam_role.ecs_task_role.arn
+
+  dynamic "volume" {
+    for_each = var.efs_volumes
+
+    content {
+      name = volume.value["name"]
+
+      efs_volume_configuration {
+        file_system_id     = volume.value["file_system_id"]
+        root_directory     = try(volume.value["root_directory"], null)
+        transit_encryption = try(volume.value["transit_encryption"], "DISABLED")
+
+        dynamic "authorization_config" {
+          for_each = try(volume.value["authorization_config"], null) != null ? [true] : []
+
+          content {
+            access_point_id = try(volume.value["authorization_config"].access_point_id, null)
+            iam             = try(volume.value["authorization_config"].iam, null)
+          }
+        }
+      }
+    }
+  }
 
   dynamic "proxy_configuration" {
     for_each = var.with_appmesh ? [var.with_appmesh] : []

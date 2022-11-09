@@ -133,10 +133,22 @@ variable "create_ecr_repository" {
   type        = bool
 }
 
+variable "create_ingress_security_group" {
+  default     = true
+  description = "Create a security group allowing ingress from target groups to the application ports. Disable this for target groups attached to a Network Loadbalancer."
+  type        = bool
+}
+
 variable "ecr_repository_name" {
   default     = ""
   description = "Existing repo to register to use with this service module, e.g. creating deployment pipelines."
   type        = string
+}
+
+variable "enable_execute_command" {
+  default     = false
+  description = "Specifies whether to enable Amazon ECS Exec for the tasks within the service."
+  type        = bool
 }
 
 variable "create_deployment_pipeline" {
@@ -185,6 +197,12 @@ variable "ecr_image_scanning_configuration" {
 variable "ecr_image_tag_mutability" {
   type    = string
   default = "MUTABLE"
+}
+
+variable "efs_volumes" {
+  default     = []
+  description = "Configuration block for EFS volumes."
+  type        = any
 }
 
 variable "force_new_deployment" {

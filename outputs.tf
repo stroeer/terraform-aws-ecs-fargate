@@ -22,3 +22,14 @@ output "autoscaling_target" {
   description = "ECS auto scaling targets if auto scaling enabled."
   value       = try(aws_appautoscaling_target.ecs[0], null)
 }
+
+// TODO: remove this intermediate output
+output "target_group_arns" {
+  description = "ARNs of the created target groups."
+  value       = aws_alb_target_group.main[*].arn
+}
+
+output "aws_alb_target_group_arns" {
+  description = "ARNs of the created target groups."
+  value       = aws_alb_target_group.main[*].arn
+}
