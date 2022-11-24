@@ -182,6 +182,7 @@ module "ecr" {
 
   custom_lifecycle_policy         = var.ecr_custom_lifecycle_policy
   enable_default_lifecycle_policy = var.ecr_enable_default_lifecycle_policy
+  force_delete                    = var.ecr_force_delete
   image_scanning_configuration    = var.ecr_image_scanning_configuration
   image_tag_mutability            = var.ecr_image_tag_mutability
   name                            = var.service_name
