@@ -187,6 +187,12 @@ variable "ecr_enable_default_lifecycle_policy" {
   type        = bool
 }
 
+variable "ecr_force_delete" {
+  default     = false
+  description = "If `true`, will delete this repository even if it contains images."
+  type        = bool
+}
+
 variable "ecr_image_scanning_configuration" {
   type = map(any)
   default = {

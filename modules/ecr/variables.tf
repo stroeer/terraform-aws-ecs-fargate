@@ -42,6 +42,12 @@ variable "enable_default_lifecycle_policy" {
   type        = bool
 }
 
+variable "force_delete" {
+  default     = false
+  description = "If `true`, will delete this repository even if it contains images."
+  type        = bool
+}
+
 variable "tags" {
   default     = {}
   description = "A mapping of tags to assign to the repository."
