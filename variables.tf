@@ -52,6 +52,28 @@ variable "appautoscaling_settings" {
   type        = map(any)
 }
 
+variable "capacity_provider_strategy" {
+  default     = null
+  description = "Capacity provider strategies to use for the service. Can be one or more."
+  type = list(object({
+    capacity_provider = string
+    weight            = string
+    base              = optional(string, null)
+  }))
+}
+
+variable "deployment_circuit_breaker" {
+  default = {
+    enable   = false
+    rollback = false
+  }
+  description = "Deployment circuit breaker configuration."
+  type = object({
+    enable   = bool
+    rollback = bool
+  })
+}
+
 variable "container_name" {
   default     = ""
   description = "Defaults to var.service_name, can be overridden if it differs. Used as a target for LB."
