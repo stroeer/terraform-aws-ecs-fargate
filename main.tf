@@ -79,12 +79,29 @@ resource "aws_ecs_service" "this" {
   enable_execute_command             = var.enable_execute_command
   force_new_deployment               = var.force_new_deployment
   health_check_grace_period_seconds  = 0
-  launch_type                        = "FARGATE"
+  launch_type                        = var.capacity_provider_strategy != null ? null : "FARGATE"
   name                               = var.service_name
   platform_version                   = var.platform_version
   propagate_tags                     = "SERVICE"
   tags                               = var.tags
   task_definition                    = "${aws_ecs_task_definition.this.family}:${max(aws_ecs_task_definition.this.revision, data.aws_ecs_task_definition.this.revision)}"
+
+  dynamic "capacity_provider_strategy" {
+    for_each = var.capacity_provider_strategy != null ? var.capacity_provider_strategy : [/* noop */]
+    content {
+      capacity_provider = capacity_provider_strategy.value.capacity_provider
+      weight            = capacity_provider_strategy.value.weight
+      base              = capacity_provider_strategy.value.base
+    }
+  }
+
+  dynamic "deployment_circuit_breaker" {
+    for_each = var.deployment_circuit_breaker != null ? [""] : [/* noop */]
+    content {
+      enable   = var.deployment_circuit_breaker.enable
+      rollback = var.deployment_circuit_breaker.rollback
+    }
+  }
 
   dynamic "load_balancer" {
     for_each = aws_alb_target_group.main
