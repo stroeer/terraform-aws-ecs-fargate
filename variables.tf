@@ -298,3 +298,8 @@ variable "security_groups" {
   type        = list(string)
   default     = []
 }
+
+variable "foo" {
+  type = bar
+  default = null
+}
