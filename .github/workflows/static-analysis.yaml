@@ -1,4 +1,4 @@
-name: CI
+name: "static analysis"
 
 on:
   pull_request:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   validate:
-    name: Validate
+    name: validate
     runs-on: ubuntu-latest
     strategy:
       matrix:
