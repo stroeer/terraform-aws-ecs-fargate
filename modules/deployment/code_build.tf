@@ -51,7 +51,7 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      python: 3.8
+      python: 3.9
   build:
     commands:
       - |
