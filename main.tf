@@ -26,7 +26,7 @@ locals {
               # if health_check_port set and different from backend_port, also allow traffic
               from_port                = target["health_check"]["port"]
               to_port                  = target["health_check"]["port"]
-              protocol                 = lookup(target["health_check"], "protocol", "tcp")
+              protocol                 = "tcp"
               source_security_group_id = tolist(data.aws_lb.public[lookup(target, "load_balancer_arn")].security_groups)[0]
               prefix                   = "health_check_port"
             }
