@@ -18,6 +18,7 @@ data "aws_iam_policy_document" "cloudwatch_logs_policy" {
 }
 
 resource "aws_iam_policy" "cloudwatch_logs_policy" {
+  name   = "cw-logs-access-${var.service_name}-${data.aws_region.current.name}"
   path   = "/ecs/task-role/"
   policy = data.aws_iam_policy_document.cloudwatch_logs_policy.json
 }
