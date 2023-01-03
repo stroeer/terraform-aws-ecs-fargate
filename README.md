@@ -1,6 +1,6 @@
 # AWS Fargate ECS Terraform Module
 
-![CI](https://github.com/stroeer/terraform-aws-ecs-fargate/workflows/static%20analysis/badge.svg) [![Terraform Registry](https://img.shields.io/badge/Terraform%20Registry-0.27.2-blue.svg)](https://registry.terraform.io/modules/stroeer/ecs-fargate/aws/0.27.2) ![Terraform Version](https://img.shields.io/badge/Terraform-0.12+-green.svg) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
+![CI](https://github.com/stroeer/terraform-aws-ecs-fargate/workflows/static%20analysis/badge.svg) [![Terraform Registry](https://img.shields.io/badge/Terraform%20Registry-0.27.3-blue.svg)](https://registry.terraform.io/modules/stroeer/ecs-fargate/aws/0.27.3) ![Terraform Version](https://img.shields.io/badge/Terraform-0.12+-green.svg) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
 
 A somewhat opinionated Terraform module to create Fargate ECS resources on AWS.
 
@@ -134,7 +134,7 @@ data "aws_region" "current" {}
 
 module "service" {
   source  = "stroeer/ecs-fargate/aws"
-  version = "0.27.2"
+  version = "0.27.3"
 
   assign_public_ip           = true
   cluster_id                 = aws_ecs_cluster.main.id
@@ -279,7 +279,7 @@ for example.
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 4.38.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 4.23.0 |
 | <a name="provider_terraform"></a> [terraform](#provider\_terraform) | n/a |
 
 ## Modules
