@@ -5,6 +5,9 @@ repos:
       - id: terraform_fmt
       - id: terraform_validate
       - id: terraform_tflint
+      - id: terraform_docs
+        args:
+          - '--args=--lockfile=false'
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
     hooks:

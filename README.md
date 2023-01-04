@@ -268,6 +268,8 @@ for example.
 * [x] CodeDeploy with ECR trigger
 * [ ] ECR policies
 * [x] Notification for the deployment pipeline [success/failure]
+
+<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
 
 | Name | Version |
@@ -379,3 +381,4 @@ for example.
 | <a name="output_ecr_repository_url"></a> [ecr\_repository\_url](#output\_ecr\_repository\_url) | URL of the ECR repository. |
 | <a name="output_ecs_task_exec_role_name"></a> [ecs\_task\_exec\_role\_name](#output\_ecs\_task\_exec\_role\_name) | ECS task role used by this service. |
 | <a name="output_target_group_arns"></a> [target\_group\_arns](#output\_target\_group\_arns) | ARNs of the created target groups. |
+<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
