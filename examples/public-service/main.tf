@@ -116,22 +116,13 @@ module "service" {
     }]
   }]
 
-  container_definitions = jsonencode([
-    {
-      command : [
-        "/bin/sh -c \"echo '<html> <head> <title>Hello from httpd service</title> <style>body {margin-top: 40px; background-color: #333;} </style> </head><body> <div style=color:white;text-align:center> <h1>Amazon ECS Sample App</h1> <h2>Congratulations!</h2> <p>Your application is now running on a container in Amazon ECS.</p> </div></body></html>' >  /usr/local/apache2/htdocs/index.html && httpd-foreground\""
-      ],
-      cpu : 256,
-      entryPoint : ["sh", "-c"],
-      essential : true,
-      image : "httpd:2.4",
-      memory : 512,
-      name : local.service_name,
-      portMappings : [{
-        containerPort : 80
-        hostPort : 80
-        protocol : "tcp"
-      }]
-    }
-  ])
+  container_definition_overwrites = {
+    command : [
+      "/bin/sh -c \"echo '<html> <head> <title>Hello from httpd service</title> <style>body {margin-top: 40px; background-color: #333;} </style> </head><body> <div style=color:white;text-align:center> <h1>Amazon ECS Sample App</h1> <h2>Congratulations!</h2> <p>Your application is now running on a container in Amazon ECS.</p> </div></body></html>' >  /usr/local/apache2/htdocs/index.html && httpd-foreground\""
+    ],
+    cpu : 256,
+    entryPoint : ["sh", "-c"],
+    image : "httpd:2.4",
+    memory : 512
+  }
 }

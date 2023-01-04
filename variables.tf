@@ -8,26 +8,14 @@ variable "cluster_id" {
   type        = string
 }
 
-variable "container_definitions" {
-  # Full documentation here: https://docs.aws.amazon.com/AmazonECS/latest/developerguide/create-task-definition.html
-  description = "JSON container definition."
-  type        = string
-}
-
 variable "container_port" {
-  description = "The port used by the web app within the container"
+  description = "The port used by the app within the container."
   type        = number
 }
 
 variable "service_name" {
   description = "The service name. Will also be used as Route53 DNS entry."
   type        = string
-}
-
-variable "subnet_tags" {
-  description = "The subnet tags where the ecs service will be deployed. If not specified all subnets will be used."
-  type        = map(string)
-  default     = null
 }
 
 variable "vpc_id" {
@@ -39,6 +27,29 @@ variable "vpc_id" {
 # OPTIONAL PARAMETERS
 # These parameters have reasonable defaults.
 # ---------------------------------------------------------------------------------------------------------------------
+
+variable "additional_container_definitions" {
+  default     = []
+  description = "Additional container definitions added to the task definition of this service, see https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html for allowed parameters."
+  type        = list(any)
+}
+
+variable "app_mesh" {
+  default     = {}
+  description = "Configuration of optional AWS App Mesh integration using an Envoy sidecar."
+  type = object({
+    container_definition = optional(any, {})
+    container_name       = optional(string, "envoy")
+    enabled              = optional(bool, false)
+    mesh_name            = optional(string, "apps")
+
+    tls = optional(object({
+      acm_certificate_arn = optional(string)
+      root_ca_arn         = optional(string)
+    }), {})
+  })
+}
+
 
 variable "assign_public_ip" {
   default     = false
@@ -60,6 +71,12 @@ variable "capacity_provider_strategy" {
     weight            = string
     base              = optional(string, null)
   }))
+}
+
+variable "container_definition_overwrites" {
+  default     = {}
+  description = "Additional container definition parameters or overwrites of defaults for your service, see https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html for allowed parameters."
+  type        = any
 }
 
 variable "deployment_circuit_breaker" {
@@ -233,6 +250,16 @@ variable "efs_volumes" {
   type        = any
 }
 
+variable "firelens" {
+  description = "Configuration for optional custom log routing using FireLens over fluentbit sidecar."
+  default     = {}
+  type = object({
+    container_definition = optional(any, {})
+    enabled              = optional(bool, false)
+    opensearch_host      = optional(string, "")
+  })
+}
+
 variable "force_new_deployment" {
   default     = false
   description = "Enable to force a new task deployment of the service. This can be used to update tasks to use a newer Docker image with same image/tag combination (e.g. myimage:latest), roll Fargate tasks onto a newer platform version, or immediately deploy ordered_placement_strategy and placement_constraints updates."
@@ -249,6 +276,15 @@ variable "memory" {
   default     = 512
   description = "Amount of memory [MB] is required by this service."
   type        = number
+}
+
+variable "otel" {
+  default     = {}
+  description = "Configuration for (optional) AWS Distro für OpenTelemetry sidecar."
+  type = object({
+    container_definition = optional(any, {})
+    enabled              = optional(bool, false)
+  })
 }
 
 variable "platform_version" {
@@ -275,10 +311,16 @@ variable "requires_internet_access" {
   type        = bool
 }
 
-variable "with_appmesh" {
-  default     = false
-  description = "This services should be created with an appmesh proxy."
-  type        = bool
+variable "security_groups" {
+  description = "A list of security group ids that will be attached additionally to the ecs deployment."
+  type        = list(string)
+  default     = []
+}
+
+variable "subnet_tags" {
+  description = "The subnet tags where the ecs service will be deployed. If not specified all subnets will be used."
+  type        = map(string)
+  default     = null
 }
 
 variable "tags" {
@@ -290,11 +332,5 @@ variable "tags" {
 variable "target_groups" {
   description = "A list of maps containing key/value pairs that define the target groups to be created. Order of these maps is important and the index of these are to be referenced in listener definitions. Required key/values: name, backend_protocol, backend_port"
   type        = any
-  default     = []
-}
-
-variable "security_groups" {
-  description = "A list of security group ids that will be attached additionally to the ecs deployment."
-  type        = list(string)
   default     = []
 }
