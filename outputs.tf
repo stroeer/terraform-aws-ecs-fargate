@@ -3,6 +3,12 @@ output "cloudwatch_log_group" {
   value       = aws_cloudwatch_log_group.containers.name
 }
 
+output "container_definitions" {
+  description = "Container definitions used by this service including all sidecars."
+  sensitive   = true
+  value       = local.container_definitions
+}
+
 output "ecr_repository_arn" {
   description = "Full ARN of the ECR repository."
   value       = join("", module.ecr[*].arn)

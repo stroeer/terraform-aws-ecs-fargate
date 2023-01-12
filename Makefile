@@ -47,13 +47,9 @@ tfsec: ## Runs tfsec on all Terraform files
 	@echo "+ $@"
 	@tfsec --exclude-downloaded-modules --config-file=.tfsec.json || exit 1
 
-documentation: ## Generates README.md from static snippets and Terraform variables
-	terraform-docs markdown table . > docs/part2.md
-	cat docs/*.md > README.md
-
 bump ::
 	@echo bumping version from $(VERSION_TAG) to $(NEXT_TAG)
-	@sed -i '' s/$(VERSION)/$(NEXT_VERSION)/g docs/part1.md
+	@sed -i '' s/$(VERSION)/$(NEXT_VERSION)/g README.md
 
 .PHONY: check-git-clean
 check-git-clean:
@@ -64,8 +60,8 @@ check-git-branch: check-git-clean
 	git fetch --all --tags --prune
 	git checkout main
 
-release: check-git-branch bump documentation
-	git add README.md docs/part1.md
+release: check-git-branch bump
+	git add README.md
 	git commit -vsam "Bump version to $(NEXT_TAG)"
 	git tag -a $(NEXT_TAG) -m "$(NEXT_TAG)"
 	git push origin $(NEXT_TAG)
