@@ -60,14 +60,14 @@ locals {
         tls             = "On"
         Trace_Output    = "Off"
       }
-      } : {
+      } : (var.cloudwatch_logs.enabled ? {
       logDriver = "awslogs"
       options = {
-        awslogs-group : aws_cloudwatch_log_group.containers.name
+        awslogs-group : aws_cloudwatch_log_group.containers[0].name
         awslogs-region : data.aws_region.current.name
         awslogs-stream-prefix : "${var.service_name}-app"
       }
-    }
+    } : null)
 
     portMappings = [
       {

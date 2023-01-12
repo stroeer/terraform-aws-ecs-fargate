@@ -1,6 +1,6 @@
 output "cloudwatch_log_group" {
   description = "Name of the CloudWatch log group for container logs."
-  value       = aws_cloudwatch_log_group.containers.name
+  value       = try(aws_cloudwatch_log_group.containers[0].name, "")
 }
 
 output "container_definitions" {

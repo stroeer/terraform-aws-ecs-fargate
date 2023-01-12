@@ -23,15 +23,15 @@ locals {
         config-file-value : "/fluent-bit/config/envoy-json.conf"
       }
     }
-    logConfiguration = {
+    logConfiguration = var.cloudwatch_logs.enabled ? {
       logDriver = "awslogs"
       options = {
-        awslogs-group         = aws_cloudwatch_log_group.containers.name
+        awslogs-group         = aws_cloudwatch_log_group.containers[0].name
         awslogs-region        = data.aws_region.current.name
         awslogs-stream-prefix = "fluentbit"
         mode                  = "non-blocking"
       }
-    }
+    } : null
   }
 
   fluentbit_container = var.firelens.enabled ? jsonencode(merge(local.fluentbit_container_defaults, var.firelens.container_definition)) : ""

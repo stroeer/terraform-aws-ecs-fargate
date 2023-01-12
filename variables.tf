@@ -260,6 +260,16 @@ variable "firelens" {
   })
 }
 
+variable "cloudwatch_logs" {
+  description = "Configuration for optional Cloudwatch Logs. Will be used as a fallback if firelens is disabled. And, used for the firelense container itself."
+  default     = {
+    enabled = true
+  }
+  type = object({
+    enabled              = optional(bool, true)
+  })
+}
+
 variable "force_new_deployment" {
   default     = false
   description = "Enable to force a new task deployment of the service. This can be used to update tasks to use a newer Docker image with same image/tag combination (e.g. myimage:latest), roll Fargate tasks onto a newer platform version, or immediately deploy ordered_placement_strategy and placement_constraints updates."
