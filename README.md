@@ -1,88 +1,78 @@
 # AWS Fargate ECS Terraform Module
 
-![CI](https://github.com/stroeer/terraform-aws-ecs-fargate/workflows/static%20analysis/badge.svg) [![Terraform Registry](https://img.shields.io/badge/Terraform%20Registry-0.29.2-blue.svg)](https://registry.terraform.io/modules/stroeer/ecs-fargate/aws/0.29.2) ![Terraform Version](https://img.shields.io/badge/Terraform-0.12+-green.svg) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
+![CI](https://github.com/stroeer/terraform-aws-ecs-fargate/workflows/static%20analysis/badge.svg) [![Terraform Registry](https://img.shields.io/badge/Terraform%20Registry-0.29.2-blue.svg)](https://registry.terraform.io/modules/stroeer/ecs-fargate/aws/0.29.2) ![Terraform Version](https://img.shields.io/badge/Terraform-1.3+-green.svg) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
 
-A somewhat opinionated Terraform module to create Fargate ECS resources on AWS.
+Terraform module to create [Fargate ECS](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS_Fargate.html) resources on AWS.
 
-This module does the heavy lifting for:
+## Features
 
-* [ECR](https://docs.aws.amazon.com/AmazonECR/latest/userguide/Registries.html) configuration
-* [automated service deployment](#Automated-service-deployment) including notifications
-* CloudWatch log group and IAM permissions for storing container logs (e.g. for sidecars)
-* integration with [App Mesh](https://docs.aws.amazon.com/app-mesh/latest/userguide/what-is-app-mesh.html)
-  and [Application Load Balancers](#Load-Balancing)
+* integration with AWS Cloud Map [service discovery](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-discovery.html)
+* integration with [App Mesh](https://docs.aws.amazon.com/app-mesh/latest/userguide/what-is-app-mesh.html) including Envoy sidecar and IAM permission configuration
+* configuration of listener rules and target groups for [Application Load Balancers](#Load-Balancing)
+* [Elastic Container Registry](https://docs.aws.amazon.com/AmazonECR/latest/userguide/what-is-ecr.html) configuration like image scanning and lifecycle policies
+* [blue/green deployments]((#Automated-service-deployment)) using CodePipeline and CodeDeploy
+* configuration of [custom log routing](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_firelens.html) using FireLens and Fluent Bit
+* CloudWatch log group and IAM permissions for storing container logs
+* [AWS Distro for OpenTelemetry](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/trace-data.html) sidecar and IAM permission configuration
 
-## Requirements
+## How do I use this module?
 
-The following resources are referenced from this module and therefore prerequisites:
+### with ALB integration
 
-* Subnets — within this VPC, there must be at least one subnet tagged with either `Tier = (public|private)`. The
-  fargate _Elastic Network Interface_ will be placed here.
-* SG (1) — within this VPC there must be a security group `Name = default`
-* SG (2) — within this VPC there must be a security group to allow traffic from ALB `Name = fargate-allow-alb-traffic`
-* IAM role — There should be a role named `ssm_ecs_task_execution_role` that will be used as a task execution role
-
-### Load Balancing
-
-`
-A service can be attached to a ALB. Neither the ALB nor the Listeners are created by the module (see example app).
-
-Sample for an service running a `HTTP` service on port `80`:
+see [example](examples/complete) for details
 
 ```terraform
 module "service" {
-  source = "..."
+  source = "registry.terraform.io/stroeer/ecs-fargate/aws"
 
-  target_groups = [
-    {
-      name             = "${local.service_name}-public"
-      backend_port     = 80
-      backend_protocol = "HTTP"
-      target_type      = "ip"
-      health_check     = {
-        enabled = true
-        path    = "/"
-      }
-    }
-  ]
+  cpu                           = 256
+  cluster_id                    = "my-ecs-cluster-id"
+  container_port                = 8000
+  create_ingress_security_group = false
+  create_deployment_pipeline    = false
+  desired_count                 = 1
+  ecr_force_delete              = true
+  memory                        = 512
+  service_name                  = "my-service"
+  vpc_id                        = module.vpc.vpc_id
 
+  // add listener rules that determine how the load balancer routes requests to its registered targets.
   https_listener_rules = [{
     listener_arn = aws_lb_listener.http.arn
 
-    priority   = 42
-    actions    = [{
+    actions = [{
       type               = "forward"
       target_group_index = 0
     }]
+
     conditions = [{
       path_patterns = ["/"]
-      host_headers  = ["www.example.com"]
     }]
   }]
+
+  // add a target group to route ALB traffic to this service
+  target_groups = [
+    {
+      name              = "my-service"
+      backend_protocol  = "HTTP"
+      backend_port      = 8000
+      load_balancer_arn = "my-lb-arn"
+      target_type       = "ip"
+
+      health_check = {
+        enabled  = true
+        path     = "/"
+        protocol = "HTTP"
+      }
+    }
+  ]
 }
 ```
-
-### DNS / Route53
-
-DNS is also not part of this module and needs to be provided by the caller:
-
-```terraform
-resource "aws_route53_record" "this" {
-  name    = "..."
-  type    = "..."
-  zone_id = "..."
-}
-```
-
-this should point to your ALB. If TLS/HTTPS will be used an ACM certificate is also required.
-
-In order to disable ALB target group attachments (e.g. for services in an App Mesh) set `target_groups = []`.
-
-### AppAutoscaling
+### with autoscaling
 
 ```terraform
 module "service" {
-  source = "..."
+  // see above
 
   appautoscaling_settings = {
     predefined_metric_type = "ECSServiceAverageCPUUtilization"
@@ -96,8 +86,7 @@ module "service" {
 }
 ```
 
-Use this configuration map to enable and alter the autoscaling
-settings for this app.
+Use this configuration map to enable and alter the autoscaling settings for this app.
 
 |key|description|
 |---|---|
@@ -110,136 +99,19 @@ settings for this app.
 |`scale_out_cooldown`| delay (in seconds) between scale out events |
 
 
+### with blue/green deployments
 
-
-### When using the automated deployment pipeline (optional):
-
-* A shared S3 bucket for storing artifacts from _CodePipeline_ can be used. You can specify it through the
-  variable `code_pipeline_artifact_bucket`. Otherwise a new bucket is created for every service.
-* A shared `IAM::Role` for _CodePipeline_ and _CodeBuild_ can be used. You can specify those through the
-  variables `code_pipeline_role_name` and `code_build_role_name`. Otherwise new roles are created for every service. For
-  the permissions required see the [module code](./modules/deployment)
-
-## Usage
-
-Simple Fargate ECS service:
-
-```hcl-terraform
-locals {
-  service_name = "example"
-}
-
-data "aws_caller_identity" "current" {}
-data "aws_region" "current" {}
-
-module "service" {
-  source  = "stroeer/ecs-fargate/aws"
-  version = "0.29.2"
-
-  assign_public_ip           = true
-  cluster_id                 = aws_ecs_cluster.main.id
-  container_port             = 80
-  create_deployment_pipeline = false
-  desired_count              = 1
-  service_name               = local.service_name
-  vpc_id                     = module.vpc.vpc_id
-
-  target_groups = [
-    {
-      name             = "${local.service_name}-public"
-      backend_port     = 80
-      backend_protocol = "HTTP"
-      target_type      = "ip"
-      health_check     = {
-        enabled = true
-        path    = "/"
-      }
-    }
-  ]
-
-  https_listener_rules = [{
-    listener_arn = aws_lb_listener.http.arn
-
-    priority   = 42
-    actions    = [{
-      type               = "forward"
-      target_group_index = 0
-    }]
-    conditions = [{
-      path_patterns = ["/"]
-    }]
-  }]
-
-  container_definitions = jsonencode([
-    {
-      command: [
-        "/bin/sh -c \"echo '<html> <head> <title>Hello from httpd service</title> <style>body {margin-top: 40px; background-color: #333;} </style> </head><body> <div style=color:white;text-align:center> <h1>Amazon ECS Sample App</h1> <h2>Congratulations!</h2> <p>Your application is now running on a container in Amazon ECS.</p> </div></body></html>' >  /usr/local/apache2/htdocs/index.html && httpd-foreground\""
-      ],
-      cpu: 256,
-      entryPoint: ["sh", "-c"],
-      essential: true,
-      image: "httpd:2.4",
-      memory: 512,
-      name: local.service_name,
-      portMappings: [{
-        containerPort: 80
-        hostPort: 80
-        protocol: "tcp"
-      }]
-    }
-  ])
-
-  ecr = {
-    image_tag_mutability         = "IMMUTABLE"
-    image_scanning_configuration = {
-      scan_on_push = true
-    }
-  }
-}
-```
-
-### Naming Conventions
-
-- Service Names `var.service_name = [a-z-]+`
-
-## Examples
-
-- [public-service](https://github.com/stroeer/terraform-aws-ecs-fargate/tree/main/examples/public-service)
-
-## Documentation
-
-Documentation is generated with `brew install terraform-docs` (
-see [Makefile](https://github.com/stroeer/terraform-aws-ecs-fargate/blob/main/Makefile)).
-
-## Terraform versions
-
-Only Terraform 0.12+ is supported.
-
-## Release
-
-Release a new module version to the [Terraform registry](https://registry.terraform.io/modules/stroeer/ecs-fargate/aws/)
-(`BUMP` defaults to `patch`):
-
-```makefile
-make BUMP=(major|minor|patch) release
-```
-
-## Automated Service Deployment
-
-Once `create_deployment_pipeline` is set to `true`, we will create an automated Deployment Pipeline:
+This module will can create an automated deployment pipeline for your service (set `create_deployment_pipeline` is set to `true`).
 
 ![deployment pipeline](docs/ecs_deployer.png)
 
-**How it works**
+#### details
 
-- You'll need AWS credentials that allow pushing images into the ECR container registry.
-- Once you push an image with `[tag=production]` - a Cloudwatch Event will trigger the start of a CodePipeline
-- **⚠ This tag will only trigger the pipeline. You will need a minimum of 3 tags**
-
-1. `production` will trigger the pipeline
-2. `container.$CONTAINER_NAME` is required to locate the correct container from the
-   service's [task-definition.json](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/create-task-definition.html)
-3. One more tag that will be unique and used for the actual deployment and the task-definition.json. A good choice would
+* you'll need AWS credentials that allows pushing images into the ECR container registry.
+* Once you push an image with `[tag=production]` - a Cloudwatch Event will trigger the start of a CodePipeline. This tag will only trigger the pipeline. In addition, you'll need the following tags:
+  * `container.$CONTAINER_NAME` is required to locate the correct container from the
+     service's [task-definition.json](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/create-task-definition.html)
+  * another tag that will be unique and used for the actual deployment and the task-definition.json. A good choice would
    be `git.sha`. To be specific, we chose a tag that does not `start with container.` and is none
    of `["local", "production", "staging", "infrastructure"]`
 
@@ -262,12 +134,17 @@ You can then configure an integration between those notifications
 and [AWS Chatbot](https://docs.aws.amazon.com/dtconsole/latest/userguide/notifications-chatbot.html)
 for example.
 
-## Todos
+**Optional shared pipeline resources**
 
-* [x] Cognito auth for ALB listeners
-* [x] CodeDeploy with ECR trigger
-* [ ] ECR policies
-* [x] Notification for the deployment pipeline [success/failure]
+* A shared S3 bucket for storing artifacts from _CodePipeline_ can be used. You can specify it through the
+  variable `code_pipeline_artifact_bucket`. Otherwise, a new bucket is created for every service.
+* A shared `IAM::Role` for _CodePipeline_ and _CodeBuild_ can be used. You can specify those through the
+  variables `code_pipeline_role_name` and `code_build_role_name`. Otherwise, new roles are created for every service. For
+  the permissions required see the [module code](./modules/deployment)
+
+## Examples
+
+- [complete](examples/complete): complete example showcasing ALB integration, autoscaling and task definition configuration
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
@@ -282,18 +159,17 @@ for example.
 | Name | Version |
 |------|---------|
 | <a name="provider_aws"></a> [aws](#provider\_aws) | >= 3.0 |
-| <a name="provider_terraform"></a> [terraform](#provider\_terraform) | n/a |
 
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
 | <a name="module_code_deploy"></a> [code\_deploy](#module\_code\_deploy) | ./modules/deployment | n/a |
-| <a name="module_container_definition"></a> [container\_definition](#module\_container\_definition) | cloudposse/config/yaml//modules/deepmerge | 1.0.2 |
+| <a name="module_container_definition"></a> [container\_definition](#module\_container\_definition) | registry.terraform.io/cloudposse/config/yaml//modules/deepmerge | 1.0.2 |
 | <a name="module_ecr"></a> [ecr](#module\_ecr) | ./modules/ecr | n/a |
-| <a name="module_envoy_container_definition"></a> [envoy\_container\_definition](#module\_envoy\_container\_definition) | cloudposse/config/yaml//modules/deepmerge | 1.0.2 |
-| <a name="module_fluentbit_container_definition"></a> [fluentbit\_container\_definition](#module\_fluentbit\_container\_definition) | cloudposse/config/yaml//modules/deepmerge | 1.0.2 |
-| <a name="module_otel_container_definition"></a> [otel\_container\_definition](#module\_otel\_container\_definition) | cloudposse/config/yaml//modules/deepmerge | 1.0.2 |
+| <a name="module_envoy_container_definition"></a> [envoy\_container\_definition](#module\_envoy\_container\_definition) | registry.terraform.io/cloudposse/config/yaml//modules/deepmerge | 1.0.2 |
+| <a name="module_fluentbit_container_definition"></a> [fluentbit\_container\_definition](#module\_fluentbit\_container\_definition) | registry.terraform.io/cloudposse/config/yaml//modules/deepmerge | 1.0.2 |
+| <a name="module_otel_container_definition"></a> [otel\_container\_definition](#module\_otel\_container\_definition) | registry.terraform.io/cloudposse/config/yaml//modules/deepmerge | 1.0.2 |
 | <a name="module_sg"></a> [sg](#module\_sg) | registry.terraform.io/terraform-aws-modules/security-group/aws | ~> 3.0 |
 
 ## Resources
@@ -311,6 +187,7 @@ for example.
 | [aws_iam_policy.cloudwatch_logs_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_policy.otel](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_role.ecs_task_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
+| [aws_iam_role.task_execution_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role_policy.ecs_task_role_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
 | [aws_iam_role_policy_attachment.acm](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.appmesh](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
@@ -321,16 +198,15 @@ for example.
 | [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
 | [aws_ecs_task_definition.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ecs_task_definition) | data source |
 | [aws_iam_policy.appmesh](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy) | data source |
+| [aws_iam_policy.ecs_task_execution_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy) | data source |
 | [aws_iam_policy_document.acm](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.cloudwatch_logs_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.ecs_task_assume_role_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
-| [aws_iam_policy_document.nothing_is_allowed](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.otel](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
-| [aws_iam_role.task_execution_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_role) | data source |
+| [aws_iam_policy_document.task_execution_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_lb.public](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/lb) | data source |
 | [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
 | [aws_subnets.selected](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/subnets) | data source |
-| [terraform_remote_state.ecs](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
 
 ## Inputs
 
@@ -339,7 +215,7 @@ for example.
 | <a name="input_additional_container_definitions"></a> [additional\_container\_definitions](#input\_additional\_container\_definitions) | Additional container definitions added to the task definition of this service, see https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html for allowed parameters. | `list(any)` | `[]` | no |
 | <a name="input_app_mesh"></a> [app\_mesh](#input\_app\_mesh) | Configuration of optional AWS App Mesh integration using an Envoy sidecar. | <pre>object({<br>    container_definition = optional(any, {})<br>    container_name       = optional(string, "envoy")<br>    enabled              = optional(bool, false)<br>    mesh_name            = optional(string, "apps")<br><br>    tls = optional(object({<br>      acm_certificate_arn = optional(string)<br>      root_ca_arn         = optional(string)<br>    }), {})<br>  })</pre> | `{}` | no |
 | <a name="input_appautoscaling_settings"></a> [appautoscaling\_settings](#input\_appautoscaling\_settings) | Autoscaling configuration for this service. | `map(any)` | `null` | no |
-| <a name="input_assign_public_ip"></a> [assign\_public\_ip](#input\_assign\_public\_ip) | This services will be placed in a public subnet and be assigned a public routable IP. | `bool` | `false` | no |
+| <a name="input_assign_public_ip"></a> [assign\_public\_ip](#input\_assign\_public\_ip) | Assign a public IP address to the ENI of this service. | `bool` | `false` | no |
 | <a name="input_capacity_provider_strategy"></a> [capacity\_provider\_strategy](#input\_capacity\_provider\_strategy) | Capacity provider strategies to use for the service. Can be one or more. | <pre>list(object({<br>    capacity_provider = string<br>    weight            = string<br>    base              = optional(string, null)<br>  }))</pre> | `null` | no |
 | <a name="input_cloudwatch_logs"></a> [cloudwatch\_logs](#input\_cloudwatch\_logs) | CloudWatch logs configuration for the containers of this service. CloudWatch logs will be used as the default log configuration if Firelens is disabled and for the fluentbit and otel containers. | <pre>object({<br>    enabled           = optional(bool, true)<br>    name              = optional(string, "")<br>    retention_in_days = optional(number, 7)<br>  })</pre> | `{}` | no |
 | <a name="input_cluster_id"></a> [cluster\_id](#input\_cluster\_id) | The ECS cluster id that should run this service | `string` | n/a | yes |
@@ -379,10 +255,12 @@ for example.
 | <a name="input_policy_document"></a> [policy\_document](#input\_policy\_document) | AWS Policy JSON describing the permissions required for this service. | `string` | `""` | no |
 | <a name="input_requires_compatibilities"></a> [requires\_compatibilities](#input\_requires\_compatibilities) | The launch type the task is using. This enables a check to ensure that all of the parameters used in the task definition meet the requirements of the launch type. | `set(string)` | <pre>[<br>  "EC2",<br>  "FARGATE"<br>]</pre> | no |
 | <a name="input_security_groups"></a> [security\_groups](#input\_security\_groups) | A list of security group ids that will be attached additionally to the ecs deployment. | `list(string)` | `[]` | no |
+| <a name="input_service_discovery_dns_namespace"></a> [service\_discovery\_dns\_namespace](#input\_service\_discovery\_dns\_namespace) | The ID of a Service Discovery private DNS namespace. If provided, the module will create a Route 53 Auto Naming Service to enable service discovery using Cloud Map. | `string` | `""` | no |
 | <a name="input_service_name"></a> [service\_name](#input\_service\_name) | The service name. Will also be used as Route53 DNS entry. | `string` | n/a | yes |
-| <a name="input_subnet_tags"></a> [subnet\_tags](#input\_subnet\_tags) | The subnet tags where the ecs service will be deployed. If not specified all subnets will be used. | `map(string)` | `null` | no |
+| <a name="input_subnet_tags"></a> [subnet\_tags](#input\_subnet\_tags) | Map of tags to identify the subnets associated with this service. Each pair must exactly match a pair on the desired subnet. Defaults to `{ Tier = public }` for services with `assign_public_ip == true` and { Tier = private } otherwise. | `map(string)` | `null` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Additional tags (\_e.g.\_ { map-migrated : d-example-443255fsf }) | `map(string)` | `{}` | no |
 | <a name="input_target_groups"></a> [target\_groups](#input\_target\_groups) | A list of maps containing key/value pairs that define the target groups to be created. Order of these maps is important and the index of these are to be referenced in listener definitions. Required key/values: name, backend\_protocol, backend\_port | `any` | `[]` | no |
+| <a name="input_task_execution_role_arn"></a> [task\_execution\_role\_arn](#input\_task\_execution\_role\_arn) | ARN of the task execution role that the Amazon ECS container agent and the Docker daemon can assume. If not provided, a default role will be created and used. | `string` | `""` | no |
 | <a name="input_task_role_arn"></a> [task\_role\_arn](#input\_task\_role\_arn) | ARN of the IAM role that allows your Amazon ECS container task to make calls to other AWS services. If not specified, the default ECS task role created in this module will be used. | `string` | `""` | no |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | VPC id where the load balancer and other resources will be deployed. | `string` | n/a | yes |
 

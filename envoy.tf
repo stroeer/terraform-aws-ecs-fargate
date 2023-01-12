@@ -61,7 +61,7 @@ locals {
 }
 
 module "envoy_container_definition" {
-  source  = "cloudposse/config/yaml//modules/deepmerge"
+  source  = "registry.terraform.io/cloudposse/config/yaml//modules/deepmerge"
   version = "1.0.2"
 
   maps = [

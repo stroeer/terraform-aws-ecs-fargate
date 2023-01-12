@@ -53,7 +53,7 @@ variable "app_mesh" {
 
 variable "assign_public_ip" {
   default     = false
-  description = "This services will be placed in a public subnet and be assigned a public routable IP."
+  description = "Assign a public IP address to the ENI of this service."
   type        = bool
 }
 
@@ -315,8 +315,20 @@ variable "requires_compatibilities" {
   type        = set(string)
 }
 
+variable "security_groups" {
+  description = "A list of security group ids that will be attached additionally to the ecs deployment."
+  type        = list(string)
+  default     = []
+}
+
+variable "service_discovery_dns_namespace" {
+  description = "The ID of a Service Discovery private DNS namespace. If provided, the module will create a Route 53 Auto Naming Service to enable service discovery using Cloud Map."
+  type        = string
+  default     = ""
+}
+
 variable "subnet_tags" {
-  description = "The subnet tags where the ecs service will be deployed. If not specified all subnets will be used."
+  description = "Map of tags to identify the subnets associated with this service. Each pair must exactly match a pair on the desired subnet. Defaults to `{ Tier = public }` for services with `assign_public_ip == true` and { Tier = private } otherwise."
   type        = map(string)
   default     = null
 }
@@ -333,14 +345,14 @@ variable "target_groups" {
   default     = []
 }
 
+variable "task_execution_role_arn" {
+  description = "ARN of the task execution role that the Amazon ECS container agent and the Docker daemon can assume. If not provided, a default role will be created and used."
+  type        = string
+  default     = ""
+}
+
 variable "task_role_arn" {
   default     = ""
   description = "ARN of the IAM role that allows your Amazon ECS container task to make calls to other AWS services. If not specified, the default ECS task role created in this module will be used."
   type        = string
-}
-
-variable "security_groups" {
-  description = "A list of security group ids that will be attached additionally to the ecs deployment."
-  type        = list(string)
-  default     = []
 }
