@@ -5,6 +5,8 @@ resource "aws_cloudwatch_log_group" "containers" {
 }
 
 data "aws_iam_policy_document" "cloudwatch_logs_policy" {
+  count = var.task_role_arn == "" ? 1 : 0
+
   statement {
     actions = [
       "logs:CreateLogStream",
@@ -18,12 +20,16 @@ data "aws_iam_policy_document" "cloudwatch_logs_policy" {
 }
 
 resource "aws_iam_policy" "cloudwatch_logs_policy" {
+  count = var.task_role_arn == "" ? 1 : 0
+
   name   = "cw-logs-access-${var.service_name}-${data.aws_region.current.name}"
   path   = "/ecs/task-role/"
-  policy = data.aws_iam_policy_document.cloudwatch_logs_policy.json
+  policy = data.aws_iam_policy_document.cloudwatch_logs_policy[count.index].json
 }
 
 resource "aws_iam_role_policy_attachment" "cloudwatch_logs_policy" {
-  role       = aws_iam_role.ecs_task_role.name
-  policy_arn = aws_iam_policy.cloudwatch_logs_policy.arn
+  count = var.task_role_arn == "" ? 1 : 0
+
+  role       = aws_iam_role.ecs_task_role[count.index].name
+  policy_arn = aws_iam_policy.cloudwatch_logs_policy[count.index].arn
 }

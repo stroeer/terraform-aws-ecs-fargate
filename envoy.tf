@@ -61,34 +61,34 @@ locals {
 }
 
 data "aws_iam_policy" "appmesh" {
-  count = var.app_mesh.enabled ? 1 : 0
+  count = var.app_mesh.enabled && var.task_role_arn == "" ? 1 : 0
 
   arn = "arn:aws:iam::aws:policy/AWSAppMeshEnvoyAccess"
 }
 
 resource "aws_iam_role_policy_attachment" "appmesh" {
-  count = var.app_mesh.enabled ? 1 : 0
+  count = var.app_mesh.enabled && var.task_role_arn == "" ? 1 : 0
 
-  role       = aws_iam_role.ecs_task_role.name
+  role       = aws_iam_role.ecs_task_role[count.index].name
   policy_arn = data.aws_iam_policy.appmesh[count.index].arn
 }
 
 resource "aws_iam_role_policy_attachment" "acm" {
-  count = var.app_mesh.enabled ? 1 : 0
+  count = var.app_mesh.enabled && var.task_role_arn == "" ? 1 : 0
 
   policy_arn = aws_iam_policy.acm[count.index].arn
-  role       = aws_iam_role.ecs_task_role.name
+  role       = aws_iam_role.ecs_task_role[count.index].name
 }
 
 resource "aws_iam_policy" "acm" {
-  count = var.app_mesh.enabled ? 1 : 0
+  count = var.app_mesh.enabled && var.task_role_arn == "" ? 1 : 0
 
   name   = "${var.service_name}-acm-${data.aws_region.current.name}"
   policy = data.aws_iam_policy_document.acm[count.index].json
 }
 
 data "aws_iam_policy_document" "acm" {
-  count = var.app_mesh.enabled ? 1 : 0
+  count = var.app_mesh.enabled && var.task_role_arn == "" ? 1 : 0
 
   statement {
     sid       = "ACMExportCertificateAccess"

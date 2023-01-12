@@ -194,7 +194,7 @@ resource "aws_ecs_task_definition" "this" {
   network_mode             = "awsvpc"
   requires_compatibilities = var.requires_compatibilities
   tags                     = var.tags
-  task_role_arn            = aws_iam_role.ecs_task_role.arn
+  task_role_arn            = var.task_role_arn == "" ? aws_iam_role.ecs_task_role[0].arn : var.task_role_arn
 
   dynamic "volume" {
     for_each = var.efs_volumes

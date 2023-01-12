@@ -25,21 +25,21 @@ locals {
 }
 
 resource "aws_iam_role_policy_attachment" "otel" {
-  count = var.otel.enabled ? 1 : 0
+  count = var.otel.enabled && var.task_role_arn == "" ? 1 : 0
 
   policy_arn = aws_iam_policy.otel[count.index].arn
-  role       = aws_iam_role.ecs_task_role.name
+  role       = aws_iam_role.ecs_task_role[count.index].name
 }
 
 resource "aws_iam_policy" "otel" {
-  count = var.otel.enabled ? 1 : 0
+  count = var.otel.enabled && var.task_role_arn == "" ? 1 : 0
 
   name   = "${var.service_name}-otel-${data.aws_region.current.name}"
   policy = data.aws_iam_policy_document.otel[count.index].json
 }
 
 data "aws_iam_policy_document" "otel" {
-  count = var.otel.enabled ? 1 : 0
+  count = var.otel.enabled && var.task_role_arn == "" ? 1 : 0
 
   statement {
     sid = "AWSDistroOpenTelemetryPolicy"
