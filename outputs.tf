@@ -19,9 +19,19 @@ output "ecr_repository_url" {
   value       = join("", module.ecr[*].repository_url)
 }
 
+output "ecs_task_exec_role_arn" {
+  description = "The ARN of the ECS task role created for this service."
+  value       = try(aws_iam_role.ecs_task_role[0].arn, "")
+}
+
 output "ecs_task_exec_role_name" {
-  description = "ECS task role used by this service."
-  value       = aws_iam_role.ecs_task_role.name
+  description = "The name of the ECS task role created for this service."
+  value       = try(aws_iam_role.ecs_task_role[0].name, "")
+}
+
+output "ecs_task_exec_role_unique_id" {
+  description = "The unique id of the ECS task role created for this service."
+  value       = try(aws_iam_role.ecs_task_role[0].unique_id, "")
 }
 
 output "autoscaling_target" {
@@ -35,6 +45,7 @@ output "target_group_arns" {
   value       = aws_alb_target_group.main[*].arn
 }
 
+// TODO: this output should not start with "aws"
 output "aws_alb_target_group_arns" {
   description = "ARNs of the created target groups."
   value       = aws_alb_target_group.main[*].arn

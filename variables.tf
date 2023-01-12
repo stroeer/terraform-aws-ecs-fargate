@@ -311,12 +311,6 @@ variable "requires_internet_access" {
   type        = bool
 }
 
-variable "security_groups" {
-  description = "A list of security group ids that will be attached additionally to the ecs deployment."
-  type        = list(string)
-  default     = []
-}
-
 variable "subnet_tags" {
   description = "The subnet tags where the ecs service will be deployed. If not specified all subnets will be used."
   type        = map(string)
@@ -332,5 +326,17 @@ variable "tags" {
 variable "target_groups" {
   description = "A list of maps containing key/value pairs that define the target groups to be created. Order of these maps is important and the index of these are to be referenced in listener definitions. Required key/values: name, backend_protocol, backend_port"
   type        = any
+  default     = []
+}
+
+variable "task_role_arn" {
+  default     = ""
+  description = "ARN of the IAM role that allows your Amazon ECS container task to make calls to other AWS services. If not specified, the default ECS task role created in this module will be used."
+  type        = string
+}
+
+variable "security_groups" {
+  description = "A list of security group ids that will be attached additionally to the ecs deployment."
+  type        = list(string)
   default     = []
 }
