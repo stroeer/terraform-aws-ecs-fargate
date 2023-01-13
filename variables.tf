@@ -91,6 +91,16 @@ variable "deployment_circuit_breaker" {
   })
 }
 
+variable "cloudwatch_logs" {
+  description = "CloudWatch logs configuration for the containers of this service. CloudWatch logs will be used as the default log configuration if Firelens is disabled and for the fluentbit and otel containers."
+  default     = {}
+  type = object({
+    enabled           = optional(bool, true)
+    name              = optional(string, "")
+    retention_in_days = optional(number, 7)
+  })
+}
+
 variable "container_name" {
   default     = ""
   description = "Defaults to var.service_name, can be overridden if it differs. Used as a target for LB."
@@ -166,6 +176,12 @@ variable "codestar_notifications_kms_master_key_id" {
   type        = string
 }
 
+variable "create_deployment_pipeline" {
+  default     = true
+  description = "Creates a deploy pipeline from ECR trigger if `create_ecr_repo == true`."
+  type        = bool
+}
+
 variable "create_ecr_repository" {
   default     = true
   description = "Create an ECR repository for this service."
@@ -175,24 +191,6 @@ variable "create_ecr_repository" {
 variable "create_ingress_security_group" {
   default     = true
   description = "Create a security group allowing ingress from target groups to the application ports. Disable this for target groups attached to a Network Loadbalancer."
-  type        = bool
-}
-
-variable "ecr_repository_name" {
-  default     = ""
-  description = "Existing repo to register to use with this service module, e.g. creating deployment pipelines."
-  type        = string
-}
-
-variable "enable_execute_command" {
-  default     = false
-  description = "Specifies whether to enable Amazon ECS Exec for the tasks within the service."
-  type        = bool
-}
-
-variable "create_deployment_pipeline" {
-  default     = true
-  description = "Creates a deploy pipeline from ECR trigger if `create_ecr_repo == true`."
   type        = bool
 }
 
@@ -212,6 +210,18 @@ variable "desired_count" {
   default     = 0
   description = "Desired count of services to be started/running."
   type        = number
+}
+
+variable "ecr_repository_name" {
+  default     = ""
+  description = "Existing repo to register to use with this service module, e.g. creating deployment pipelines."
+  type        = string
+}
+
+variable "enable_execute_command" {
+  default     = false
+  description = "Specifies whether to enable Amazon ECS Exec for the tasks within the service."
+  type        = bool
 }
 
 variable "ecr_custom_lifecycle_policy" {

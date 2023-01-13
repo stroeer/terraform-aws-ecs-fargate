@@ -11,15 +11,15 @@ locals {
     user                   = "0:1337"
     volumesFrom            = []
 
-    logConfiguration = {
+    logConfiguration = var.cloudwatch_logs.enabled ? {
       logDriver = "awslogs"
       options = {
-        awslogs-group         = aws_cloudwatch_log_group.containers.name
+        awslogs-group         = aws_cloudwatch_log_group.containers[0].name
         awslogs-region        = data.aws_region.current.name
         awslogs-stream-prefix = "otel"
         mode                  = "non-blocking"
       }
-    }
+    } : null
   }
   otel_container = var.otel.enabled ? jsonencode(merge(local.otel_container_defaults, var.otel.container_definition)) : ""
 }

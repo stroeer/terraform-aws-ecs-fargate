@@ -1,11 +1,13 @@
 resource "aws_cloudwatch_log_group" "containers" {
-  name              = "/aws/ecs/${var.service_name}"
-  retention_in_days = 7
+  count = var.cloudwatch_logs.enabled ? 1 : 0
+
+  name              = var.cloudwatch_logs.name == "" ? "/aws/ecs/${var.service_name}" : var.cloudwatch_logs.name
+  retention_in_days = var.cloudwatch_logs.retention_in_days
   tags              = var.tags
 }
 
 data "aws_iam_policy_document" "cloudwatch_logs_policy" {
-  count = var.task_role_arn == "" ? 1 : 0
+  count = var.cloudwatch_logs.enabled && var.task_role_arn == "" ? 1 : 0
 
   statement {
     actions = [
@@ -15,7 +17,7 @@ data "aws_iam_policy_document" "cloudwatch_logs_policy" {
       "logs:PutLogEvents"
     ]
 
-    resources = [aws_cloudwatch_log_group.containers.arn]
+    resources = [aws_cloudwatch_log_group.containers[count.index].arn]
   }
 }
 
@@ -28,7 +30,7 @@ resource "aws_iam_policy" "cloudwatch_logs_policy" {
 }
 
 resource "aws_iam_role_policy_attachment" "cloudwatch_logs_policy" {
-  count = var.task_role_arn == "" ? 1 : 0
+  count = var.cloudwatch_logs.enabled && var.task_role_arn == "" ? 1 : 0
 
   role       = aws_iam_role.ecs_task_role[count.index].name
   policy_arn = aws_iam_policy.cloudwatch_logs_policy[count.index].arn

@@ -30,7 +30,7 @@ init: ## Initialize a Terraform working directory
 .PHONY: fmt
 fmt: ## Checks config files against canonical format
 	@echo "+ $@"
-	@terraform fmt -write=true -recursive
+	@terraform fmt -check=true -recursive
 
 .PHONY: validate
 validate: init ## Validates the Terraform files
