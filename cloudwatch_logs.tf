@@ -1,8 +1,8 @@
 resource "aws_cloudwatch_log_group" "containers" {
   count = var.cloudwatch_logs.enabled ? 1 : 0
 
-  name              = "/aws/ecs/${var.service_name}"
-  retention_in_days = 7
+  name              = var.cloudwatch_logs.name == "" ? "/aws/ecs/${var.service_name}" : var.cloudwatch_logs.name
+  retention_in_days = var.cloudwatch_logs.retention_in_days
   tags              = var.tags
 }
 

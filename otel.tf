@@ -19,7 +19,7 @@ locals {
         awslogs-stream-prefix = "otel"
         mode                  = "non-blocking"
       }
-    }: null
+    } : null
   }
   otel_container = var.otel.enabled ? jsonencode(merge(local.otel_container_defaults, var.otel.container_definition)) : ""
 }

@@ -49,12 +49,12 @@ locals {
         Trace_Output    = "Off"
       }
       } : (var.cloudwatch_logs.enabled ? {
-      logDriver = "awslogs"
-      options = {
-        awslogs-group : aws_cloudwatch_log_group.containers[0].name
-        awslogs-region : data.aws_region.current.name
-        awslogs-stream-prefix : var.app_mesh.container_name
-      }
+        logDriver = "awslogs"
+        options = {
+          awslogs-group : aws_cloudwatch_log_group.containers[0].name
+          awslogs-region : data.aws_region.current.name
+          awslogs-stream-prefix : var.app_mesh.container_name
+        }
     } : null)
   }
   envoy_container = var.app_mesh.enabled ? jsonencode(merge(local.envoy_container_defaults, var.app_mesh.container_definition)) : ""
