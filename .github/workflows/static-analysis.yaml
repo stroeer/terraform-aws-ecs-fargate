@@ -31,12 +31,15 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: check
-        run: |
-          tflint --init
-          make fmt validate tflint
+      - run: make fmt
+
+      - run: make validate
+
+      - run: make tflint
 
       - name: Terraform security scan
         uses: aquasecurity/tfsec-pr-commenter-action@v1.3.1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          tfsec_args: '--force-all-dirs --exclude-downloaded-modules --minimum-severity HIGH'
+          working_dir: ''

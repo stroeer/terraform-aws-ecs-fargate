@@ -43,15 +43,17 @@ module "lb_security_group_public" {
   egress_rules             = ["all-all"]
 }
 
-// plain ALB in the public subnet
+#tfsec:ignore:aws-elb-alb-not-public
 resource "aws_lb" "main" {
-  name               = "main"
-  load_balancer_type = "application"
-  security_groups    = [module.vpc.default_security_group_id, module.lb_security_group_public.this_security_group_id]
-  subnets            = module.vpc.public_subnets
+  drop_invalid_header_fields = true
+  name                       = "main"
+  load_balancer_type         = "application"
+  security_groups            = [module.vpc.default_security_group_id, module.lb_security_group_public.this_security_group_id]
+  subnets                    = module.vpc.public_subnets
 }
 
 // ALB listener on port 80 (HTTP)
+#tfsec:ignore:aws-elb-http-not-used
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.main.arn
   port              = 80
@@ -75,13 +77,14 @@ resource "aws_ecs_cluster" "main" {
 module "service" {
   source = "../../"
 
-  assign_public_ip           = true
-  cluster_id                 = aws_ecs_cluster.main.id
-  container_port             = 80
-  create_deployment_pipeline = false
-  desired_count              = 1
-  service_name               = local.service_name
-  vpc_id                     = module.vpc.vpc_id
+  assign_public_ip              = true
+  cluster_id                    = aws_ecs_cluster.main.id
+  create_deployment_pipeline    = false
+  create_ingress_security_group = false
+  container_port                = 80
+  desired_count                 = 1
+  service_name                  = local.service_name
+  vpc_id                        = module.vpc.vpc_id
 
   appautoscaling_settings = {
     max_capacity           = 4

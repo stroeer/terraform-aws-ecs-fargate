@@ -4,7 +4,13 @@ repos:
     hooks:
       - id: terraform_fmt
       - id: terraform_validate
+        args:
+          - --init-args=-backend=false
+          - --init-args=-lockfile=readonly
       - id: terraform_tflint
+      - id: terraform_tfsec
+        args:
+          - --args=--minimum-severity HIGH --exclude-downloaded-modules
       - id: terraform_docs
         args:
           - '--args=--lockfile=false'
