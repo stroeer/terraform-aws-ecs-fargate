@@ -57,7 +57,17 @@ locals {
         }
     } : null)
   }
-  envoy_container = var.app_mesh.enabled ? jsonencode(merge(local.envoy_container_defaults, var.app_mesh.container_definition)) : ""
+  envoy_container = var.app_mesh.enabled ? jsonencode(module.envoy_container_definition.merged) : ""
+}
+
+module "envoy_container_definition" {
+  source  = "Invicton-Labs/deepmerge/null"
+  version = "0.1.5"
+
+  maps = [
+    local.envoy_container_defaults,
+    var.app_mesh.container_definition
+  ]
 }
 
 data "aws_iam_policy" "appmesh" {

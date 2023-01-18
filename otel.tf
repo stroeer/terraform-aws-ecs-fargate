@@ -21,7 +21,17 @@ locals {
       }
     } : null
   }
-  otel_container = var.otel.enabled ? jsonencode(merge(local.otel_container_defaults, var.otel.container_definition)) : ""
+  otel_container = var.otel.enabled ? jsonencode(module.otel_container_definition.merged) : ""
+}
+
+module "otel_container_definition" {
+  source  = "Invicton-Labs/deepmerge/null"
+  version = "0.1.5"
+
+  maps = [
+    local.otel_container_defaults,
+    var.otel.container_definition
+  ]
 }
 
 resource "aws_iam_role_policy_attachment" "otel" {

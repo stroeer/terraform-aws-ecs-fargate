@@ -34,5 +34,15 @@ locals {
     } : null
   }
 
-  fluentbit_container = var.firelens.enabled ? jsonencode(merge(local.fluentbit_container_defaults, var.firelens.container_definition)) : ""
+  fluentbit_container = var.firelens.enabled ? jsonencode(module.fluentbit_container_definition.merged) : ""
+}
+
+module "fluentbit_container_definition" {
+  source  = "Invicton-Labs/deepmerge/null"
+  version = "0.1.5"
+
+  maps = [
+    local.fluentbit_container_defaults,
+    var.firelens.container_definition
+  ]
 }
