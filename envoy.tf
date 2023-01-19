@@ -61,8 +61,8 @@ locals {
 }
 
 module "envoy_container_definition" {
-  source  = "Invicton-Labs/deepmerge/null"
-  version = "0.1.5"
+  source  = "cloudposse/config/yaml//modules/deepmerge"
+  version = "0.2.0"
 
   maps = [
     local.envoy_container_defaults,

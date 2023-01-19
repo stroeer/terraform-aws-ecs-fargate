@@ -289,11 +289,11 @@ for example.
 | Name | Source | Version |
 |------|--------|---------|
 | <a name="module_code_deploy"></a> [code\_deploy](#module\_code\_deploy) | ./modules/deployment | n/a |
-| <a name="module_container_definition"></a> [container\_definition](#module\_container\_definition) | Invicton-Labs/deepmerge/null | 0.1.5 |
+| <a name="module_container_definition"></a> [container\_definition](#module\_container\_definition) | cloudposse/config/yaml//modules/deepmerge | 0.2.0 |
 | <a name="module_ecr"></a> [ecr](#module\_ecr) | ./modules/ecr | n/a |
-| <a name="module_envoy_container_definition"></a> [envoy\_container\_definition](#module\_envoy\_container\_definition) | Invicton-Labs/deepmerge/null | 0.1.5 |
-| <a name="module_fluentbit_container_definition"></a> [fluentbit\_container\_definition](#module\_fluentbit\_container\_definition) | Invicton-Labs/deepmerge/null | 0.1.5 |
-| <a name="module_otel_container_definition"></a> [otel\_container\_definition](#module\_otel\_container\_definition) | Invicton-Labs/deepmerge/null | 0.1.5 |
+| <a name="module_envoy_container_definition"></a> [envoy\_container\_definition](#module\_envoy\_container\_definition) | cloudposse/config/yaml//modules/deepmerge | 0.2.0 |
+| <a name="module_fluentbit_container_definition"></a> [fluentbit\_container\_definition](#module\_fluentbit\_container\_definition) | cloudposse/config/yaml//modules/deepmerge | 0.2.0 |
+| <a name="module_otel_container_definition"></a> [otel\_container\_definition](#module\_otel\_container\_definition) | cloudposse/config/yaml//modules/deepmerge | 0.2.0 |
 | <a name="module_sg"></a> [sg](#module\_sg) | registry.terraform.io/terraform-aws-modules/security-group/aws | ~> 3.0 |
 
 ## Resources
