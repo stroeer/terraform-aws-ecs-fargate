@@ -51,7 +51,7 @@ tflint: ## Runs tflint on all Terraform files
 	@for s in $(STACKS); do \
 		echo "tflint $$s"; \
 		terraform -chdir=$$s init -backend=false -lockfile=readonly > /dev/null; \
-		tflint --chdir=$$s --format=compact --module --config=$(ROOT_DIR)/.tflint.hcl || exit 1;\
+		tflint --chdir=$$s --format=compact --config=$(ROOT_DIR)/.tflint.hcl || exit 1;\
 	done;
 
 .PHONY: tfsec
