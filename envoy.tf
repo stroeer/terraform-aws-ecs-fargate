@@ -62,7 +62,7 @@ locals {
 
 module "envoy_container_definition" {
   source  = "cloudposse/config/yaml//modules/deepmerge"
-  version = "0.2.0"
+  version = "1.0.2"
 
   maps = [
     local.envoy_container_defaults,
