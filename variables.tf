@@ -315,12 +315,6 @@ variable "requires_compatibilities" {
   type        = set(string)
 }
 
-variable "requires_internet_access" {
-  default     = false
-  description = "As Fargate does not support IPv6 yet, this is the only way to enable internet access for the service by placing it in a public subnet (but not assigning a public IP)."
-  type        = bool
-}
-
 variable "subnet_tags" {
   description = "The subnet tags where the ecs service will be deployed. If not specified all subnets will be used."
   type        = map(string)

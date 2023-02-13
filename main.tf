@@ -47,7 +47,7 @@ data "aws_subnets" "selected" {
   }
 
   tags = var.subnet_tags != null ? var.subnet_tags : {
-    Tier = (var.assign_public_ip || var.requires_internet_access) ? "public" : "private"
+    Tier = var.assign_public_ip ? "public" : "private"
   }
 }
 
