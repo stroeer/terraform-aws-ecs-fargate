@@ -1,5 +1,5 @@
 data "aws_lb" "public" {
-  for_each = toset([for target in var.target_groups : lookup(target, "load_balancer_arn", "")])
+  for_each = var.create_ingress_security_group ? toset([for target in var.target_groups : lookup(target, "load_balancer_arn", "")]) : []
   arn      = each.value
 }
 
@@ -90,7 +90,8 @@ resource "aws_ecs_service" "this" {
   task_definition                    = "${aws_ecs_task_definition.this.family}:${max(aws_ecs_task_definition.this.revision, data.aws_ecs_task_definition.this.revision)}"
 
   dynamic "capacity_provider_strategy" {
-    for_each = var.capacity_provider_strategy != null ? var.capacity_provider_strategy : [/* noop */]
+    for_each = var.capacity_provider_strategy != null ? var.capacity_provider_strategy : []
+
     content {
       capacity_provider = capacity_provider_strategy.value.capacity_provider
       weight            = capacity_provider_strategy.value.weight
@@ -99,7 +100,8 @@ resource "aws_ecs_service" "this" {
   }
 
   dynamic "deployment_circuit_breaker" {
-    for_each = var.deployment_circuit_breaker != null ? [""] : [/* noop */]
+    for_each = var.deployment_circuit_breaker != null ? [true] : []
+
     content {
       enable   = var.deployment_circuit_breaker.enable
       rollback = var.deployment_circuit_breaker.rollback
@@ -108,6 +110,7 @@ resource "aws_ecs_service" "this" {
 
   dynamic "load_balancer" {
     for_each = aws_alb_target_group.main
+
     content {
       container_name   = local.container_name
       container_port   = load_balancer.value.port
@@ -116,14 +119,18 @@ resource "aws_ecs_service" "this" {
   }
 
   network_configuration {
-    subnets          = data.aws_subnets.selected.ids
-    security_groups  = concat(concat(var.security_groups, [for sg in module.sg : sg.this_security_group_id]), [])
     assign_public_ip = var.assign_public_ip
+    security_groups  = concat(concat(var.security_groups, [for sg in module.sg : sg.this_security_group_id]), [])
+    subnets          = data.aws_subnets.selected.ids
   }
 
-  service_registries {
-    registry_arn   = aws_service_discovery_service.this.arn
-    container_name = var.container_name
+  dynamic "service_registries" {
+    for_each = var.service_discovery_dns_namespace != "" ? [true] : []
+
+    content {
+      registry_arn   = aws_service_discovery_service.this[0].arn
+      container_name = var.container_name
+    }
   }
 
   lifecycle {
@@ -131,14 +138,15 @@ resource "aws_ecs_service" "this" {
   }
 }
 
-data "aws_iam_role" "task_execution_role" {
-  name = "ssm_ecs_task_execution_role"
-}
-
 resource "aws_ecs_task_definition" "this" {
+  depends_on = [
+    aws_iam_role.task_execution_role,
+    aws_iam_role.ecs_task_role
+  ]
+
   container_definitions    = local.container_definitions
   cpu                      = var.cpu
-  execution_role_arn       = data.aws_iam_role.task_execution_role.arn
+  execution_role_arn       = var.task_execution_role_arn == "" ? aws_iam_role.task_execution_role[0].arn : var.task_execution_role_arn
   family                   = var.service_name
   memory                   = var.memory
   network_mode             = "awsvpc"
@@ -171,6 +179,7 @@ resource "aws_ecs_task_definition" "this" {
 
   dynamic "proxy_configuration" {
     for_each = try(var.app_mesh.enabled, false) ? [true] : []
+
     content {
       container_name = var.app_mesh.container_name
       type           = "APPMESH"
@@ -257,6 +266,7 @@ resource "aws_appautoscaling_policy" "ecs" {
     disable_scale_in   = lookup(var.appautoscaling_settings, "disable_scale_in", false)
     scale_in_cooldown  = lookup(var.appautoscaling_settings, "scale_in_cooldown", 300)
     scale_out_cooldown = lookup(var.appautoscaling_settings, "scale_out_cooldown", 30)
+
     predefined_metric_specification {
       predefined_metric_type = lookup(var.appautoscaling_settings, "predefined_metric_type", "ECSServiceAverageCPUUtilization")
     }
