@@ -13,15 +13,16 @@ locals {
     logConfiguration = var.firelens.enabled && var.firelens.opensearch_host != "" ? {
       logDriver = "awsfirelens",
       options = {
-        Aws_Auth        = "Off"
-        Aws_Region      = data.aws_region.current.name
-        Host            = var.firelens.opensearch_host
-        Logstash_Format = "true"
-        Logstash_Prefix = "${var.service_name}-app"
-        Name            = "opensearch"
-        Port            = "443"
-        tls             = "On"
-        Trace_Output    = "Off"
+        Aws_Auth           = "On"
+        Aws_Region         = data.aws_region.current.name
+        Host               = var.firelens.opensearch_host
+        Logstash_Format    = "true"
+        Logstash_Prefix    = "${var.service_name}-app"
+        Name               = "opensearch"
+        Port               = "443"
+        Suppress_Type_Name = "On"
+        tls                = "On"
+        Trace_Output       = "Off"
       }
       } : (var.cloudwatch_logs.enabled ? {
         logDriver = "awslogs"
