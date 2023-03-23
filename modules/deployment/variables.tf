@@ -81,3 +81,9 @@ variable "tags" {
   description = "Additional tags (_e.g._ { map-migrated : d-example-443255fsf })"
   type        = map(string)
 }
+
+variable "ecr_image_tag" {
+  default     = "production"
+  description = "Tag of the new image pushed to the Amazon ECR repository to trigger the deployment pipeline."
+  type        = string
+}
