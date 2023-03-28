@@ -58,7 +58,7 @@ resource "aws_codepipeline" "codepipeline" {
       version         = "1"
 
       configuration = {
-        "ClusterName" : "k8",
+        "ClusterName" : var.cluster_name,
         "ServiceName" : var.service_name
         "FileName" : "imagedefinitions.json"
       }
