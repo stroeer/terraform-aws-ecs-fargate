@@ -214,7 +214,7 @@ module "ecr" {
   force_delete                    = var.ecr_force_delete
   image_scanning_configuration    = var.ecr_image_scanning_configuration
   image_tag_mutability            = var.ecr_image_tag_mutability
-  name                            = var.service_name
+  name                            = var.ecr_repository_name != "" ? var.ecr_repository_name : var.service_name
   tags                            = var.tags
 }
 
