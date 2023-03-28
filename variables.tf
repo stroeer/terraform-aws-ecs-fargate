@@ -282,6 +282,12 @@ variable "https_listener_rules" {
   default     = []
 }
 
+variable "ecr_image_tag" {
+  default     = "production"
+  description = "Tag of the new image pushed to the Amazon ECR repository to trigger the deployment pipeline."
+  type        = string
+}
+
 variable "memory" {
   default     = 512
   description = "Amount of memory [MB] is required by this service."
