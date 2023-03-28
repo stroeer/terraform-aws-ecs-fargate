@@ -19,7 +19,7 @@ resource "aws_cloudwatch_event_rule" "this" {
             "PUSH"
         ],
         "image-tag": [
-            "production"
+            "${var.ecr_image_tag}"
         ],
         "repository-name": [
             "${var.ecr_repository_name}"
