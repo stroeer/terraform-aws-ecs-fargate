@@ -229,6 +229,7 @@ module "code_deploy" {
   codestar_notifications_target_arn       = var.codestar_notifications_target_arn
   codestar_notification_kms_master_key_id = var.codestar_notifications_kms_master_key_id
   ecr_repository_name                     = var.create_ecr_repository ? module.ecr[count.index].name : var.ecr_repository_name
+  ecr_image_tag                           = var.ecr_image_tag
   service_name                            = var.service_name
   code_build_role                         = var.code_build_role_name
   code_pipeline_role                      = var.code_pipeline_role_name

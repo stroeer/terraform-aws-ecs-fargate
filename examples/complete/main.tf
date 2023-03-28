@@ -120,6 +120,7 @@ module "service" {
   memory                        = 512
   service_name                  = local.service_name
   vpc_id                        = module.vpc.vpc_id
+  ecr_image_tag                 = local.image_tag
 
   // configure autoscaling for this service
   appautoscaling_settings = {
