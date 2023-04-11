@@ -91,6 +91,21 @@ variable "deployment_circuit_breaker" {
   })
 }
 
+variable "deployment_failure_detection_alarms" {
+  default = {
+    enable      = false
+    rollback    = false
+    alarm_names = []
+  }
+  description = "Deployment circuit breaker configuration."
+  type = object({
+    enable      = optional(bool, true)
+    rollback    = bool
+    alarm_names = optional(list(string), [])
+  })
+}
+
+
 variable "cloudwatch_logs" {
   description = "CloudWatch logs configuration for the containers of this service. CloudWatch logs will be used as the default log configuration if Firelens is disabled and for the fluentbit and otel containers."
   default     = {}

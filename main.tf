@@ -108,6 +108,12 @@ resource "aws_ecs_service" "this" {
     }
   }
 
+  alarms {
+    enable      = var.deployment_failure_detection_alarms.enable
+    rollback    = var.deployment_failure_detection_alarms.rollback
+    alarm_names = var.deployment_failure_detection_alarms.alarm_names
+  }
+
   dynamic "load_balancer" {
     for_each = aws_alb_target_group.main
 
