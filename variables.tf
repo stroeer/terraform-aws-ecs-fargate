@@ -97,11 +97,12 @@ variable "deployment_failure_detection_alarms" {
     rollback    = false
     alarm_names = []
   }
-  description = "Deployment circuit breaker configuration."
+
+  description = "CloudWatch alarms used to detect deployment failures."
   type = object({
-    enable      = optional(bool, true)
+    enable      = bool
     rollback    = bool
-    alarm_names = optional(list(string), [])
+    alarm_names = list(string)
   })
 }
 
