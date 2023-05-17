@@ -37,6 +37,10 @@ resource "aws_alb_target_group" "main" {
       matcher             = lookup(health_check.value, "matcher", null)
     }
   }
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_alb_listener_rule" "public" {
