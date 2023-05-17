@@ -154,6 +154,11 @@ resource "aws_ecs_task_definition" "this" {
   tags                     = var.tags
   task_role_arn            = var.task_role_arn == "" ? aws_iam_role.ecs_task_role[0].arn : var.task_role_arn
 
+  runtime_platform {
+    cpu_architecture        = var.cpu_architecture
+    operating_system_family = var.operating_system_family
+  }
+
   dynamic "volume" {
     for_each = var.efs_volumes
 

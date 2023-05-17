@@ -125,6 +125,12 @@ variable "cpu" {
   type        = number
 }
 
+variable "cpu_architecture" {
+  default     = "X86_64"
+  description = "If the `requires_compatibilities` is `FARGATE` this field is required; must be set to a valid option from the operating system family in the runtime platform setting, see https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#runtime-platform."
+  type        = string
+}
+
 variable "code_pipeline_artifact_bucket" {
   default     = ""
   description = "Use an existing bucket for codepipeline artifacts that can be reused for multiple services. Otherwise a separate bucket for each service will be created."
@@ -312,6 +318,12 @@ variable "platform_version" {
 variable "policy_document" {
   default     = ""
   description = "AWS Policy JSON describing the permissions required for this service."
+  type        = string
+}
+
+variable "operating_system_family" {
+  default     = "LINUX"
+  description = "Must be set to either `X86_64` or `ARM64`, see https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#runtime-platform."
   type        = string
 }
 
