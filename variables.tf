@@ -127,7 +127,7 @@ variable "cpu" {
 
 variable "cpu_architecture" {
   default     = "X86_64"
-  description = "If the `requires_compatibilities` is `FARGATE` this field is required; must be set to a valid option from the operating system family in the runtime platform setting, see https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#runtime-platform."
+  description = "Must be set to either `X86_64` or `ARM64`, see https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#runtime-platform."
   type        = string
 }
 
@@ -323,7 +323,7 @@ variable "policy_document" {
 
 variable "operating_system_family" {
   default     = "LINUX"
-  description = "Must be set to either `X86_64` or `ARM64`, see https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#runtime-platform."
+  description = "If the `requires_compatibilities` is `FARGATE` this field is required. Must be set to a valid option from https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#runtime-platform."
   type        = string
 }
 
