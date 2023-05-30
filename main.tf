@@ -81,7 +81,7 @@ resource "aws_ecs_service" "this" {
   desired_count                      = var.desired_count
   enable_execute_command             = var.enable_execute_command
   force_new_deployment               = var.force_new_deployment
-  health_check_grace_period_seconds  = 0
+  health_check_grace_period_seconds  = var.health_check_grace_period
   launch_type                        = var.capacity_provider_strategy != null ? null : "FARGATE"
   name                               = var.service_name
   platform_version                   = var.platform_version

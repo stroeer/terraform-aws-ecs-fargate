@@ -282,6 +282,12 @@ variable "force_new_deployment" {
   type        = bool
 }
 
+variable "health_check_grace_period" {
+  default     = 0
+  type        = number
+  description = "Set the start-up grace period with which to ignore health checks. This can be important to for containers with long startup times. E.g. Windows containers."
+}
+
 variable "https_listener_rules" {
   description = "A list of maps describing the Listener Rules for this ALB. Required key/values: actions, conditions. Optional key/values: priority, https_listener_index (default to https_listeners[count.index])"
   type        = any
