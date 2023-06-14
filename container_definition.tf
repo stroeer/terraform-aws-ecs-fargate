@@ -8,7 +8,7 @@ locals {
     name                   = var.service_name
     readonlyRootFilesystem = true
     mountPoints            = []
-    user                   = "0"
+    user                   = startswith(upper(var.operating_system_family), "WINDOWS") ? null : "0"
     volumesFrom            = []
 
     logConfiguration = var.firelens.enabled && var.firelens.opensearch_host != "" ? {
@@ -42,7 +42,7 @@ locals {
       }
     ]
 
-    ulimits = [
+    ulimits = startswith(upper(var.operating_system_family), "WINDOWS") ? [] : [
       {
         name      = "nofile"
         softLimit = 1024 * 32, // default is 1024
