@@ -7,7 +7,7 @@ locals {
     mountPoints            = []
     portMappings           = []
     readonlyRootFilesystem = false
-    user                   = "1337:1337"
+    user                   = startswith(upper(var.operating_system_family), "WINDOWS") ? null : "1337:1337"
     volumesFrom            = []
 
     environment = [
@@ -28,7 +28,7 @@ locals {
       startPeriod = 10
     }
 
-    ulimits = [
+    ulimits = startswith(upper(var.operating_system_family), "WINDOWS") ? [] : [
       {
         name      = "nofile"
         softLimit = 1024 * 32
