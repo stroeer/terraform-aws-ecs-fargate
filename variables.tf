@@ -282,6 +282,12 @@ variable "force_new_deployment" {
   type        = bool
 }
 
+variable "health_check_grace_period_seconds" {
+  default     = 0
+  type        = number
+  description = "Seconds to ignore failing load balancer health checks on newly instantiated tasks to prevent premature shutdown, up to 2147483647. Only valid for services configured to use load balancers."
+}
+
 variable "https_listener_rules" {
   description = "A list of maps describing the Listener Rules for this ALB. Required key/values: actions, conditions. Optional key/values: priority, https_listener_index (default to https_listeners[count.index])"
   type        = any
