@@ -282,10 +282,10 @@ variable "force_new_deployment" {
   type        = bool
 }
 
-variable "health_check_grace_period" {
+variable "health_check_grace_period_seconds" {
   default     = 0
   type        = number
-  description = "Set the start-up grace period with which to ignore health checks. This can be important to for containers with long startup times. E.g. Windows containers."
+  description = "Seconds to ignore failing load balancer health checks on newly instantiated tasks to prevent premature shutdown, up to 2147483647. Only valid for services configured to use load balancers."
 }
 
 variable "https_listener_rules" {
