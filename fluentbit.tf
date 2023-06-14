@@ -7,7 +7,7 @@ locals {
     mountPoints            = []
     portMappings           = []
     readonlyRootFilesystem = false
-    user                   = "0:1337"
+    user                   = startswith(upper(var.operating_system_family), "WINDOWS") ? null : "0:1337"
     volumesFrom            = []
 
     environment = [
