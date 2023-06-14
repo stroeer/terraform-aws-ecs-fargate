@@ -1,9 +1,10 @@
 locals {
+  ecr_repository_name = var.ecr_repository_name != "" ? var.ecr_repository_name : var.service_name
   // mandatory app container with overridable defaults
   app_container_defaults = {
     dependsOn              = var.app_mesh.enabled ? [{ containerName = var.app_mesh.container_name, condition = "HEALTHY" }] : []
     essential              = true
-    image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com/${var.service_name}:${var.ecr_image_tag}"
+    image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com/${local.ecr_repository_name}:${var.ecr_image_tag}"
     name                   = var.service_name
     readonlyRootFilesystem = true
     mountPoints            = []
