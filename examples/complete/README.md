@@ -36,8 +36,8 @@ Note that this example may create resources which cost money. Run `terraform des
 |------|--------|---------|
 | <a name="module_alb_security_group_public"></a> [alb\_security\_group\_public](#module\_alb\_security\_group\_public) | registry.terraform.io/terraform-aws-modules/security-group/aws | >= 4.17 |
 | <a name="module_service"></a> [service](#module\_service) | ../../ | n/a |
-| <a name="module_vpc"></a> [vpc](#module\_vpc) | registry.terraform.io/terraform-aws-modules/vpc/aws | >= 3.18 |
-| <a name="module_vpc_endpoints"></a> [vpc\_endpoints](#module\_vpc\_endpoints) | registry.terraform.io/terraform-aws-modules/vpc/aws//modules/vpc-endpoints | >= 3.18 |
+| <a name="module_vpc"></a> [vpc](#module\_vpc) | registry.terraform.io/terraform-aws-modules/vpc/aws | >= 4.0 |
+| <a name="module_vpc_endpoints"></a> [vpc\_endpoints](#module\_vpc\_endpoints) | registry.terraform.io/terraform-aws-modules/vpc/aws//modules/vpc-endpoints | >= 4.0 |
 
 ## Resources
 
