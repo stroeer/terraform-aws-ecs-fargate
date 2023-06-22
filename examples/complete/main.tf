@@ -1,20 +1,19 @@
 locals {
   container_port = 8000
   image_tag      = "production"
-  service_name   = "${random_pet.this.id}-service"
 }
 
 resource "random_pet" "this" {
-  length = 2
+  length = 1
 }
 
 resource "aws_ecs_cluster" "this" {
-  name = "${random_pet.this.id}-cluster"
+  name = random_pet.this.id
 }
 
 module "vpc" {
   source  = "registry.terraform.io/terraform-aws-modules/vpc/aws"
-  version = ">= 3.18"
+  version = ">= 4.0"
 
   azs                  = slice(data.aws_availability_zones.available.names, 0, 3)
   cidr                 = "10.0.0.0/16"
@@ -35,7 +34,7 @@ module "vpc" {
 // see https://docs.aws.amazon.com/AmazonECR/latest/userguide/vpc-endpoints.html for necessary endpoints to run Fargate tasks
 module "vpc_endpoints" {
   source  = "registry.terraform.io/terraform-aws-modules/vpc/aws//modules/vpc-endpoints"
-  version = ">= 3.18"
+  version = ">= 4.0"
 
   security_group_ids = [data.aws_security_group.default.id]
   vpc_id             = module.vpc.vpc_id
@@ -118,7 +117,7 @@ module "service" {
   desired_count                 = 1
   ecr_force_delete              = true
   memory                        = 512
-  service_name                  = local.service_name
+  service_name                  = random_pet.this.id
   vpc_id                        = module.vpc.vpc_id
   ecr_image_tag                 = local.image_tag
 
@@ -152,7 +151,7 @@ module "service" {
   // add a target group to route ALB traffic to this service
   target_groups = [
     {
-      name              = "${local.service_name}-public"
+      name_prefix       = "${substr(random_pet.this.id, 0, 5)}-"
       backend_protocol  = "HTTP"
       backend_port      = local.container_port
       load_balancer_arn = aws_lb_listener.http.load_balancer_arn
