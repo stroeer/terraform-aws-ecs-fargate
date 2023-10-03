@@ -54,8 +54,12 @@ output "task_execution_role_unique_id" {
   value       = try(aws_iam_role.task_execution_role[0].unique_id, "")
 }
 
-// TODO: this output should not start with "aws"
-output "aws_alb_target_group_arns" {
+output "alb_target_group_arns" {
   description = "ARNs of the created target groups."
   value       = aws_alb_target_group.main[*].arn
+}
+
+output "alb_target_group_arn_suffixes" {
+  description = "ARN suffixes of the created target groups."
+  value       = aws_alb_target_group.main[*].arn_suffix
 }
