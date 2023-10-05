@@ -275,7 +275,7 @@ resource "aws_appautoscaling_policy" "ecs" {
 
     predefined_metric_specification {
       predefined_metric_type = lookup(var.appautoscaling_settings, "predefined_metric_type", "ECSServiceAverageCPUUtilization")
-      resource_label         = lookup(var.appautoscaling_settings, "resource_label")
+      resource_label         = lookup(var.appautoscaling_settings, "resource_label", null)
     }
   }
 }
