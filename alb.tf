@@ -38,6 +38,18 @@ resource "aws_alb_target_group" "main" {
     }
   }
 
+  dynamic "stickiness" {
+    for_each = length(keys(lookup(var.target_groups[count.index], "stickiness", {}))) == 0 ? [] : [
+    lookup(var.target_groups[count.index], "stickiness", {})]
+
+    content {
+      cookie_duration = lookup(stickiness.value, "cookie_duration", null)
+      cookie_name     = lookup(stickiness.value, "cookie_name", null)
+      enabled         = lookup(stickiness.value, "enabled", null)
+      type            = lookup(stickiness.value, "type", null)
+    }
+  }
+
   lifecycle {
     create_before_destroy = true
   }
