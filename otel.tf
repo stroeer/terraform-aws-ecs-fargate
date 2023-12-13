@@ -2,7 +2,7 @@ locals {
   // optional AWS Distro for OpenTelemetry container
   otel_container_defaults = {
     essential              = false
-    image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com/ecr-public/aws-observability/aws-otel-collector:v0.29.0"
+    image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com/ecr-public/aws-observability/aws-otel-collector:v0.36.0"
     name                   = "otel"
     readonlyRootFilesystem = false
     mountPoints            = []
