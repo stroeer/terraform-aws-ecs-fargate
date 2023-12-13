@@ -10,8 +10,8 @@ resource "aws_alb_target_group" "main" {
 
   vpc_id           = var.vpc_id
   port             = lookup(var.target_groups[count.index], "backend_port", null)
-  protocol         = lookup(var.target_groups[count.index], "backend_protocol", null) != null ? upper(lookup(var.target_groups[count.index], "backend_protocol")) : null
-  protocol_version = lookup(var.target_groups[count.index], "protocol_version", null) != null ? upper(lookup(var.target_groups[count.index], "protocol_version")) : null
+  protocol         = lookup(var.target_groups[count.index], "backend_protocol", null) != null ? upper(lookup(var.target_groups[count.index], "backend_protocol", null)) : null
+  protocol_version = lookup(var.target_groups[count.index], "protocol_version", null) != null ? upper(lookup(var.target_groups[count.index], "protocol_version", null)) : null
   target_type      = lookup(var.target_groups[count.index], "target_type", null)
 
   deregistration_delay               = lookup(var.target_groups[count.index], "deregistration_delay", null)
@@ -23,7 +23,8 @@ resource "aws_alb_target_group" "main" {
 
   dynamic "health_check" {
     for_each = length(keys(lookup(var.target_groups[count.index], "health_check", {}))) == 0 ? [] : [
-    lookup(var.target_groups[count.index], "health_check", {})]
+      lookup(var.target_groups[count.index], "health_check", {})
+    ]
 
     content {
       enabled             = lookup(health_check.value, "enabled", null)
