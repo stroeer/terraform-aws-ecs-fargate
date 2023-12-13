@@ -11,15 +11,15 @@ locals {
           [
             {
               # allow backend_port traffic
-              from_port                = lookup(target, "backend_port")
-              to_port                  = lookup(target, "backend_port")
+              from_port                = lookup(target, "backend_port", null)
+              to_port                  = lookup(target, "backend_port", null)
               protocol                 = "tcp"
-              source_security_group_id = tolist(data.aws_lb.public[lookup(target, "load_balancer_arn")].security_groups)[0]
+              source_security_group_id = tolist(data.aws_lb.public[lookup(target, "load_balancer_arn", null)].security_groups)[0]
               prefix                   = "backend_port"
             }
           ],
           lookup(target, "health_check", null) != null &&
-          lookup(target["health_check"], "port", "traffic-port") != lookup(target, "backend_port", ) &&
+          lookup(target["health_check"], "port", "traffic-port") != lookup(target, "backend_port", null) &&
           lookup(target["health_check"], "port", "traffic-port") != "traffic-port"
           ? [
             {
@@ -27,7 +27,7 @@ locals {
               from_port                = target["health_check"]["port"]
               to_port                  = target["health_check"]["port"]
               protocol                 = "tcp"
-              source_security_group_id = tolist(data.aws_lb.public[lookup(target, "load_balancer_arn")].security_groups)[0]
+              source_security_group_id = tolist(data.aws_lb.public[lookup(target, "load_balancer_arn", null)].security_groups)[0]
               prefix                   = "health_check_port"
             }
           ] : []
@@ -268,7 +268,7 @@ resource "aws_appautoscaling_policy" "ecs" {
   service_namespace  = aws_appautoscaling_target.ecs[count.index].service_namespace
 
   target_tracking_scaling_policy_configuration {
-    target_value       = lookup(var.appautoscaling_settings, "target_value")
+    target_value       = lookup(var.appautoscaling_settings, "target_value", null)
     disable_scale_in   = lookup(var.appautoscaling_settings, "disable_scale_in", false)
     scale_in_cooldown  = lookup(var.appautoscaling_settings, "scale_in_cooldown", 300)
     scale_out_cooldown = lookup(var.appautoscaling_settings, "scale_out_cooldown", 30)
