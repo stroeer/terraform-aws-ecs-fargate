@@ -8,6 +8,10 @@ variable "cluster_id" {
   type        = string
 }
 
+variable "cluster_name" {
+  description = "The ECS cluster name"
+}
+
 variable "container_port" {
   description = "The port used by the app within the container."
   type        = number
