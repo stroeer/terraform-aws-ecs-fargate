@@ -157,7 +157,7 @@ variable "code_build_role_name" {
 
 variable "code_build_log_retention_in_days" {
   default     = 7
-  description = "CloudWatch log retention period for Code Build logs."
+  description = "Log retention in days of the CodeBuild CloudWatch log group."
   type        = number
 }
 

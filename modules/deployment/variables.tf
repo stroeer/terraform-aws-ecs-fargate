@@ -52,6 +52,12 @@ variable "code_build_role" {
   type        = string
 }
 
+variable "code_build_log_retention_in_days" {
+  default     = 7
+  description = "Log retention in days of the CodeBuild CloudWatch log group."
+  type        = number
+}
+
 variable "codestar_notifications_detail_type" {
   default     = "BASIC"
   description = "The level of detail to include in the notifications for this resource. Possible values are BASIC and FULL."
@@ -86,10 +92,4 @@ variable "ecr_image_tag" {
   default     = "production"
   description = "Tag of the new image pushed to the Amazon ECR repository to trigger the deployment pipeline."
   type        = string
-}
-
-variable "log_retention_in_days" {
-  default     = 7
-  description = "CloudWatch log retention period in days."
-  type        = number
 }
