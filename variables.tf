@@ -155,6 +155,12 @@ variable "code_build_role_name" {
   type        = string
 }
 
+variable "code_build_log_retention_in_days" {
+  default     = 7
+  description = "Log retention in days of the CodeBuild CloudWatch log group."
+  type        = number
+}
+
 variable "codestar_notifications_detail_type" {
   default     = "BASIC"
   description = "The level of detail to include in the notifications for this resource. Possible values are BASIC and FULL."

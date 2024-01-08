@@ -11,15 +11,15 @@ locals {
           [
             {
               # allow backend_port traffic
-              from_port                = lookup(target, "backend_port")
-              to_port                  = lookup(target, "backend_port")
+              from_port                = lookup(target, "backend_port", null)
+              to_port                  = lookup(target, "backend_port", null)
               protocol                 = "tcp"
-              source_security_group_id = tolist(data.aws_lb.public[lookup(target, "load_balancer_arn")].security_groups)[0]
+              source_security_group_id = tolist(data.aws_lb.public[lookup(target, "load_balancer_arn", null)].security_groups)[0]
               prefix                   = "backend_port"
             }
           ],
           lookup(target, "health_check", null) != null &&
-          lookup(target["health_check"], "port", "traffic-port") != lookup(target, "backend_port", ) &&
+          lookup(target["health_check"], "port", "traffic-port") != lookup(target, "backend_port", null) &&
           lookup(target["health_check"], "port", "traffic-port") != "traffic-port"
           ? [
             {
@@ -27,7 +27,7 @@ locals {
               from_port                = target["health_check"]["port"]
               to_port                  = target["health_check"]["port"]
               protocol                 = "tcp"
-              source_security_group_id = tolist(data.aws_lb.public[lookup(target, "load_balancer_arn")].security_groups)[0]
+              source_security_group_id = tolist(data.aws_lb.public[lookup(target, "load_balancer_arn", null)].security_groups)[0]
               prefix                   = "health_check_port"
             }
           ] : []
@@ -237,6 +237,7 @@ module "code_deploy" {
   ecr_image_tag                           = var.ecr_image_tag
   service_name                            = var.service_name
   code_build_role                         = var.code_build_role_name
+  code_build_log_retention_in_days        = var.code_build_log_retention_in_days
   code_pipeline_role                      = var.code_pipeline_role_name
   artifact_bucket                         = var.code_pipeline_artifact_bucket
   artifact_bucket_server_side_encryption  = var.code_pipeline_artifact_bucket_sse
@@ -268,7 +269,7 @@ resource "aws_appautoscaling_policy" "ecs" {
   service_namespace  = aws_appautoscaling_target.ecs[count.index].service_namespace
 
   target_tracking_scaling_policy_configuration {
-    target_value       = lookup(var.appautoscaling_settings, "target_value")
+    target_value       = lookup(var.appautoscaling_settings, "target_value", null)
     disable_scale_in   = lookup(var.appautoscaling_settings, "disable_scale_in", false)
     scale_in_cooldown  = lookup(var.appautoscaling_settings, "scale_in_cooldown", 300)
     scale_out_cooldown = lookup(var.appautoscaling_settings, "scale_out_cooldown", 30)
