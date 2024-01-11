@@ -1,6 +1,7 @@
 locals {
   // optional envoy container for AWS AppMesh
   envoy_container_defaults = {
+    dependsOn              = var.firelens.enabled ? [{ containerName = var.firelens.container_name, condition = "HEALTHY" }] : []
     name                   = var.app_mesh.container_name
     image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com/ecr-public/appmesh/aws-appmesh-envoy:v1.24.0.0-prod"
     essential              = true
@@ -25,7 +26,7 @@ locals {
       ]
       timeout     = 2
       interval    = 5
-      startPeriod = 10
+      startPeriod = 15
     }
 
     ulimits = startswith(upper(var.operating_system_family), "WINDOWS") ? [] : [
