@@ -46,6 +46,24 @@ variable "code_pipeline_role" {
   type        = string
 }
 
+variable "code_build_environment_compute_type" {
+  description = "Information about the compute resources the CodeBuild stage of the deployment pipeline will use."
+  default     = "BUILD_LAMBDA_1GB"
+  type        = string
+}
+
+variable "code_build_environment_image" {
+  description = "Docker image to use for the CodeBuild stage of the deployment pipeline. The image needs to include python."
+  default     = "aws/codebuild/amazonlinux-aarch64-lambda-standard:python3.12"
+  type        = string
+}
+
+variable "code_build_environment_type" {
+  description = "Type of build environment for the CodeBuild stage of the deployment pipeline."
+  default     = "ARM_LAMBDA_CONTAINER"
+  type        = string
+}
+
 variable "code_build_role" {
   default     = ""
   description = "Use an existing role for codebuild permissions that can be reused for multiple services."

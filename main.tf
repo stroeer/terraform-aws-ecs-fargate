@@ -229,6 +229,9 @@ module "code_deploy" {
 
   cluster_name                            = var.cluster_id
   container_name                          = local.container_name
+  code_build_environment_compute_type     = var.code_build_environment_compute_type
+  code_build_environment_image            = var.code_build_environment_image
+  code_build_environment_type             = var.code_build_environment_type
   codestar_notifications_detail_type      = var.codestar_notifications_detail_type
   codestar_notifications_event_type_ids   = var.codestar_notifications_event_type_ids
   codestar_notifications_target_arn       = var.codestar_notifications_target_arn

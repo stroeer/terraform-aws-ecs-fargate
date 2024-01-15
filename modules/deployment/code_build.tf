@@ -33,9 +33,9 @@ resource "aws_codebuild_project" "this" {
   }
 
   environment {
-    compute_type = "BUILD_GENERAL1_SMALL"
-    image        = "aws/codebuild/amazonlinux2-x86_64-standard:4.0"
-    type         = "LINUX_CONTAINER"
+    compute_type = var.code_build_environment_compute_type
+    image        = var.code_build_environment_image
+    type         = var.code_build_environment_type
 
     environment_variable {
       name  = "CONTAINER_NAME"
@@ -49,9 +49,6 @@ resource "aws_codebuild_project" "this" {
 version: 0.2
 
 phases:
-  install:
-    runtime-versions:
-      python: 3.9
   build:
     commands:
       - |
