@@ -49,9 +49,6 @@ resource "aws_codebuild_project" "this" {
 version: 0.2
 
 phases:
-  install:
-    runtime-versions:
-      python: 3.12
   build:
     commands:
       - |

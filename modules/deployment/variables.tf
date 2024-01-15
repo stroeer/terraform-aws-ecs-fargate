@@ -53,7 +53,7 @@ variable "code_build_environment_compute_type" {
 }
 
 variable "code_build_environment_image" {
-  description = "Docker image to use for the CodeBuild stage of the deployment pipeline."
+  description = "Docker image to use for the CodeBuild stage of the deployment pipeline. The image needs to include python."
   default     = "aws/codebuild/amazonlinux-aarch64-lambda-standard:python3.12"
   type        = string
 }
