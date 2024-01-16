@@ -1,4 +1,4 @@
-name: 'Warns and then closes stale issues and PRs'
+name: 'stale issues and PRs'
 on:
   schedule:
     - cron: '0 0 * * *'
