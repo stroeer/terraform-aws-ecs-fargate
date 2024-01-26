@@ -152,13 +152,13 @@ for example.
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 3.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.32 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 3.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 5.32 |
 
 ## Modules
 
@@ -230,6 +230,8 @@ for example.
 | <a name="input_code_pipeline_artifact_bucket"></a> [code\_pipeline\_artifact\_bucket](#input\_code\_pipeline\_artifact\_bucket) | Use an existing bucket for codepipeline artifacts that can be reused for multiple services. Otherwise a separate bucket for each service will be created. | `string` | `""` | no |
 | <a name="input_code_pipeline_artifact_bucket_sse"></a> [code\_pipeline\_artifact\_bucket\_sse](#input\_code\_pipeline\_artifact\_bucket\_sse) | AWS KMS master key id for server-side encryption. | `any` | `{}` | no |
 | <a name="input_code_pipeline_role_name"></a> [code\_pipeline\_role\_name](#input\_code\_pipeline\_role\_name) | Use an existing role for codepipeline permissions that can be reused for multiple services. Otherwise a separate role for this service will be created. | `string` | `""` | no |
+| <a name="input_code_pipeline_type"></a> [code\_pipeline\_type](#input\_code\_pipeline\_type) | Type of the CodePipeline. Possible values are: `V1` and `V2`. | `string` | `"V1"` | no |
+| <a name="input_code_pipeline_variables"></a> [code\_pipeline\_variables](#input\_code\_pipeline\_variables) | CodePipeline variables. Valid only when `codepipeline_type` is `V2`. | <pre>list(object({<br>    name          = string<br>    default_value = optional(string)<br>    description   = optional(string)<br>  }))</pre> | `[]` | no |
 | <a name="input_codestar_notifications_detail_type"></a> [codestar\_notifications\_detail\_type](#input\_codestar\_notifications\_detail\_type) | The level of detail to include in the notifications for this resource. Possible values are BASIC and FULL. | `string` | `"BASIC"` | no |
 | <a name="input_codestar_notifications_event_type_ids"></a> [codestar\_notifications\_event\_type\_ids](#input\_codestar\_notifications\_event\_type\_ids) | A list of event types associated with this notification rule. For list of allowed events see https://docs.aws.amazon.com/dtconsole/latest/userguide/concepts.html#concepts-api. | `list(string)` | <pre>[<br>  "codepipeline-pipeline-pipeline-execution-succeeded",<br>  "codepipeline-pipeline-pipeline-execution-failed"<br>]</pre> | no |
 | <a name="input_codestar_notifications_kms_master_key_id"></a> [codestar\_notifications\_kms\_master\_key\_id](#input\_codestar\_notifications\_kms\_master\_key\_id) | AWS KMS master key id for server-side encryption. | `string` | `null` | no |

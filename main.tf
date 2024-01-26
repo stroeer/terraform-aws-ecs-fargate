@@ -242,6 +242,8 @@ module "code_deploy" {
   code_build_role                         = var.code_build_role_name
   code_build_log_retention_in_days        = var.code_build_log_retention_in_days
   code_pipeline_role                      = var.code_pipeline_role_name
+  code_pipeline_type                      = var.code_pipeline_type
+  code_pipeline_variables                 = var.code_pipeline_variables
   artifact_bucket                         = var.code_pipeline_artifact_bucket
   artifact_bucket_server_side_encryption  = var.code_pipeline_artifact_bucket_sse
 
