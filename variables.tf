@@ -149,6 +149,22 @@ variable "code_pipeline_role_name" {
   type        = string
 }
 
+variable "code_pipeline_type" {
+  description = "Type of the CodePipeline. Possible values are: `V1` and `V2`."
+  default     = "V1"
+  type        = string
+}
+
+variable "code_pipeline_variables" {
+  description = "CodePipeline variables. Valid only when `codepipeline_type` is `V2`."
+  default     = []
+  type = list(object({
+    name          = string
+    default_value = optional(string)
+    description   = optional(string)
+  }))
+}
+
 variable "code_build_environment_compute_type" {
   description = "Information about the compute resources the CodeBuild stage of the deployment pipeline will use."
   default     = "BUILD_LAMBDA_1GB"
