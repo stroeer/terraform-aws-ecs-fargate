@@ -2,7 +2,7 @@ locals {
   // optional FluentBit container for log aggregation
   fluentbit_container_defaults = {
     name                   = var.firelens.container_name
-    image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com/ecr-public/aws-observability/aws-for-fluent-bit:2.29.0"
+    image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com/ecr-public/aws-observability/aws-for-fluent-bit:2.32.0"
     essential              = true
     mountPoints            = []
     portMappings           = []
