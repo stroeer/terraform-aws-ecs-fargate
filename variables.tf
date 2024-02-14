@@ -326,6 +326,7 @@ variable "firelens" {
   description = "Configuration for optional custom log routing using FireLens over fluentbit sidecar."
   default     = {}
   type = object({
+    container_name       = optional(string, "fluentbit")
     container_definition = optional(any, {})
     enabled              = optional(bool, false)
     opensearch_host      = optional(string, "")
