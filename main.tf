@@ -108,6 +108,16 @@ resource "aws_ecs_service" "this" {
     }
   }
 
+  dynamic "alarms" {
+    for_each = var.deployment_failure_detection_alarms.enable ? [true] : []
+
+    content {
+      enable      = var.deployment_failure_detection_alarms.enable
+      rollback    = var.deployment_failure_detection_alarms.rollback
+      alarm_names = var.deployment_failure_detection_alarms.alarm_names
+    }
+  }
+
   dynamic "load_balancer" {
     for_each = aws_alb_target_group.main
 
@@ -229,6 +239,9 @@ module "code_deploy" {
 
   cluster_name                            = var.cluster_id
   container_name                          = local.container_name
+  code_build_environment_compute_type     = var.code_build_environment_compute_type
+  code_build_environment_image            = var.code_build_environment_image
+  code_build_environment_type             = var.code_build_environment_type
   codestar_notifications_detail_type      = var.codestar_notifications_detail_type
   codestar_notifications_event_type_ids   = var.codestar_notifications_event_type_ids
   codestar_notifications_target_arn       = var.codestar_notifications_target_arn
@@ -239,6 +252,8 @@ module "code_deploy" {
   code_build_role                         = var.code_build_role_name
   code_build_log_retention_in_days        = var.code_build_log_retention_in_days
   code_pipeline_role                      = var.code_pipeline_role_name
+  code_pipeline_type                      = var.code_pipeline_type
+  code_pipeline_variables                 = var.code_pipeline_variables
   artifact_bucket                         = var.code_pipeline_artifact_bucket
   artifact_bucket_server_side_encryption  = var.code_pipeline_artifact_bucket_sse
 

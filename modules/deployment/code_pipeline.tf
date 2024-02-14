@@ -1,6 +1,7 @@
 resource "aws_codepipeline" "codepipeline" {
-  name     = var.service_name
-  role_arn = var.code_pipeline_role == "" ? aws_iam_role.code_pipeline_role[0].arn : data.aws_iam_role.code_pipeline[0].arn
+  name          = var.service_name
+  pipeline_type = var.code_pipeline_type
+  role_arn      = var.code_pipeline_role == "" ? aws_iam_role.code_pipeline_role[0].arn : data.aws_iam_role.code_pipeline[0].arn
 
   tags = merge(var.tags, {
     tf_module = basename(path.module)
@@ -62,6 +63,15 @@ resource "aws_codepipeline" "codepipeline" {
         "ServiceName" : var.service_name
         "FileName" : "imagedefinitions.json"
       }
+    }
+  }
+
+  dynamic "variable" {
+    for_each = var.code_pipeline_variables
+    content {
+      name          = variable.value.name
+      default_value = variable.value.default_value
+      description   = variable.value.description
     }
   }
 }

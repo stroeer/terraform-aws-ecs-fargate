@@ -1,6 +1,6 @@
 # AWS Fargate ECS Terraform Module
 
-![CI](https://github.com/stroeer/terraform-aws-ecs-fargate/workflows/static%20analysis/badge.svg) [![Terraform Registry](https://img.shields.io/badge/Terraform%20Registry-0.37.0-blue.svg)](https://registry.terraform.io/modules/stroeer/ecs-fargate/aws/0.37.0) ![Terraform Version](https://img.shields.io/badge/Terraform-1.3+-green.svg) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
+![CI](https://github.com/stroeer/terraform-aws-ecs-fargate/workflows/static%20analysis/badge.svg) [![Terraform Registry](https://img.shields.io/badge/Terraform%20Registry-0.39.0-blue.svg)](https://registry.terraform.io/modules/stroeer/ecs-fargate/aws/0.39.0) ![Terraform Version](https://img.shields.io/badge/Terraform-1.3+-green.svg) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
 
 Terraform module to create [Fargate ECS](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS_Fargate.html) resources on AWS.
 
@@ -152,13 +152,13 @@ for example.
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 3.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.32 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 3.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 5.32 |
 
 ## Modules
 
@@ -222,11 +222,16 @@ for example.
 | <a name="input_capacity_provider_strategy"></a> [capacity\_provider\_strategy](#input\_capacity\_provider\_strategy) | Capacity provider strategies to use for the service. Can be one or more. | <pre>list(object({<br>    capacity_provider = string<br>    weight            = string<br>    base              = optional(string, null)<br>  }))</pre> | `null` | no |
 | <a name="input_cloudwatch_logs"></a> [cloudwatch\_logs](#input\_cloudwatch\_logs) | CloudWatch logs configuration for the containers of this service. CloudWatch logs will be used as the default log configuration if Firelens is disabled and for the fluentbit and otel containers. | <pre>object({<br>    enabled           = optional(bool, true)<br>    name              = optional(string, "")<br>    retention_in_days = optional(number, 7)<br>  })</pre> | `{}` | no |
 | <a name="input_cluster_id"></a> [cluster\_id](#input\_cluster\_id) | The ECS cluster id that should run this service | `string` | n/a | yes |
+| <a name="input_code_build_environment_compute_type"></a> [code\_build\_environment\_compute\_type](#input\_code\_build\_environment\_compute\_type) | Information about the compute resources the CodeBuild stage of the deployment pipeline will use. | `string` | `"BUILD_LAMBDA_1GB"` | no |
+| <a name="input_code_build_environment_image"></a> [code\_build\_environment\_image](#input\_code\_build\_environment\_image) | Docker image to use for the CodeBuild stage of the deployment pipeline. The image needs to include python. | `string` | `"aws/codebuild/amazonlinux-aarch64-lambda-standard:python3.12"` | no |
+| <a name="input_code_build_environment_type"></a> [code\_build\_environment\_type](#input\_code\_build\_environment\_type) | Type of build environment for the CodeBuild stage of the deployment pipeline. | `string` | `"ARM_LAMBDA_CONTAINER"` | no |
 | <a name="input_code_build_log_retention_in_days"></a> [code\_build\_log\_retention\_in\_days](#input\_code\_build\_log\_retention\_in\_days) | Log retention in days of the CodeBuild CloudWatch log group. | `number` | `7` | no |
 | <a name="input_code_build_role_name"></a> [code\_build\_role\_name](#input\_code\_build\_role\_name) | Use an existing role for codebuild permissions that can be reused for multiple services. Otherwise a separate role for this service will be created. | `string` | `""` | no |
 | <a name="input_code_pipeline_artifact_bucket"></a> [code\_pipeline\_artifact\_bucket](#input\_code\_pipeline\_artifact\_bucket) | Use an existing bucket for codepipeline artifacts that can be reused for multiple services. Otherwise a separate bucket for each service will be created. | `string` | `""` | no |
 | <a name="input_code_pipeline_artifact_bucket_sse"></a> [code\_pipeline\_artifact\_bucket\_sse](#input\_code\_pipeline\_artifact\_bucket\_sse) | AWS KMS master key id for server-side encryption. | `any` | `{}` | no |
 | <a name="input_code_pipeline_role_name"></a> [code\_pipeline\_role\_name](#input\_code\_pipeline\_role\_name) | Use an existing role for codepipeline permissions that can be reused for multiple services. Otherwise a separate role for this service will be created. | `string` | `""` | no |
+| <a name="input_code_pipeline_type"></a> [code\_pipeline\_type](#input\_code\_pipeline\_type) | Type of the CodePipeline. Possible values are: `V1` and `V2`. | `string` | `"V1"` | no |
+| <a name="input_code_pipeline_variables"></a> [code\_pipeline\_variables](#input\_code\_pipeline\_variables) | CodePipeline variables. Valid only when `codepipeline_type` is `V2`. | <pre>list(object({<br>    name          = string<br>    default_value = optional(string)<br>    description   = optional(string)<br>  }))</pre> | `[]` | no |
 | <a name="input_codestar_notifications_detail_type"></a> [codestar\_notifications\_detail\_type](#input\_codestar\_notifications\_detail\_type) | The level of detail to include in the notifications for this resource. Possible values are BASIC and FULL. | `string` | `"BASIC"` | no |
 | <a name="input_codestar_notifications_event_type_ids"></a> [codestar\_notifications\_event\_type\_ids](#input\_codestar\_notifications\_event\_type\_ids) | A list of event types associated with this notification rule. For list of allowed events see https://docs.aws.amazon.com/dtconsole/latest/userguide/concepts.html#concepts-api. | `list(string)` | <pre>[<br>  "codepipeline-pipeline-pipeline-execution-succeeded",<br>  "codepipeline-pipeline-pipeline-execution-failed"<br>]</pre> | no |
 | <a name="input_codestar_notifications_kms_master_key_id"></a> [codestar\_notifications\_kms\_master\_key\_id](#input\_codestar\_notifications\_kms\_master\_key\_id) | AWS KMS master key id for server-side encryption. | `string` | `null` | no |
@@ -240,6 +245,7 @@ for example.
 | <a name="input_create_ecr_repository"></a> [create\_ecr\_repository](#input\_create\_ecr\_repository) | Create an ECR repository for this service. | `bool` | `true` | no |
 | <a name="input_create_ingress_security_group"></a> [create\_ingress\_security\_group](#input\_create\_ingress\_security\_group) | Create a security group allowing ingress from target groups to the application ports. Disable this for target groups attached to a Network Loadbalancer. | `bool` | `true` | no |
 | <a name="input_deployment_circuit_breaker"></a> [deployment\_circuit\_breaker](#input\_deployment\_circuit\_breaker) | Deployment circuit breaker configuration. | <pre>object({<br>    enable   = bool<br>    rollback = bool<br>  })</pre> | <pre>{<br>  "enable": false,<br>  "rollback": false<br>}</pre> | no |
+| <a name="input_deployment_failure_detection_alarms"></a> [deployment\_failure\_detection\_alarms](#input\_deployment\_failure\_detection\_alarms) | CloudWatch alarms used to detect deployment failures. | <pre>object({<br>    enable      = bool<br>    rollback    = bool<br>    alarm_names = list(string)<br>  })</pre> | <pre>{<br>  "alarm_names": [],<br>  "enable": false,<br>  "rollback": false<br>}</pre> | no |
 | <a name="input_deployment_maximum_percent"></a> [deployment\_maximum\_percent](#input\_deployment\_maximum\_percent) | Upper limit (as a percentage of the service's desiredCount) of the number of running tasks that can be running in a service during a deployment. Not valid when using the `DAEMON` scheduling strategy. | `number` | `200` | no |
 | <a name="input_deployment_minimum_healthy_percent"></a> [deployment\_minimum\_healthy\_percent](#input\_deployment\_minimum\_healthy\_percent) | Lower limit (as a percentage of the service's desiredCount) of the number of running tasks that must remain running and healthy in a service during a deployment. | `number` | `100` | no |
 | <a name="input_desired_count"></a> [desired\_count](#input\_desired\_count) | Desired count of services to be started/running. | `number` | `0` | no |

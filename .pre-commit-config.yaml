@@ -7,9 +7,11 @@ repos:
         args:
           - --init-args=-backend=false
       - id: terraform_tflint
-      - id: terraform_tfsec
+      - id: terraform_trivy
         args:
-          - --args=--minimum-severity HIGH --exclude-downloaded-modules
+          - --args=--tf-exclude-downloaded-modules
+          - --args=--skip-dirs "**/.terraform/**/*"
+          - --args=--severity=HIGH,CRITICAL
       - id: terraform_docs
         args:
           - '--args=--lockfile=false'

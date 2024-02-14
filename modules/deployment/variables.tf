@@ -40,9 +40,43 @@ variable "artifact_bucket_server_side_encryption" {
   type        = any
 }
 
+variable "code_pipeline_type" {
+  description = "Type of the CodePipeline. Possible values are: `V1` and `V2`."
+  default     = "V1"
+  type        = string
+}
+
 variable "code_pipeline_role" {
   default     = ""
   description = "Use an existing role for codepipeline permissions that can be reused for multiple services."
+  type        = string
+}
+
+variable "code_pipeline_variables" {
+  description = "CodePipeline variables. Valid only when `codepipeline_type` is `V2`."
+  default     = []
+  type = list(object({
+    name          = string
+    default_value = optional(string)
+    description   = optional(string)
+  }))
+}
+
+variable "code_build_environment_compute_type" {
+  description = "Information about the compute resources the CodeBuild stage of the deployment pipeline will use."
+  default     = "BUILD_LAMBDA_1GB"
+  type        = string
+}
+
+variable "code_build_environment_image" {
+  description = "Docker image to use for the CodeBuild stage of the deployment pipeline. The image needs to include python."
+  default     = "aws/codebuild/amazonlinux-aarch64-lambda-standard:python3.12"
+  type        = string
+}
+
+variable "code_build_environment_type" {
+  description = "Type of build environment for the CodeBuild stage of the deployment pipeline."
+  default     = "ARM_LAMBDA_CONTAINER"
   type        = string
 }
 
