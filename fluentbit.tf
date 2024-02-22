@@ -1,8 +1,8 @@
 locals {
   // optional FluentBit container for log aggregation
   fluentbit_container_defaults = {
-    name                   = "fluentbit"
-    image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com/ecr-public/aws-observability/aws-for-fluent-bit:2.29.0"
+    name                   = var.firelens.container_name
+    image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com/ecr-public/aws-observability/aws-for-fluent-bit:2.32.0"
     essential              = true
     mountPoints            = []
     portMappings           = []
@@ -14,6 +14,18 @@ locals {
       // Valid values are: debug, info and error
       { name = " FLB_LOG_LEVEL", value = "error" }
     ],
+
+    healthCheck = {
+      retries = 3
+      command = [
+        "CMD-SHELL",
+        "curl -s http://localhost:2020/api/v1/uptime | grep uptime_hr | grep -q running"
+      ]
+      timeout     = 2
+      interval    = 5
+      startPeriod = 10
+    }
+
 
     firelensConfiguration = {
       type = "fluentbit"

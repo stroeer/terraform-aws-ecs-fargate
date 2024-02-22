@@ -91,6 +91,22 @@ variable "deployment_circuit_breaker" {
   })
 }
 
+variable "deployment_failure_detection_alarms" {
+  default = {
+    enable      = false
+    rollback    = false
+    alarm_names = []
+  }
+
+  description = "CloudWatch alarms used to detect deployment failures."
+  type = object({
+    enable      = bool
+    rollback    = bool
+    alarm_names = list(string)
+  })
+}
+
+
 variable "cloudwatch_logs" {
   description = "CloudWatch logs configuration for the containers of this service. CloudWatch logs will be used as the default log configuration if Firelens is disabled and for the fluentbit and otel containers."
   default     = {}
@@ -310,6 +326,7 @@ variable "firelens" {
   description = "Configuration for optional custom log routing using FireLens over fluentbit sidecar."
   default     = {}
   type = object({
+    container_name       = optional(string, "fluentbit")
     container_definition = optional(any, {})
     enabled              = optional(bool, false)
     opensearch_host      = optional(string, "")
