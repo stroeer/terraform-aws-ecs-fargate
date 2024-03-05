@@ -2,7 +2,7 @@ locals {
   // optional FluentBit container for log aggregation
   fluentbit_container_defaults = {
     name                   = var.firelens.container_name
-    image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com/ecr-public/aws-observability/aws-for-fluent-bit:2.32.0"
+    image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com/ecr-public/aws-observability/aws-for-fluent-bit:init-2.32.0.20240122"
     essential              = true
     mountPoints            = []
     portMappings           = []
@@ -11,15 +11,28 @@ locals {
     volumesFrom            = []
 
     environment = [
-      // Valid values are: debug, info and error
-      { name = " FLB_LOG_LEVEL", value = "error" }
+      // Valid values are: debug, info and error, default if missing: info
+      { name = "FLB_LOG_LEVEL", value = "error" },
+      {
+        "name" : "aws_fluent_bit_init_s3_1",
+        "value" : "arn:aws:s3:::config-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}/ecs/fluent-bit/service-custom.conf"
+      },
+      {
+        "name" : "aws_fluent_bit_init_s3_2",
+        "value" : "arn:aws:s3:::config-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}/ecs/fluent-bit/filters-custom.conf"
+      },
+      {
+        "name" : "aws_fluent_bit_init_s3_3",
+        "value" : "arn:aws:s3:::config-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}/ecs/fluent-bit/parsers-custom.conf"
+      },
     ],
 
+    # https://github.com/aws-samples/amazon-ecs-firelens-examples/tree/mainline/examples/fluent-bit/health-check
     healthCheck = {
       retries = 3
       command = [
         "CMD-SHELL",
-        "curl -s http://localhost:2020/api/v1/uptime | grep uptime_hr | grep -q running"
+        "curl --fail localhost:2020/api/v1/uptime"
       ]
       timeout     = 2
       interval    = 5
@@ -28,13 +41,10 @@ locals {
 
 
     firelensConfiguration = {
-      type = "fluentbit"
-      options = {
-        enable-ecs-log-metadata : "true",
-        config-file-type : "file",
-        config-file-value : "/fluent-bit/config/envoy-json.conf"
-      }
+      type    = "fluentbit"
+      options = { enable-ecs-log-metadata : "true" }
     }
+
     logConfiguration = var.cloudwatch_logs.enabled ? {
       logDriver = "awslogs"
       options = {
@@ -57,4 +67,35 @@ module "fluentbit_container_definition" {
     local.fluentbit_container_defaults,
     var.firelens.container_definition
   ]
+}
+
+data "aws_iam_policy_document" "fluent_bit_config_access" {
+  count = var.firelens.enabled && var.task_role_arn == "" ? 1 : 0
+
+  statement {
+    actions = [
+      "s3:GetObject",
+      "s3:GetBucketLocation"
+    ]
+
+    resources = [
+      "arn:aws:s3:::config-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}/ecs/fluent-bit/*",
+      "arn:aws:s3:::config-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}",
+    ]
+  }
+}
+
+resource "aws_iam_policy" "fluent_bit_config_access" {
+  count = var.firelens.enabled && var.task_role_arn == "" ? 1 : 0
+
+  name   = "fluent-bit-config-access-${var.service_name}-${data.aws_region.current.name}"
+  path   = "/ecs/task-role/"
+  policy = data.aws_iam_policy_document.fluent_bit_config_access[count.index].json
+}
+
+resource "aws_iam_role_policy_attachment" "fluent_bit_config_access" {
+  count = var.firelens.enabled && var.task_role_arn == "" ? 1 : 0
+
+  role       = aws_iam_role.ecs_task_role[count.index].name
+  policy_arn = aws_iam_policy.fluent_bit_config_access[count.index].arn
 }
