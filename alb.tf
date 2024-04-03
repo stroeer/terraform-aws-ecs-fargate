@@ -45,15 +45,18 @@ resource "aws_alb_target_group" "main" {
 }
 
 resource "aws_alb_listener_rule" "public" {
-  count = length(var.https_listener_rules)
+  for_each = {
+    for idx, rule in nonsensitive(var.https_listener_rules) :
+    idx => rule
+  }
 
-  listener_arn = lookup(var.https_listener_rules[count.index], "listener_arn", null)
-  priority     = lookup(var.https_listener_rules[count.index], "priority", null)
+  listener_arn = lookup(each.value, "listener_arn", null)
+  priority     = lookup(each.value, "priority", null)
 
   # authenticate-cognito actions
   dynamic "action" {
     for_each = [
-      for action_rule in var.https_listener_rules[count.index].actions :
+      for action_rule in each.value.actions :
       action_rule
       if action_rule.type == "authenticate-cognito"
     ]
@@ -76,7 +79,7 @@ resource "aws_alb_listener_rule" "public" {
   # authenticate-oidc actions
   dynamic "action" {
     for_each = [
-      for action_rule in var.https_listener_rules[count.index].actions :
+      for action_rule in each.value.actions :
       action_rule
       if action_rule.type == "authenticate-oidc"
     ]
@@ -103,7 +106,7 @@ resource "aws_alb_listener_rule" "public" {
   # redirect actions
   dynamic "action" {
     for_each = [
-      for action_rule in var.https_listener_rules[count.index].actions :
+      for action_rule in each.value.actions :
       action_rule
       if action_rule.type == "redirect"
     ]
@@ -124,7 +127,7 @@ resource "aws_alb_listener_rule" "public" {
   # fixed-response actions
   dynamic "action" {
     for_each = [
-      for action_rule in var.https_listener_rules[count.index].actions :
+      for action_rule in each.value.actions :
       action_rule
       if action_rule.type == "fixed-response"
     ]
@@ -142,21 +145,21 @@ resource "aws_alb_listener_rule" "public" {
   # forward actions
   dynamic "action" {
     for_each = [
-      for action_rule in var.https_listener_rules[count.index].actions :
+      for action_rule in each.value.actions :
       action_rule
       if action_rule.type == "forward"
     ]
 
     content {
       type             = action.value["type"]
-      target_group_arn = aws_alb_target_group.main[lookup(action.value, "target_group_index", count.index)].id
+      target_group_arn = aws_alb_target_group.main[lookup(action.value, "target_group_index", index(var.https_listener_rules, each.value))].id
     }
   }
 
   # Path Pattern condition
   dynamic "condition" {
     for_each = [
-      for condition_rule in var.https_listener_rules[count.index].conditions :
+      for condition_rule in each.value.conditions :
       condition_rule
       if length(lookup(condition_rule, "path_patterns", [])) > 0
     ]
@@ -171,7 +174,7 @@ resource "aws_alb_listener_rule" "public" {
   # Host header condition
   dynamic "condition" {
     for_each = [
-      for condition_rule in var.https_listener_rules[count.index].conditions :
+      for condition_rule in each.value.conditions :
       condition_rule
       if length(lookup(condition_rule, "host_headers", [])) > 0
     ]
@@ -186,7 +189,7 @@ resource "aws_alb_listener_rule" "public" {
   # Http header condition
   dynamic "condition" {
     for_each = [
-      for condition_rule in var.https_listener_rules[count.index].conditions :
+      for condition_rule in each.value.conditions :
       condition_rule
       if length(lookup(condition_rule, "http_headers", [])) > 0
     ]
@@ -206,7 +209,7 @@ resource "aws_alb_listener_rule" "public" {
   # Http request method condition
   dynamic "condition" {
     for_each = [
-      for condition_rule in var.https_listener_rules[count.index].conditions :
+      for condition_rule in each.value.conditions :
       condition_rule
       if length(lookup(condition_rule, "http_request_methods", [])) > 0
     ]
@@ -221,7 +224,7 @@ resource "aws_alb_listener_rule" "public" {
   # Query string condition
   dynamic "condition" {
     for_each = [
-      for condition_rule in var.https_listener_rules[count.index].conditions :
+      for condition_rule in each.value.conditions :
       condition_rule
       if length(lookup(condition_rule, "query_strings", [])) > 0
     ]
@@ -241,7 +244,7 @@ resource "aws_alb_listener_rule" "public" {
   # Source IP address condition
   dynamic "condition" {
     for_each = [
-      for condition_rule in var.https_listener_rules[count.index].conditions :
+      for condition_rule in each.value.conditions :
       condition_rule
       if length(lookup(condition_rule, "source_ips", [])) > 0
     ]
@@ -251,5 +254,9 @@ resource "aws_alb_listener_rule" "public" {
         values = condition.value["source_ips"]
       }
     }
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
