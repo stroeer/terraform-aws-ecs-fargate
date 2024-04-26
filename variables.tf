@@ -329,6 +329,7 @@ variable "firelens" {
     container_name       = optional(string, "fluentbit")
     container_definition = optional(any, {})
     enabled              = optional(bool, false)
+    init_config_files    = optional(list(string), [])
     opensearch_host      = optional(string, "")
   })
 }

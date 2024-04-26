@@ -1,31 +1,29 @@
 locals {
+  // additional init config files from S3 or files inside a custom image
+  // which are added to the FluentBit container as environment variables, see
+  // https://github.com/aws/aws-for-fluent-bit/tree/develop/use_cases/init-process-for-fluent-bit
+  init_config_files = [
+    for idx, file_or_arn in var.firelens.init_config_files : {
+      name  = format("aws_fluent_bit_init_%s", idx)
+      value = file_or_arn
+    }
+  ]
+
+  // additional init config files ARNs from S3 to be used in an IAM policy for the task role
+  s3_init_file_arns   = [for conf in local.init_config_files : conf.value if can(regex("^arn:.*:s3:", conf.value))]
+  s3_init_bucket_arns = distinct([for arn in local.s3_init_file_arns : split("/", arn)[0]])
+
   // optional FluentBit container for log aggregation
   fluentbit_container_defaults = {
     name                   = var.firelens.container_name
     image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com/ecr-public/aws-observability/aws-for-fluent-bit:init-2.32.0.20240122"
+    environment            = concat([{ name = "FLB_LOG_LEVEL", value = "error" }], local.init_config_files)
     essential              = true
     mountPoints            = []
     portMappings           = []
     readonlyRootFilesystem = false
     user                   = startswith(upper(var.operating_system_family), "WINDOWS") ? null : "0:1337"
     volumesFrom            = []
-
-    environment = [
-      // Valid values are: debug, info and error, default if missing: info
-      { name = "FLB_LOG_LEVEL", value = "error" },
-      {
-        "name" : "aws_fluent_bit_init_s3_1",
-        "value" : "arn:aws:s3:::config-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}/ecs/fluent-bit/service-custom.conf"
-      },
-      {
-        "name" : "aws_fluent_bit_init_s3_2",
-        "value" : "arn:aws:s3:::config-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}/ecs/fluent-bit/filters-custom.conf"
-      },
-      {
-        "name" : "aws_fluent_bit_init_s3_3",
-        "value" : "arn:aws:s3:::config-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}/ecs/fluent-bit/parsers-custom.conf"
-      },
-    ],
 
     # https://github.com/aws-samples/amazon-ecs-firelens-examples/tree/mainline/examples/fluent-bit/health-check
     healthCheck = {
@@ -70,23 +68,33 @@ module "fluentbit_container_definition" {
 }
 
 data "aws_iam_policy_document" "fluent_bit_config_access" {
-  count = var.firelens.enabled && var.task_role_arn == "" ? 1 : 0
+  count = var.firelens.enabled && var.task_role_arn == "" && length(local.s3_init_file_arns) > 0 ? 1 : 0
 
-  statement {
-    actions = [
-      "s3:GetObject",
-      "s3:GetBucketLocation"
-    ]
+  // allow reading the init config files from S3
+  dynamic "statement" {
+    for_each = [true]
 
-    resources = [
-      "arn:aws:s3:::config-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}/ecs/fluent-bit/*",
-      "arn:aws:s3:::config-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}",
-    ]
+    content {
+      effect    = "Allow"
+      actions   = ["s3:GetObject"]
+      resources = local.s3_init_file_arns
+    }
+  }
+
+  // allow listing the S3 buckets containing the init config files
+  dynamic "statement" {
+    for_each = [true]
+
+    content {
+      effect    = "Allow"
+      actions   = ["s3:GetBucketLocation"]
+      resources = local.s3_init_bucket_arns
+    }
   }
 }
 
 resource "aws_iam_policy" "fluent_bit_config_access" {
-  count = var.firelens.enabled && var.task_role_arn == "" ? 1 : 0
+  count = var.firelens.enabled && var.task_role_arn == "" && length(local.s3_init_file_arns) > 0 ? 1 : 0
 
   name   = "fluent-bit-config-access-${var.service_name}-${data.aws_region.current.name}"
   path   = "/ecs/task-role/"
@@ -94,7 +102,7 @@ resource "aws_iam_policy" "fluent_bit_config_access" {
 }
 
 resource "aws_iam_role_policy_attachment" "fluent_bit_config_access" {
-  count = var.firelens.enabled && var.task_role_arn == "" ? 1 : 0
+  count = var.firelens.enabled && var.task_role_arn == "" && length(local.s3_init_file_arns) > 0 ? 1 : 0
 
   role       = aws_iam_role.ecs_task_role[count.index].name
   policy_arn = aws_iam_policy.fluent_bit_config_access[count.index].arn
