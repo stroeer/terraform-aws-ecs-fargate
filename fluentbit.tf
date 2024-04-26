@@ -71,25 +71,17 @@ data "aws_iam_policy_document" "fluent_bit_config_access" {
   count = var.firelens.enabled && var.task_role_arn == "" && length(local.s3_init_file_arns) > 0 ? 1 : 0
 
   // allow reading the init config files from S3
-  dynamic "statement" {
-    for_each = [true]
-
-    content {
-      effect    = "Allow"
-      actions   = ["s3:GetObject"]
-      resources = local.s3_init_file_arns
-    }
+  statement {
+    effect    = "Allow"
+    actions   = ["s3:GetObject"]
+    resources = local.s3_init_file_arns
   }
 
   // allow listing the S3 buckets containing the init config files
-  dynamic "statement" {
-    for_each = [true]
-
-    content {
-      effect    = "Allow"
-      actions   = ["s3:GetBucketLocation"]
-      resources = local.s3_init_bucket_arns
-    }
+  statement {
+    effect    = "Allow"
+    actions   = ["s3:GetBucketLocation"]
+    resources = local.s3_init_bucket_arns
   }
 }
 
