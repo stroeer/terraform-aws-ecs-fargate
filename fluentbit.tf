@@ -68,7 +68,7 @@ module "fluentbit_container_definition" {
 }
 
 data "aws_iam_policy_document" "fluent_bit_config_access" {
-  count = var.firelens.enabled && var.task_role_arn == "" && length(local.s3_init_file_arns) > 0 ? 1 : 0
+  count = var.firelens.enabled && var.task_role_arn == "" && length(local.s3_init_file_arns) > 0 && var.attach_fluentbit_init_policy ? 1 : 0
 
   // allow reading the init config files from S3
   statement {
@@ -86,7 +86,7 @@ data "aws_iam_policy_document" "fluent_bit_config_access" {
 }
 
 resource "aws_iam_policy" "fluent_bit_config_access" {
-  count = var.firelens.enabled && var.task_role_arn == "" && length(local.s3_init_file_arns) > 0 ? 1 : 0
+  count = var.firelens.enabled && var.task_role_arn == "" && length(local.s3_init_file_arns) > 0 && var.attach_fluentbit_init_policy ? 1 : 0
 
   name   = "fluent-bit-config-access-${var.service_name}-${data.aws_region.current.name}"
   path   = "/ecs/task-role/"
@@ -94,7 +94,7 @@ resource "aws_iam_policy" "fluent_bit_config_access" {
 }
 
 resource "aws_iam_role_policy_attachment" "fluent_bit_config_access" {
-  count = var.firelens.enabled && var.task_role_arn == "" && length(local.s3_init_file_arns) > 0 ? 1 : 0
+  count = var.firelens.enabled && var.task_role_arn == "" && length(local.s3_init_file_arns) > 0 && var.attach_fluentbit_init_policy ? 1 : 0
 
   role       = aws_iam_role.ecs_task_role[count.index].name
   policy_arn = aws_iam_policy.fluent_bit_config_access[count.index].arn

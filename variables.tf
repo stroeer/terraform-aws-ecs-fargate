@@ -50,6 +50,11 @@ variable "app_mesh" {
   })
 }
 
+variable "appautoscaling_settings" {
+  default     = null
+  description = "Autoscaling configuration for this service."
+  type        = map(any)
+}
 
 variable "assign_public_ip" {
   default     = false
@@ -57,10 +62,10 @@ variable "assign_public_ip" {
   type        = bool
 }
 
-variable "appautoscaling_settings" {
-  default     = null
-  description = "Autoscaling configuration for this service."
-  type        = map(any)
+variable "attach_fluentbit_init_policy" {
+  default     = true
+  description = "Controls if an IAM policy granting access to fluenbit init config on S3 should be attached to the default ECS task role of this service. Only relevant if `firelens.init_config_files` is not empty."
+  type        = bool
 }
 
 variable "capacity_provider_strategy" {
