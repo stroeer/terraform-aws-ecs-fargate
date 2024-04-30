@@ -9,6 +9,9 @@ locals {
     }
   ]
 
+  // image tag for the FluentBit container
+  image_tag = length(local.init_config_files) > 0 ? "init-2.32.0.20240122" : "2.32.0"
+
   // additional init config files ARNs from S3 to be used in an IAM policy for the task role
   s3_init_file_arns   = [for conf in local.init_config_files : conf.value if can(regex("^arn:.*:s3:", conf.value))]
   s3_init_bucket_arns = distinct([for arn in local.s3_init_file_arns : split("/", arn)[0]])
@@ -16,12 +19,13 @@ locals {
   // optional FluentBit container for log aggregation
   fluentbit_container_defaults = {
     name                   = var.firelens.container_name
-    image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com/ecr-public/aws-observability/aws-for-fluent-bit:init-2.32.0.20240122"
-    environment            = concat([{ name = "FLB_LOG_LEVEL", value = "error" }], local.init_config_files)
+    image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com/ecr-public/aws-observability/aws-for-fluent-bit:${local.image_tag}"
+    environment            = concat([{ name = "FLB_LOG_LEVEL", value = var.firelens.log_level }], local.init_config_files)
     essential              = true
     mountPoints            = []
     portMappings           = []
     readonlyRootFilesystem = false
+    systemControls         = []
     user                   = startswith(upper(var.operating_system_family), "WINDOWS") ? null : "0:1337"
     volumesFrom            = []
 

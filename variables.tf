@@ -325,11 +325,12 @@ variable "firelens" {
   description = "Configuration for optional custom log routing using FireLens over fluentbit sidecar. Enable `attach_init_config_s3_policy` to attach an IAM policy granting access to the init config files on S3."
   default     = {}
   type = object({
+    attach_init_config_s3_policy = optional(bool, false)
     container_name               = optional(string, "fluentbit")
     container_definition         = optional(any, {})
     enabled                      = optional(bool, false)
     init_config_files            = optional(list(string), [])
-    attach_init_config_s3_policy = optional(bool, false)
+    log_level                    = optional(string, "info")
     opensearch_host              = optional(string, "")
   })
 }
