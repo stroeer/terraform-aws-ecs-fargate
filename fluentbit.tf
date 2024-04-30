@@ -1,10 +1,12 @@
 locals {
+  s3_arn_regex = "^arn:.*:s3:"
+
   // additional init config files from S3 or files inside a custom image
   // which are added to the FluentBit container as environment variables, see
   // https://github.com/aws/aws-for-fluent-bit/tree/develop/use_cases/init-process-for-fluent-bit
   init_config_files = [
     for idx, file_or_arn in var.firelens.init_config_files : {
-      name  = format("aws_fluent_bit_init_%s", idx)
+      name  = format(can(regex(local.s3_arn_regex, file_or_arn)) ? "aws_fluent_bit_init_s3_%s" : "aws_fluent_bit_init_file_%s", idx)
       value = file_or_arn
     }
   ]
@@ -13,7 +15,7 @@ locals {
   image_tag = length(local.init_config_files) > 0 ? "init-2.32.0.20240122" : "2.32.0"
 
   // additional init config files ARNs from S3 to be used in an IAM policy for the task role
-  s3_init_file_arns   = [for conf in local.init_config_files : conf.value if can(regex("^arn:.*:s3:", conf.value))]
+  s3_init_file_arns   = [for conf in local.init_config_files : conf.value if can(regex(local.s3_arn_regex, conf.value))]
   s3_init_bucket_arns = distinct([for arn in local.s3_init_file_arns : split("/", arn)[0]])
 
   // optional FluentBit container for log aggregation
@@ -29,7 +31,6 @@ locals {
     user                   = startswith(upper(var.operating_system_family), "WINDOWS") ? null : "0:1337"
     volumesFrom            = []
 
-    # https://github.com/aws-samples/amazon-ecs-firelens-examples/tree/mainline/examples/fluent-bit/health-check
     healthCheck = {
       retries = 3
       command = [
@@ -40,7 +41,6 @@ locals {
       interval    = 5
       startPeriod = 10
     }
-
 
     firelensConfiguration = {
       type    = "fluentbit"
@@ -87,6 +87,7 @@ data "aws_iam_policy_document" "fluent_bit_config_access" {
     actions   = ["s3:GetBucketLocation"]
     resources = local.s3_init_bucket_arns
   }
+
 }
 
 resource "aws_iam_policy" "fluent_bit_config_access" {
