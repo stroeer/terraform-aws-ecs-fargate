@@ -62,12 +62,6 @@ variable "assign_public_ip" {
   type        = bool
 }
 
-variable "attach_fluentbit_init_policy" {
-  default     = true
-  description = "Controls if an IAM policy granting access to fluenbit init config on S3 should be attached to the default ECS task role of this service. Only relevant if `firelens.init_config_files` is not empty."
-  type        = bool
-}
-
 variable "capacity_provider_strategy" {
   default     = null
   description = "Capacity provider strategies to use for the service. Can be one or more."
@@ -328,14 +322,15 @@ variable "efs_volumes" {
 }
 
 variable "firelens" {
-  description = "Configuration for optional custom log routing using FireLens over fluentbit sidecar."
+  description = "Configuration for optional custom log routing using FireLens over fluentbit sidecar. Enable `attach_init_config_s3_policy` to attach an IAM policy granting access to the init config files on S3."
   default     = {}
   type = object({
-    container_name       = optional(string, "fluentbit")
-    container_definition = optional(any, {})
-    enabled              = optional(bool, false)
-    init_config_files    = optional(list(string), [])
-    opensearch_host      = optional(string, "")
+    container_name               = optional(string, "fluentbit")
+    container_definition         = optional(any, {})
+    enabled                      = optional(bool, false)
+    init_config_files            = optional(list(string), [])
+    attach_init_config_s3_policy = optional(bool, false)
+    opensearch_host              = optional(string, "")
   })
 }
 
