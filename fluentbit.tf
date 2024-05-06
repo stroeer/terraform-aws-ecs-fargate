@@ -11,8 +11,8 @@ locals {
     }
   ]
 
-  // image tag for the FluentBit container
-  image_tag = length(local.init_config_files) > 0 ? "init-2.32.0.20240122" : "2.32.0"
+  // default image tag for the FluentBit container
+  image_tag = length(local.init_config_files) > 0 ? "init-2.32.2.20240425" : "2.32.2.20240425"
 
   // additional init config files ARNs from S3 to be used in an IAM policy for the task role
   s3_init_file_arns   = [for conf in local.init_config_files : conf.value if can(regex(local.s3_arn_regex, conf.value))]
@@ -35,7 +35,7 @@ locals {
       retries = 3
       command = [
         "CMD-SHELL",
-        "curl --fail localhost:2020/api/v1/uptime"
+        length(local.init_config_files) > 0 ? "curl --fail localhost:2020/api/v1/uptime" : "curl -s http://localhost:2020/api/v1/uptime | grep uptime_hr | grep -q running"
       ]
       timeout     = 2
       interval    = 5
