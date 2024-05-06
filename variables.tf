@@ -50,17 +50,16 @@ variable "app_mesh" {
   })
 }
 
+variable "appautoscaling_settings" {
+  default     = null
+  description = "Autoscaling configuration for this service."
+  type        = map(any)
+}
 
 variable "assign_public_ip" {
   default     = false
   description = "Assign a public IP address to the ENI of this service."
   type        = bool
-}
-
-variable "appautoscaling_settings" {
-  default     = null
-  description = "Autoscaling configuration for this service."
-  type        = map(any)
 }
 
 variable "capacity_provider_strategy" {
@@ -323,13 +322,16 @@ variable "efs_volumes" {
 }
 
 variable "firelens" {
-  description = "Configuration for optional custom log routing using FireLens over fluentbit sidecar."
+  description = "Configuration for optional custom log routing using FireLens over fluentbit sidecar. Enable `attach_init_config_s3_policy` to attach an IAM policy granting access to the init config files on S3."
   default     = {}
   type = object({
-    container_name       = optional(string, "fluentbit")
-    container_definition = optional(any, {})
-    enabled              = optional(bool, false)
-    opensearch_host      = optional(string, "")
+    attach_init_config_s3_policy = optional(bool, false)
+    container_name               = optional(string, "fluentbit")
+    container_definition         = optional(any, {})
+    enabled                      = optional(bool, false)
+    init_config_files            = optional(list(string), [])
+    log_level                    = optional(string, "info")
+    opensearch_host              = optional(string, "")
   })
 }
 

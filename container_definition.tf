@@ -8,6 +8,7 @@ locals {
     name                   = var.service_name
     readonlyRootFilesystem = true
     mountPoints            = []
+    systemControls         = []
     user                   = startswith(upper(var.operating_system_family), "WINDOWS") ? null : "0"
     volumesFrom            = []
 
