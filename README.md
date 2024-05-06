@@ -1,6 +1,6 @@
 # AWS Fargate ECS Terraform Module
 
-![CI](https://github.com/stroeer/terraform-aws-ecs-fargate/workflows/static%20analysis/badge.svg) [![Terraform Registry](https://img.shields.io/badge/Terraform%20Registry-0.41.0-blue.svg)](https://registry.terraform.io/modules/stroeer/ecs-fargate/aws/0.41.0) ![Terraform Version](https://img.shields.io/badge/Terraform-1.3+-green.svg) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
+![CI](https://github.com/stroeer/terraform-aws-ecs-fargate/workflows/static%20analysis/badge.svg) [![Terraform Registry](https://img.shields.io/badge/Terraform%20Registry-0.42.0-blue.svg)](https://registry.terraform.io/modules/stroeer/ecs-fargate/aws/0.42.0) ![Terraform Version](https://img.shields.io/badge/Terraform-1.3+-green.svg) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
 
 Terraform module to create [Fargate ECS](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS_Fargate.html) resources on AWS.
 
