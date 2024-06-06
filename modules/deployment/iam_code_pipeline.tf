@@ -73,7 +73,8 @@ data "aws_iam_policy_document" "code_pipepline_permissions" {
     actions = [
       # cloudtrail reports that codepipeline actually requires access to `*`
       "ecs:DescribeTaskDefinition",
-      "ecs:RegisterTaskDefinition"
+      "ecs:RegisterTaskDefinition",
+      "ecs:TagResource"
     ]
     resources = ["*"]
   }
