@@ -1,6 +1,9 @@
 locals {
   container_port = 8000
   image_tag      = "production"
+
+  vpc_cidr = "10.0.0.0/16"
+  azs      = slice(data.aws_availability_zones.available.names, 0, 3)
 }
 
 resource "random_pet" "this" {
@@ -12,15 +15,17 @@ resource "aws_ecs_cluster" "this" {
 }
 
 module "vpc" {
-  source  = "registry.terraform.io/terraform-aws-modules/vpc/aws"
-  version = ">= 4.0"
+  source  = "terraform-aws-modules/vpc/aws"
+  version = "~> 5.0"
 
-  azs                  = slice(data.aws_availability_zones.available.names, 0, 3)
-  cidr                 = "10.0.0.0/16"
-  enable_dns_hostnames = true
-  name                 = random_pet.this.id
-  private_subnets      = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
-  public_subnets       = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
+  azs             = local.azs
+  cidr            = local.vpc_cidr
+  name            = random_pet.this.id
+  private_subnets = [for k, v in local.azs : cidrsubnet(local.vpc_cidr, 4, k)]
+  public_subnets  = [for k, v in local.azs : cidrsubnet(local.vpc_cidr, 8, k + 48)]
+
+  enable_nat_gateway = true
+  single_nat_gateway = true
 
   public_subnet_tags = {
     Tier = "public"
@@ -31,77 +36,42 @@ module "vpc" {
   }
 }
 
-// see https://docs.aws.amazon.com/AmazonECR/latest/userguide/vpc-endpoints.html for necessary endpoints to run Fargate tasks
-module "vpc_endpoints" {
-  source  = "registry.terraform.io/terraform-aws-modules/vpc/aws//modules/vpc-endpoints"
-  version = ">= 4.0"
 
-  security_group_ids = [data.aws_security_group.default.id]
-  vpc_id             = module.vpc.vpc_id
+module "alb" {
+  source  = "terraform-aws-modules/alb/aws"
+  version = "~> 9.0"
 
-  endpoints = {
-    ecr_api = {
-      service             = "ecr.api"
-      private_dns_enabled = true
-      subnet_ids          = module.vpc.private_subnets
-    }
-
-    ecr_dkr = {
-      service             = "ecr.dkr"
-      private_dns_enabled = true
-      subnet_ids          = module.vpc.private_subnets
-    }
-
-    logs = {
-      service             = "logs"
-      private_dns_enabled = true
-      subnet_ids          = module.vpc.private_subnets
-    }
-
-    s3 = {
-      service         = "s3"
-      service_type    = "Gateway"
-      route_table_ids = flatten([module.vpc.private_route_table_ids, module.vpc.public_route_table_ids])
-    }
-  }
-}
-
-module "alb_security_group_public" {
-  source  = "registry.terraform.io/terraform-aws-modules/security-group/aws"
-  version = ">= 4.17"
-
-  name            = "fargate-allow-alb-traffic"
-  use_name_prefix = false
-  description     = "Security group for example usage with ALB"
-  vpc_id          = module.vpc.vpc_id
-
-  ingress_cidr_blocks      = ["0.0.0.0/0"]
-  ingress_ipv6_cidr_blocks = ["::/0"]
-  ingress_rules            = ["http-80-tcp"]
-  egress_rules             = ["all-all"]
-}
-
-#tfsec:ignore:aws-elb-alb-not-public
-resource "aws_lb" "public" {
-  drop_invalid_header_fields = true
+  enable_deletion_protection = false
   load_balancer_type         = "application"
   name                       = random_pet.this.id
-  security_groups            = [module.vpc.default_security_group_id, module.alb_security_group_public.security_group_id]
   subnets                    = module.vpc.public_subnets
-}
+  vpc_id                     = module.vpc.vpc_id
 
-#tfsec:ignore:aws-elb-http-not-used
-resource "aws_lb_listener" "http" {
-  load_balancer_arn = aws_lb.public.arn
-  port              = 80
+  security_group_ingress_rules = {
+    all_http = {
+      from_port   = 80
+      to_port     = 80
+      ip_protocol = "tcp"
+      cidr_ipv4   = "0.0.0.0/0"
+    }
+  }
+  security_group_egress_rules = {
+    all = {
+      ip_protocol = "-1"
+      cidr_ipv4   = module.vpc.vpc_cidr_block
+    }
+  }
 
-  default_action {
-    type = "fixed-response"
+  listeners = {
+    http = {
+      port     = 80
+      protocol = "HTTP"
 
-    fixed_response {
-      content_type = "text/plain"
-      message_body = "Request was not routed."
-      status_code  = 400
+      fixed_response = {
+        content_type = "text/plain"
+        message_body = "Request was not routed."
+        status_code  = 404
+      }
     }
   }
 }
@@ -110,16 +80,18 @@ module "service" {
   source = "../../"
 
   cpu                           = 256
+  cpu_architecture              = "ARM64"
   cluster_id                    = aws_ecs_cluster.this.id
   container_port                = local.container_port
-  create_ingress_security_group = false
+  create_ingress_security_group = true
   create_deployment_pipeline    = false
   desired_count                 = 1
   ecr_force_delete              = true
+  ecr_image_tag                 = local.image_tag
   memory                        = 512
   service_name                  = random_pet.this.id
+  security_groups               = [aws_security_group.egress_all.id]
   vpc_id                        = module.vpc.vpc_id
-  ecr_image_tag                 = local.image_tag
 
   // configure autoscaling for this service
   appautoscaling_settings = {
@@ -136,7 +108,7 @@ module "service" {
 
   // add listener rules that determine how the load balancer routes requests to its registered targets.
   https_listener_rules = [{
-    listener_arn = aws_lb_listener.http.arn
+    listener_arn = module.alb.listeners["http"].arn
 
     actions = [{
       type               = "forward"
@@ -154,7 +126,7 @@ module "service" {
       name_prefix       = "${substr(random_pet.this.id, 0, 5)}-"
       backend_protocol  = "HTTP"
       backend_port      = local.container_port
-      load_balancer_arn = aws_lb_listener.http.load_balancer_arn
+      load_balancer_arn = module.alb.arn
       target_type       = "ip"
 
       health_check = {
@@ -166,18 +138,31 @@ module "service" {
   ]
 }
 
+resource "aws_security_group" "egress_all" {
+  name_prefix = "${random_pet.this.id}-egress-all-"
+  description = "Allow all outbound traffic"
+  vpc_id      = module.vpc.vpc_id
+
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
 resource "null_resource" "initial_image" {
   provisioner "local-exec" {
     command = "aws ecr get-login-password --region ${var.region} | docker login --username AWS --password-stdin ${module.service.ecr_repository_url}"
   }
 
   provisioner "local-exec" {
-    command     = "docker build --tag ${module.service.ecr_repository_url}:${local.image_tag} ."
-    working_dir = "${path.module}/../fixtures/context"
-  }
-
-  provisioner "local-exec" {
-    command     = "docker push --all-tags ${module.service.ecr_repository_url}"
+    command     = "docker buildx build --tag ${module.service.ecr_repository_url}:${local.image_tag} --platform linux/amd64,linux/arm64 --push ."
     working_dir = "${path.module}/../fixtures/context"
   }
 }
