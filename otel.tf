@@ -15,7 +15,7 @@ locals {
     logConfiguration = var.cloudwatch_logs.enabled ? {
       logDriver = "awslogs"
       options = {
-        awslogs-group         = aws_cloudwatch_log_group.containers[0].name
+        awslogs-group         = var.cloudwatch_logs.name == "" ? aws_cloudwatch_log_group.containers[0].name : var.cloudwatch_logs.name
         awslogs-region        = data.aws_region.current.name
         awslogs-stream-prefix = "otel"
         mode                  = "non-blocking"
