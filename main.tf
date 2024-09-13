@@ -1,5 +1,5 @@
 data "aws_lb" "public" {
-  for_each = var.create_ingress_security_group ? toset([for target in var.target_groups : lookup(target, "load_balancer_arn", "")]) : []
+  for_each = var.create_ingress_security_group ? { for idx, target in var.target_groups : lookup(target, "load_balancer_arn", "") => lookup(target, "load_balancer_arn", "") } : {}
   arn      = each.value
 }
 
@@ -64,7 +64,8 @@ module "sg" {
 }
 
 resource "aws_security_group_rule" "trusted_egress_attachment" {
-  for_each                 = { for route in local.ingress_targets : "${route["prefix"]}-${route["source_security_group_id"]}" => route }
+  depends_on               = [data.aws_lb.public]
+  for_each                 = { for route in local.ingress_targets : "${route["prefix"]}-${route["protocol"]}-${route["from_port"]}-${route["to_port"]}" => route }
   type                     = "egress"
   from_port                = each.value["from_port"]
   to_port                  = each.value["to_port"]
