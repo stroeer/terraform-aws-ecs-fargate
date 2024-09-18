@@ -158,7 +158,7 @@ resource "aws_security_group" "egress_all" {
 
 resource "null_resource" "initial_image" {
   provisioner "local-exec" {
-    command = "aws ecr get-login-password --region ${var.region} | docker login --username AWS --password-stdin ${module.service.ecr_repository_url}"
+    command = "aws ecr get-login-password --region ${var.region} | docker login --username AWS --password-stdin ${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com"
   }
 
   provisioner "local-exec" {
