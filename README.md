@@ -146,7 +146,7 @@ for example.
 
 - [complete](examples/complete): complete example showcasing ALB integration, autoscaling and task definition configuration
 
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
@@ -298,4 +298,4 @@ for example.
 | <a name="output_task_role_arn"></a> [task\_role\_arn](#output\_task\_role\_arn) | ARN of IAM role that allows your Amazon ECS container task to make calls to other AWS services. |
 | <a name="output_task_role_name"></a> [task\_role\_name](#output\_task\_role\_name) | Friendly name of IAM role that allows your Amazon ECS container task to make calls to other AWS services. |
 | <a name="output_task_role_unique_id"></a> [task\_role\_unique\_id](#output\_task\_role\_unique\_id) | Stable and unique string identifying the IAM role that allows your Amazon ECS container task to make calls to other AWS services. |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END_TF_DOCS -->
