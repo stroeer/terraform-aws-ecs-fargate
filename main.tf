@@ -1,12 +1,12 @@
 data "aws_lb" "public" {
-  for_each = var.create_ingress_security_group ? { for idx, target in var.target_groups : lookup(target, "load_balancer_arn", "") => lookup(target, "load_balancer_arn", "") } : {}
+  for_each = var.create_ingress_security_group ? { for idx, target in var.target_groups : idx => lookup(target, "load_balancer_arn", "") } : {}
   arn      = each.value
 }
 
 locals {
   ingress_targets = flatten(
     [
-      for target in var.target_groups : flatten(
+      for idx, target in var.target_groups : flatten(
         [
           [
             {
@@ -14,7 +14,7 @@ locals {
               from_port                = lookup(target, "backend_port", null)
               to_port                  = lookup(target, "backend_port", null)
               protocol                 = "tcp"
-              source_security_group_id = tolist(data.aws_lb.public[lookup(target, "load_balancer_arn", null)].security_groups)[0]
+              source_security_group_id = tolist(data.aws_lb.public[idx].security_groups)[0]
               prefix                   = "backend_port"
             }
           ],
@@ -27,7 +27,7 @@ locals {
               from_port                = target["health_check"]["port"]
               to_port                  = target["health_check"]["port"]
               protocol                 = "tcp"
-              source_security_group_id = tolist(data.aws_lb.public[lookup(target, "load_balancer_arn", null)].security_groups)[0]
+              source_security_group_id = tolist(data.aws_lb.public[idx].security_groups)[0]
               prefix                   = "health_check_port"
             }
           ] : []
