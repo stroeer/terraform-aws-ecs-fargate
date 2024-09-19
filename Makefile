@@ -77,15 +77,17 @@ release: check-git-branch bump
 	git tag -a $(NEXT_TAG) -m "$(NEXT_TAG)"
 	git push origin $(NEXT_TAG)
 	git push
-	# create GH release if GITHUB_TOKEN is set
-	if [ ! -z "${GITHUB_TOKEN}" ] ; then 												\
-    	curl 																		\
-    		-H "Authorization: token ${GITHUB_TOKEN}" 								\
-    		-X POST 																\
-    		-H "Accept: application/vnd.github.v3+json"								\
-    		https://api.github.com/repos/stroeer/terraform-aws-ecs-fargate/releases \
-    		-d "{\"tag_name\":\"$(NEXT_TAG)\",\"generate_release_notes\":true}"; 									\
+	# create GH release if `gh cli` is installed and authenticated
+	@if ! command -v gh >/dev/null 2>&1 ; then 											\
+		echo "gh CLI is not installed. Please create the release manually on GitHub." ; \
+		exit 0 ; 																		\
 	fi;
+	@if ! gh auth status >/dev/null 2>&1 ; then 											\
+		echo "gh CLI is not authenticated. Please run 'gh auth login' or create the release manually on GitHub." ; \
+		exit 0 ; 																		\
+	fi;
+	@gh release create $(NEXT_TAG) --generate-notes
+	@echo "GitHub release created successfully for tag $(NEXT_TAG) at: https://github.com/stroeer/terraform-aws-ecs-fargate/releases/tag/$(NEXT_TAG)"
 
 help: ## Display this help screen
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
