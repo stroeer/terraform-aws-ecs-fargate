@@ -24,7 +24,7 @@ NEXT_TAG 			:= v$(NEXT_VERSION)
 STACKS = $(shell find . -not -path "*/\.*" -iname "*.tf" | sed -E "s|/[^/]+$$||" | sort --unique)
 ROOT_DIR := $(shell pwd)
 
-all: fmt validate tfsec tflint
+all: fmt validate tflint trivy
 
 init: ## Initialize a Terraform working directory
 	@echo "+ $@"
@@ -54,14 +54,9 @@ tflint: ## Runs tflint on all Terraform files
 		tflint --chdir=$$s --format=compact --config=$(ROOT_DIR)/.tflint.hcl || exit 1;\
 	done;
 
-.PHONY: tfsec
-tfsec: ## Runs tfsec on all Terraform files
+trivy: ## Runs trivy on all Terraform files
 	@echo "+ $@"
-	@for s in $(STACKS); do \
-		echo "tfsec $$s"; \
-		cd $$s; terraform init -backend=false > /dev/null; \
-		tfsec --concise-output --exclude-downloaded-modules --minimum-severity HIGH || exit 1; cd $(ROOT_DIR);\
-	done;
+	@trivy config  --exit-code 1 --severity HIGH --tf-exclude-downloaded-modules .
 
 bump ::
 	@echo bumping version from $(VERSION_TAG) to $(NEXT_TAG)
