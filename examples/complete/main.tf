@@ -77,7 +77,8 @@ module "alb" {
 }
 
 module "service" {
-  source = "../../"
+  source     = "../../"
+  depends_on = [module.vpc]
 
   cpu                           = 256
   cpu_architecture              = "ARM64"
@@ -143,6 +144,9 @@ resource "aws_security_group" "egress_all" {
   description = "Allow all outbound traffic"
   vpc_id      = module.vpc.vpc_id
 
+  # make sure to secure traffic in production environments
+  # see https://avd.aquasec.com/misconfig/aws/ec2/avd-aws-0104/#Terraform
+  #trivy:ignore:AVD-AWS-0104
   egress {
     from_port        = 0
     to_port          = 0

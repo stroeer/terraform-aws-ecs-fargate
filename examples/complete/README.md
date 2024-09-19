@@ -17,8 +17,8 @@ Note that this example may create resources which cost money. Run `terraform des
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 4.9 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.32 |
 | <a name="requirement_null"></a> [null](#requirement\_null) | >= 3.2 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | >= 3.4 |
 
@@ -26,7 +26,7 @@ Note that this example may create resources which cost money. Run `terraform des
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 4.9 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 5.32 |
 | <a name="provider_null"></a> [null](#provider\_null) | >= 3.2 |
 | <a name="provider_random"></a> [random](#provider\_random) | >= 3.4 |
 
@@ -59,5 +59,5 @@ Note that this example may create resources which cost money. Run `terraform des
 
 | Name | Description |
 |------|-------------|
-| <a name="output_alb_dns_name"></a> [alb\_dns\_name](#output\_alb\_dns\_name) | n/a |
+| <a name="output_endpoint"></a> [endpoint](#output\_endpoint) | n/a |
 <!-- END_TF_DOCS -->

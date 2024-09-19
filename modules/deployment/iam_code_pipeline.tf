@@ -69,9 +69,10 @@ data "aws_iam_policy_document" "code_pipepline_permissions" {
     resources = [aws_codebuild_project.this.arn]
   }
 
+  # cloudtrail reports that codepipeline actually requires access to `*`
+  #trivy:ignore:AVD-AWS-0057
   statement {
     actions = [
-      # cloudtrail reports that codepipeline actually requires access to `*`
       "ecs:DescribeTaskDefinition",
       "ecs:RegisterTaskDefinition",
       "ecs:TagResource"
