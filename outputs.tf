@@ -19,8 +19,13 @@ output "ecr_repository_arn" {
   value       = join("", module.ecr[*].arn)
 }
 
+output "ecr_repository_id" {
+  description = "The registry ID where the repository was created."
+  value       = join("", module.ecr[*].registry_id)
+}
+
 output "ecr_repository_url" {
-  description = "URL of the ECR repository."
+  description = "The URL of the repository (in the form `aws_account_id.dkr.ecr.region.amazonaws.com/repositoryName`)"
   value       = join("", module.ecr[*].repository_url)
 }
 

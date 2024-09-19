@@ -1,3 +1,3 @@
-output "alb_dns_name" {
-  value = aws_lb.public.dns_name
+output "endpoint" {
+  value = "http://${module.alb.dns_name}/"
 }
