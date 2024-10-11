@@ -380,3 +380,15 @@ variable "task_role_arn" {
   description = "ARN of the IAM role that allows your Amazon ECS container task to make calls to other AWS services. If not specified, the default ECS task role created in this module will be used."
   type        = string
 }
+
+variable "ignore_all_changes" {
+  default     = false
+  description = "Ignore all changes to the ecs service."
+  type        = bool
+}
+
+variable "prevent_destroy" {
+  default     = false
+  description = "Prevent the service from being destroyed."
+  type        = bool
+}

@@ -134,7 +134,8 @@ resource "aws_ecs_service" "this" {
   }
 
   lifecycle {
-    ignore_changes = [desired_count]
+    ignore_changes  = var.ignore_all_changes == true ? "all" : [desired_count]
+    prevent_destroy = var.prevent_destroy == true ? var.prevent_destroy : false
   }
 }
 
