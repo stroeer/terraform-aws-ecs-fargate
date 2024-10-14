@@ -74,7 +74,10 @@ resource "aws_security_group_rule" "trusted_egress_attachment" {
   security_group_id        = each.value["source_security_group_id"]
 }
 
-resource "aws_ecs_service" "this" {
+# Terraform doesn't support expressions in the lifecycle block, so we have to create two identical resources 
+# (except for the lifecycle block) and use a count to determine which one to create.
+resource "aws_ecs_service" "prevent_destroy" {
+  count                              = var.prevent_destroy ? 1 : 0
   cluster                            = var.cluster_id
   deployment_maximum_percent         = var.deployment_maximum_percent
   deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent
@@ -134,8 +137,73 @@ resource "aws_ecs_service" "this" {
   }
 
   lifecycle {
-    ignore_changes  = var.ignore_all_changes == true ? "all" : [desired_count]
-    prevent_destroy = var.prevent_destroy == true ? var.prevent_destroy : false
+    ignore_changes  = all
+    prevent_destroy = true
+  }
+}
+
+resource "aws_ecs_service" "this" {
+  count                              = var.prevent_destroy ? 0 : 1
+  cluster                            = var.cluster_id
+  deployment_maximum_percent         = var.deployment_maximum_percent
+  deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent
+  desired_count                      = var.desired_count
+  enable_execute_command             = var.enable_execute_command
+  force_new_deployment               = var.force_new_deployment
+  health_check_grace_period_seconds  = var.health_check_grace_period_seconds
+  launch_type                        = var.capacity_provider_strategy != null ? null : "FARGATE"
+  name                               = var.service_name
+  platform_version                   = var.platform_version
+  propagate_tags                     = "SERVICE"
+  tags                               = var.tags
+  task_definition                    = "${aws_ecs_task_definition.this.family}:${max(aws_ecs_task_definition.this.revision, data.aws_ecs_task_definition.this.revision)}"
+
+  dynamic "capacity_provider_strategy" {
+    for_each = var.capacity_provider_strategy != null ? var.capacity_provider_strategy : []
+
+    content {
+      capacity_provider = capacity_provider_strategy.value.capacity_provider
+      weight            = capacity_provider_strategy.value.weight
+      base              = capacity_provider_strategy.value.base
+    }
+  }
+
+  dynamic "deployment_circuit_breaker" {
+    for_each = var.deployment_circuit_breaker != null ? [true] : []
+
+    content {
+      enable   = var.deployment_circuit_breaker.enable
+      rollback = var.deployment_circuit_breaker.rollback
+    }
+  }
+
+  dynamic "load_balancer" {
+    for_each = aws_alb_target_group.main
+
+    content {
+      container_name   = local.container_name
+      container_port   = load_balancer.value.port
+      target_group_arn = load_balancer.value.arn
+    }
+  }
+
+  network_configuration {
+    assign_public_ip = var.assign_public_ip
+    security_groups  = concat(concat(var.security_groups, [for sg in module.sg : sg.this_security_group_id]), [])
+    subnets          = data.aws_subnets.selected.ids
+  }
+
+  dynamic "service_registries" {
+    for_each = var.service_discovery_dns_namespace != "" ? [true] : []
+
+    content {
+      registry_arn   = aws_service_discovery_service.this[0].arn
+      container_name = var.container_name
+    }
+  }
+
+  lifecycle {
+    ignore_changes = [desired_count]
   }
 }
 
@@ -254,7 +322,7 @@ resource "aws_appautoscaling_target" "ecs" {
 
   max_capacity       = lookup(var.appautoscaling_settings, "max_capacity", var.desired_count)
   min_capacity       = lookup(var.appautoscaling_settings, "min_capacity", var.desired_count)
-  resource_id        = "service/${var.cluster_id}/${aws_ecs_service.this.name}"
+  resource_id        = var.prevent_destroy ? "service/${var.cluster_id}/${aws_ecs_service.prevent_destroy[0].name}" : "service/${var.cluster_id}/${aws_ecs_service.this[0].name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
 }

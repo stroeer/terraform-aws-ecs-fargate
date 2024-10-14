@@ -381,14 +381,8 @@ variable "task_role_arn" {
   type        = string
 }
 
-variable "ignore_all_changes" {
-  default     = false
-  description = "Ignore all changes to the ecs service."
-  type        = bool
-}
-
 variable "prevent_destroy" {
   default     = false
-  description = "Prevent the service from being destroyed."
+  description = "Prevent the ECS service from being destroyed."
   type        = bool
 }
