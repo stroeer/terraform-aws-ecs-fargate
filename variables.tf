@@ -324,6 +324,16 @@ variable "efs_volumes" {
   type        = any
 }
 
+variable "extra_port_mappings" {
+  default     = []
+  description = "Additional ports to be exposed from the container."
+  type        = list(object({
+    hostPort      = number
+    containerPort = number
+    protocol      = optional(string, "tcp")
+  }))
+}
+
 variable "firelens" {
   description = "Configuration for optional custom log routing using FireLens over fluentbit sidecar. Enable `attach_init_config_s3_policy` to attach an IAM policy granting access to the init config files on S3."
   default     = {}
