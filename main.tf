@@ -201,7 +201,9 @@ resource "aws_ecs_task_definition" "this" {
       type           = "APPMESH"
 
       properties = {
-        AppPorts         = var.container_port
+        AppPorts = join(",", concat([tostring(var.container_port)], [
+          for x in var.extra_port_mappings : x.containerPort
+        ]))
         EgressIgnoredIPs = "169.254.170.2,169.254.169.254"
         IgnoredGID       = "1337"
         ProxyEgressPort  = 15001

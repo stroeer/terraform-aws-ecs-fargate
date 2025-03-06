@@ -327,7 +327,7 @@ variable "efs_volumes" {
 variable "extra_port_mappings" {
   default     = []
   description = "Additional ports to be exposed from the container."
-  type        = list(object({
+  type = list(object({
     hostPort      = number
     containerPort = number
     protocol      = optional(string, "tcp")
