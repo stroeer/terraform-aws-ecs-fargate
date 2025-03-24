@@ -331,20 +331,40 @@ resource "aws_appautoscaling_policy" "ecs" {
   count = var.appautoscaling_settings != null ? 1 : 0
 
   name               = "${var.service_name}-auto-scaling"
-  policy_type        = "TargetTrackingScaling"
+  policy_type        = lookup(var.appautoscaling_settings, "policy_type", "TargetTrackingScaling")
   resource_id        = aws_appautoscaling_target.ecs[count.index].resource_id
   scalable_dimension = aws_appautoscaling_target.ecs[count.index].scalable_dimension
   service_namespace  = aws_appautoscaling_target.ecs[count.index].service_namespace
 
-  target_tracking_scaling_policy_configuration {
-    target_value       = lookup(var.appautoscaling_settings, "target_value")
-    disable_scale_in   = lookup(var.appautoscaling_settings, "disable_scale_in", false)
-    scale_in_cooldown  = lookup(var.appautoscaling_settings, "scale_in_cooldown", 300)
-    scale_out_cooldown = lookup(var.appautoscaling_settings, "scale_out_cooldown", 30)
+  dynamic "target_tracking_scaling_policy_configuration" {
+    for_each = lookup(var.appautoscaling_settings, "policy_type", "TargetTrackingScaling") == "TargetTrackingScaling" ? [1] : []
+    content {
+      target_value       = lookup(var.appautoscaling_settings, "target_value")
+      disable_scale_in   = lookup(var.appautoscaling_settings, "disable_scale_in", false)
+      scale_in_cooldown  = lookup(var.appautoscaling_settings, "scale_in_cooldown", 300)
+      scale_out_cooldown = lookup(var.appautoscaling_settings, "scale_out_cooldown", 30)
 
-    predefined_metric_specification {
-      predefined_metric_type = lookup(var.appautoscaling_settings, "predefined_metric_type", "ECSServiceAverageCPUUtilization")
-      resource_label         = lookup(var.appautoscaling_settings, "resource_label", null)
+      predefined_metric_specification {
+        predefined_metric_type = lookup(var.appautoscaling_settings, "predefined_metric_type", "ECSServiceAverageCPUUtilization")
+        resource_label         = lookup(var.appautoscaling_settings, "resource_label", null)
+      }
+    }
+  }
+
+  dynamic "step_scaling_policy_configuration" {
+    for_each = lookup(var.appautoscaling_settings, "policy_type", "TargetTrackingScaling") == "StepScaling" ? [1] : []
+    content {
+      adjustment_type = "ChangeInCapacity"
+      cooldown        = lookup(var.appautoscaling_settings, "scale_out_cooldown", 120)
+
+      dynamic "step_adjustment" {
+        for_each = var.appautoscaling_settings.step_scaling.step_adjustments != null ? var.appautoscaling_settings.step_scaling.step_adjustments : []
+        content {
+          metric_interval_lower_bound = lookup(step_adjustment.value, "metric_interval_lower_bound", null)
+          metric_interval_upper_bound = lookup(step_adjustment.value, "metric_interval_upper_bound", null)
+          scaling_adjustment          = step_adjustment.value.scaling_adjustment
+        }
+      }
     }
   }
 }

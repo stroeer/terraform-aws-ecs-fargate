@@ -60,7 +60,7 @@ variable "assign_public_ip" {
 variable "appautoscaling_settings" {
   default     = null
   description = "Autoscaling configuration for this service."
-  type        = map(any)
+  type        = any
 }
 
 variable "capacity_provider_strategy" {
