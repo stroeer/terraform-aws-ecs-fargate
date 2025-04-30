@@ -386,3 +386,8 @@ variable "prevent_destroy" {
   description = "Prevent the ECS service from being destroyed."
   type        = bool
 }
+
+variable "enable_events_policy" {
+  type    = bool
+  default = false
+}

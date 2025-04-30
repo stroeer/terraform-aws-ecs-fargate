@@ -82,3 +82,31 @@ resource "aws_iam_role_policy_attachment" "enable_execute_command" {
   role       = aws_iam_role.ecs_task_role[count.index].name
   policy_arn = aws_iam_policy.enable_execute_command[count.index].arn
 }
+
+
+data "aws_iam_policy_document" "enable_events_policy" {
+  count = var.task_role_arn == "" && var.enable_events_policy ? 1 : 0
+
+  statement {
+    actions = [
+      "events:PutEvents"
+    ]
+
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "enable_events_policy" {
+  count = var.task_role_arn == "" && var.enable_events_policy ? 1 : 0
+
+  name   = "enable-events-policy-${var.service_name}-${data.aws_region.current.name}"
+  path   = "/ecs/task-role/"
+  policy = data.aws_iam_policy_document.enable_events_policy[count.index].json
+}
+
+resource "aws_iam_role_policy_attachment" "enable_events_policy" {
+  count = var.task_role_arn == "" && var.enable_events_policy ? 1 : 0
+
+  role       = aws_iam_role.ecs_task_role[count.index].name
+  policy_arn = aws_iam_policy.enable_events_policy[count.index].arn
+}
