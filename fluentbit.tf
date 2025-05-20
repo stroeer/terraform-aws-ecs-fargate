@@ -12,7 +12,7 @@ locals {
   ]
 
   // default image tag for the FluentBit container
-  image_tag = length(local.init_config_files) > 0 ? "init-2.32.2.20240425" : "2.32.2.20240425"
+  image_tag = length(local.init_config_files) > 0 ? "init-2.32.5.20250422" : "2.32.5.20250422"
 
   // additional init config files ARNs from S3 to be used in an IAM policy for the task role
   s3_init_file_arns   = [for conf in local.init_config_files : conf.value if can(regex(local.s3_arn_regex, conf.value))]
