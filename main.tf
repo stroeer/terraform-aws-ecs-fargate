@@ -4,7 +4,7 @@ data "aws_lb" "public" {
 }
 
 locals {
-  ingress_targets = flatten(
+  ingress_targets = nonsensitive(flatten(
     [
       for idx, target in var.target_groups : flatten(
         [
@@ -34,7 +34,7 @@ locals {
         ]
       ) if var.create_ingress_security_group
     ]
-  )
+  ))
 
   additional_sidecars   = [for s in var.additional_container_definitions : jsonencode(s)]
   container_definitions = "[${join(",", concat(compact([local.app_container, local.envoy_container, local.fluentbit_container, local.otel_container])), compact(local.additional_sidecars))}]"
