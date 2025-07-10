@@ -62,6 +62,12 @@ variable "assign_public_ip" {
   type        = bool
 }
 
+variable "availability_zone_rebalancing" {
+  default     = "DISABLED"
+  description = "ECS automatically redistributes tasks within a service across Availability Zones (AZs) to mitigate the risk of impaired application availability due to underlying infrastructure failures and task lifecycle activities. The valid values are `ENABLED` and `DISABLED`. "
+  type        = string
+}
+
 variable "capacity_provider_strategy" {
   default     = null
   description = "Capacity provider strategies to use for the service. Can be one or more."
