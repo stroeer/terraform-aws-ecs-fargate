@@ -76,6 +76,7 @@ resource "aws_security_group_rule" "trusted_egress_attachment" {
 }
 
 resource "aws_ecs_service" "this" {
+  availability_zone_rebalancing      = var.availability_zone_rebalancing
   cluster                            = var.cluster_id
   deployment_maximum_percent         = var.deployment_maximum_percent
   deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent
