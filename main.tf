@@ -60,7 +60,8 @@ data "aws_subnets" "selected" {
   }
 }
 
-// FIXME: the module is currently not upgraded to aws 6.x and doesn't support the `region` variable
+// FIXME: the module is currently not upgraded to aws 6.x and doesn't support the `region` variable, see https://github.com/terraform-aws-modules/terraform-aws-security-group/issues/341
+// update the complete example using a different region as soon as the module is fixed
 module "sg" {
   count   = var.create_ingress_security_group && length(local.ingress_targets) > 0 ? 1 : 0
   source  = "registry.terraform.io/terraform-aws-modules/security-group/aws"
