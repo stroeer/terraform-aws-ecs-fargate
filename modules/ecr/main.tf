@@ -1,4 +1,6 @@
 resource "aws_ecr_repository" "this" {
+  region = var.region
+
   force_delete         = var.force_delete
   image_tag_mutability = var.image_tag_mutability #tfsec:ignore:aws-ecr-enforce-immutable-repository
   name                 = var.name
@@ -12,12 +14,16 @@ resource "aws_ecr_repository" "this" {
 resource "aws_ecr_lifecycle_policy" "custom_lifecycle_policy" {
   count = var.custom_lifecycle_policy != null && !var.enable_default_lifecycle_policy ? 1 : 0
 
+  region = var.region
+
   repository = aws_ecr_repository.this.name
   policy     = var.custom_lifecycle_policy
 }
 
 resource "aws_ecr_lifecycle_policy" "default_lifecycle_policy" {
   count = var.enable_default_lifecycle_policy ? 1 : 0
+
+  region = var.region
 
   repository = aws_ecr_repository.this.name
   policy = jsonencode({

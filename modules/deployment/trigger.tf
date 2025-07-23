@@ -1,4 +1,6 @@
 resource "aws_cloudwatch_event_rule" "this" {
+  region = var.region
+
   name        = "${var.service_name}-ecr-trigger"
   description = "Capture ECR push events."
 
@@ -40,7 +42,7 @@ resource "aws_cloudwatch_event_target" "trigger" {
 }
 
 resource "aws_iam_role" "trigger" {
-  name               = "${var.service_name}-${data.aws_region.current.name}-ecr-trigger"
+  name               = "${var.service_name}-${data.aws_region.current.region}-ecr-trigger"
   path               = "/ecs/deployment/"
   assume_role_policy = data.aws_iam_policy_document.trigger-assume-role-policy.json
 
@@ -61,7 +63,7 @@ data "aws_iam_policy_document" "trigger-assume-role-policy" {
 }
 
 resource "aws_iam_policy" "trigger" {
-  name   = "${var.service_name}-${data.aws_region.current.name}-ecr-trigger"
+  name   = "${var.service_name}-${data.aws_region.current.region}-ecr-trigger"
   path   = "/ecs/deployment/"
   policy = data.aws_iam_policy_document.trigger-permissions.json
 }

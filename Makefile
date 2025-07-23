@@ -89,5 +89,14 @@ release: check-git-branch bump
 	@gh release create $(NEXT_TAG) --generate-notes
 	@echo "GitHub release created successfully for tag $(NEXT_TAG) at: https://github.com/stroeer/terraform-aws-ecs-fargate/releases/tag/$(NEXT_TAG)"
 
+.PHONY: update
+update: ## Upgrades Terraform core and providers constraints recursively using https://github.com/minamijoyo/tfupdate
+	@echo "+ $@"
+	@command -v tfupdate >/dev/null 2>&1 || { echo >&2 "Please install tfupdate: 'brew install minamijoyo/tfupdate/tfupdate'"; exit 1; }
+	@tfupdate terraform -v ">= 1.5.7" -r .
+	@tfupdate provider aws -v ">= 6.0" -r .
+	@tfupdate provider archive -v ">= 2.2" -r .
+	@tfupdate provider null -v ">= 3.2" -r .
+
 help: ## Display this help screen
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

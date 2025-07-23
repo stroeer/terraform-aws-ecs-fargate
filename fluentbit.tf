@@ -21,7 +21,7 @@ locals {
   // optional FluentBit container for log aggregation
   fluentbit_container_defaults = {
     name                   = var.firelens.container_name
-    image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com/ecr-public/aws-observability/aws-for-fluent-bit:${local.image_tag}"
+    image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.region}.amazonaws.com/ecr-public/aws-observability/aws-for-fluent-bit:${local.image_tag}"
     environment            = concat([{ name = "FLB_LOG_LEVEL", value = var.firelens.log_level }], local.init_config_files)
     essential              = true
     mountPoints            = []
@@ -51,7 +51,7 @@ locals {
       logDriver = "awslogs"
       options = {
         awslogs-group         = var.cloudwatch_logs.name == "" ? aws_cloudwatch_log_group.containers[0].name : var.cloudwatch_logs.name
-        awslogs-region        = data.aws_region.current.name
+        awslogs-region        = data.aws_region.current.region
         awslogs-stream-prefix = "fluentbit"
         mode                  = "non-blocking"
       }
@@ -93,7 +93,7 @@ data "aws_iam_policy_document" "fluent_bit_config_access" {
 resource "aws_iam_policy" "fluent_bit_config_access" {
   count = var.firelens.enabled && var.task_role_arn == "" && length(local.s3_init_file_arns) > 0 && var.firelens.attach_init_config_s3_policy ? 1 : 0
 
-  name   = "fluent-bit-config-access-${var.service_name}-${data.aws_region.current.name}"
+  name   = "fluent-bit-config-access-${var.service_name}-${data.aws_region.current.region}"
   path   = "/ecs/task-role/"
   policy = data.aws_iam_policy_document.fluent_bit_config_access[count.index].json
 }

@@ -1,6 +1,8 @@
 resource "aws_cloudwatch_log_group" "containers" {
   count = var.cloudwatch_logs.enabled && var.cloudwatch_logs.name == "" ? 1 : 0
 
+  region = var.region
+
   name              = var.cloudwatch_logs.name == "" ? "/aws/ecs/${var.service_name}" : var.cloudwatch_logs.name
   retention_in_days = var.cloudwatch_logs.retention_in_days
   tags              = var.tags
@@ -24,7 +26,7 @@ data "aws_iam_policy_document" "cloudwatch_logs_policy" {
 resource "aws_iam_policy" "cloudwatch_logs_policy" {
   count = var.task_role_arn == "" ? 1 : 0
 
-  name   = "cw-logs-access-${var.service_name}-${data.aws_region.current.name}"
+  name   = "cw-logs-access-${var.service_name}-${data.aws_region.current.region}"
   path   = "/ecs/task-role/"
   policy = data.aws_iam_policy_document.cloudwatch_logs_policy[count.index].json
 }
