@@ -53,3 +53,9 @@ variable "tags" {
   description = "A mapping of tags to assign to the repository."
   type        = map(string)
 }
+
+variable "region" {
+  description = "Alternative region used in all region-aware resources. If not set, the provider's region will be used."
+  default     = null
+  type        = string
+}

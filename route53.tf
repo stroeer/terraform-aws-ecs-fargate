@@ -1,6 +1,8 @@
 resource "aws_service_discovery_service" "this" {
   count = var.service_discovery_dns_namespace != "" ? 1 : 0
 
+  region = var.region
+
   description = "Route 53 Auto Naming Service for ${var.service_name}"
   name        = var.service_name
 
@@ -12,9 +14,5 @@ resource "aws_service_discovery_service" "this" {
       ttl  = 10
       type = "A"
     }
-  }
-
-  health_check_custom_config {
-    failure_threshold = 1
   }
 }

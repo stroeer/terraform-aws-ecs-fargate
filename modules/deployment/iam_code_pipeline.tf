@@ -43,7 +43,7 @@ data "aws_iam_policy_document" "code_pipepline_permissions" {
   statement {
     actions = ["ecr:DescribeImages"]
 
-    resources = ["arn:aws:ecr:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:repository/${var.ecr_repository_name}"]
+    resources = ["arn:aws:ecr:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:repository/${var.ecr_repository_name}"]
   }
 
   statement {
@@ -84,7 +84,7 @@ data "aws_iam_policy_document" "code_pipepline_permissions" {
     actions = [
       "ecs:UpdateService"
     ]
-    resources = ["arn:aws:ecs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:service/${var.cluster_name}/${var.service_name}"]
+    resources = ["arn:aws:ecs:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:service/${var.cluster_name}/${var.service_name}"]
   }
 }
 
