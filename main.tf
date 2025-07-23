@@ -51,7 +51,8 @@ data "aws_subnets" "selected" {
   }
 }
 
-// FIXME: the module is currently not upgraded to aws 6.x and doesn't support the `region` variable
+// FIXME: the module is currently not upgraded to aws 6.x and doesn't support the `region` variable, see https://github.com/terraform-aws-modules/terraform-aws-security-group/issues/341
+// update the complete example using a different region as soon as the module is fixed
 module "sg" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "~> 5.0"
