@@ -1,4 +1,4 @@
-FROM python:3.12-alpine
+FROM python:3.13-alpine
 
 RUN addgroup -S app && adduser -S app -G app
 WORKDIR /home/app

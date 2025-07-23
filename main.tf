@@ -51,10 +51,11 @@ data "aws_subnets" "selected" {
   }
 }
 
+// FIXME: the module is currently not upgraded to aws 6.x and doesn't support the `region` variable
 module "sg" {
+  source  = "terraform-aws-modules/security-group/aws"
+  version = "~> 5.0"
   count   = var.create_ingress_security_group && length(local.ingress_targets) > 0 ? 1 : 0
-  source  = "registry.terraform.io/terraform-aws-modules/security-group/aws"
-  version = "~> 3.0"
 
   name                                  = "${var.service_name}-inbound-from-target-groups"
   description                           = "Allow TCP from target groups to port"
@@ -64,18 +65,23 @@ module "sg" {
 }
 
 resource "aws_security_group_rule" "trusted_egress_attachment" {
-  depends_on               = [data.aws_lb.public]
-  for_each                 = { for route in local.ingress_targets : "${route["prefix"]}-${route["protocol"]}-${route["from_port"]}-${route["to_port"]}" => route }
+  depends_on = [data.aws_lb.public]
+  for_each   = { for route in local.ingress_targets : "${route["prefix"]}-${route["protocol"]}-${route["from_port"]}-${route["to_port"]}" => route }
+
+  region = var.region
+
   type                     = "egress"
   from_port                = each.value["from_port"]
   to_port                  = each.value["to_port"]
   protocol                 = "tcp"
-  description              = "Attached from ${module.sg[0].this_security_group_name} (${each.value["prefix"]})"
-  source_security_group_id = module.sg[0].this_security_group_id
+  description              = "Attached from ${module.sg[0].security_group_name} (${each.value["prefix"]})"
+  source_security_group_id = module.sg[0].security_group_id
   security_group_id        = each.value["source_security_group_id"]
 }
 
 resource "aws_ecs_service" "this" {
+  region = var.region
+
   availability_zone_rebalancing      = var.availability_zone_rebalancing
   cluster                            = var.cluster_id
   deployment_maximum_percent         = var.deployment_maximum_percent
@@ -132,7 +138,7 @@ resource "aws_ecs_service" "this" {
 
   network_configuration {
     assign_public_ip = var.assign_public_ip
-    security_groups  = concat(concat(var.security_groups, [for sg in module.sg : sg.this_security_group_id]), [])
+    security_groups  = concat(concat(var.security_groups, [for sg in module.sg : sg.security_group_id]), [])
     subnets          = data.aws_subnets.selected.ids
   }
 
@@ -155,6 +161,8 @@ resource "aws_ecs_task_definition" "this" {
     aws_iam_role.task_execution_role,
     aws_iam_role.ecs_task_role
   ]
+
+  region = var.region
 
   container_definitions    = local.container_definitions
   cpu                      = var.cpu
@@ -228,6 +236,8 @@ module "ecr" {
   source = "./modules/ecr"
   count  = var.create_ecr_repository ? 1 : 0
 
+  region = var.region
+
   custom_lifecycle_policy         = var.ecr_custom_lifecycle_policy
   enable_default_lifecycle_policy = var.ecr_enable_default_lifecycle_policy
   force_delete                    = var.ecr_force_delete
@@ -240,6 +250,8 @@ module "ecr" {
 module "code_deploy" {
   source = "./modules/deployment"
   count  = var.create_deployment_pipeline && (var.create_ecr_repository || var.ecr_repository_name != "") ? 1 : 0
+
+  region = var.region
 
   cluster_name                            = var.cluster_id
   container_name                          = local.container_name
@@ -271,6 +283,8 @@ module "code_deploy" {
 resource "aws_appautoscaling_target" "ecs" {
   count = var.appautoscaling_settings != null ? 1 : 0
 
+  region = var.region
+
   max_capacity       = lookup(var.appautoscaling_settings, "max_capacity", var.desired_count)
   min_capacity       = lookup(var.appautoscaling_settings, "min_capacity", var.desired_count)
   resource_id        = "service/${var.cluster_id}/${aws_ecs_service.this.name}"
@@ -280,6 +294,8 @@ resource "aws_appautoscaling_target" "ecs" {
 
 resource "aws_appautoscaling_policy" "ecs" {
   count = var.appautoscaling_settings != null ? 1 : 0
+
+  region = var.region
 
   name               = "${var.service_name}-auto-scaling"
   policy_type        = "TargetTrackingScaling"

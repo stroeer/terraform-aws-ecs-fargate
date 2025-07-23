@@ -2,7 +2,7 @@ locals {
   // optional AWS Distro for OpenTelemetry container
   otel_container_defaults = {
     essential              = false
-    image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com/ecr-public/aws-observability/aws-otel-collector:v0.42.0"
+    image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.region}.amazonaws.com/ecr-public/aws-observability/aws-otel-collector:v0.42.0"
     name                   = "otel"
     readonlyRootFilesystem = false
     mountPoints            = []
@@ -16,7 +16,7 @@ locals {
       logDriver = "awslogs"
       options = {
         awslogs-group         = var.cloudwatch_logs.name == "" ? aws_cloudwatch_log_group.containers[0].name : var.cloudwatch_logs.name
-        awslogs-region        = data.aws_region.current.name
+        awslogs-region        = data.aws_region.current.region
         awslogs-stream-prefix = "otel"
         mode                  = "non-blocking"
       }
@@ -45,7 +45,7 @@ resource "aws_iam_role_policy_attachment" "otel" {
 resource "aws_iam_policy" "otel" {
   count = var.otel.enabled && var.task_role_arn == "" ? 1 : 0
 
-  name   = "${var.service_name}-otel-${data.aws_region.current.name}"
+  name   = "${var.service_name}-otel-${data.aws_region.current.region}"
   policy = data.aws_iam_policy_document.otel[count.index].json
 }
 

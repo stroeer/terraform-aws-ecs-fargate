@@ -5,6 +5,8 @@
 resource "aws_alb_target_group" "main" {
   count = length(var.target_groups)
 
+  region = var.region
+
   name        = lookup(var.target_groups[count.index], "name", null)
   name_prefix = lookup(var.target_groups[count.index], "name_prefix", null)
 
@@ -46,6 +48,8 @@ resource "aws_alb_target_group" "main" {
 
 resource "aws_alb_listener_rule" "public" {
   count = length(var.https_listener_rules)
+
+  region = var.region
 
   listener_arn = lookup(var.https_listener_rules[count.index], "listener_arn", null)
   priority     = lookup(var.https_listener_rules[count.index], "priority", null)

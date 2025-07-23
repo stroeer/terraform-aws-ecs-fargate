@@ -1,4 +1,6 @@
 resource "aws_codepipeline" "codepipeline" {
+  region = var.region
+
   name          = var.service_name
   pipeline_type = var.code_pipeline_type
   role_arn      = var.code_pipeline_role == "" ? aws_iam_role.code_pipeline_role[0].arn : data.aws_iam_role.code_pipeline[0].arn
