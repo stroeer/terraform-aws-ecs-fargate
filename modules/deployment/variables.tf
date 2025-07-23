@@ -127,3 +127,9 @@ variable "ecr_image_tag" {
   description = "Tag of the new image pushed to the Amazon ECR repository to trigger the deployment pipeline."
   type        = string
 }
+
+variable "region" {
+  description = "Alternative region used in all region-aware resources. If not set, the provider's region will be used."
+  default     = null
+  type        = string
+}

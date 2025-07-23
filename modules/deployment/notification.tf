@@ -14,6 +14,7 @@ data "aws_iam_policy_document" "sns_codestar_policy" {
 }
 
 resource "aws_codestarnotifications_notification_rule" "notification" {
+  region = var.region
 
   detail_type    = var.codestar_notifications_detail_type
   event_type_ids = var.codestar_notifications_event_type_ids
@@ -32,6 +33,8 @@ resource "aws_codestarnotifications_notification_rule" "notification" {
 resource "aws_sns_topic" "notifications" {
   count = var.codestar_notifications_target_arn == "" ? 1 : 0
 
+  region = var.region
+
   name              = "${var.service_name}-notifications"
   kms_master_key_id = var.codestar_notification_kms_master_key_id
   tags = merge(var.tags, {
@@ -41,6 +44,8 @@ resource "aws_sns_topic" "notifications" {
 
 resource "aws_sns_topic_policy" "notifications" {
   count = var.codestar_notifications_target_arn == "" ? 1 : 0
+
+  region = var.region
 
   arn    = aws_sns_topic.notifications[count.index].arn
   policy = data.aws_iam_policy_document.sns_codestar_policy[count.index].json
