@@ -60,13 +60,13 @@ resource "aws_iam_role_policy" "ecr" {
 
 data "aws_iam_policy_document" "ecr" {
   statement {
-    sid = "ECRAuthorizationToken"
+    sid       = "ECRAuthorizationToken"
     actions   = ["ecr:GetAuthorizationToken"]
     resources = ["*"]
   }
 
   statement {
-    sid = "PrivateECRRepositoryAccess"
+    sid     = "PrivateECRRepositoryAccess"
     actions = ["ecr:BatchCheckLayerAvailability", "ecr:GetDownloadUrlForLayer", "ecr:BatchGetImage"]
     resources = compact([
       for repo in local.ecr_repository_info : (
@@ -77,7 +77,7 @@ data "aws_iam_policy_document" "ecr" {
 
   # https://docs.aws.amazon.com/guardduty/latest/ug/runtime-monitoring-ecr-repository-gdu-agent.html
   statement {
-    sid = "GuardDutyAgentECRAccess"
+    sid     = "GuardDutyAgentECRAccess"
     actions = ["ecr:BatchCheckLayerAvailability", "ecr:GetDownloadUrlForLayer", "ecr:BatchGetImage"]
     resources = [
       "arn:aws:ecr:*:*:repository/aws-guardduty-agent-fargate"
