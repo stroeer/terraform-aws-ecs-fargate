@@ -68,11 +68,11 @@ data "aws_iam_policy_document" "ecr" {
   statement {
     sid = "PrivateECRRepositoryAccess"
     actions = ["ecr:BatchCheckLayerAvailability", "ecr:GetDownloadUrlForLayer", "ecr:BatchGetImage"]
-    resources = [
+    resources = compact([
       for repo in local.ecr_repository_info : (
         repo != null ? "arn:aws:ecr:${repo.region}:${repo.account_id}:repository/${repo.repo_name}" : null
       )
-    ]
+    ])
   }
 
   # https://docs.aws.amazon.com/guardduty/latest/ug/runtime-monitoring-ecr-repository-gdu-agent.html
