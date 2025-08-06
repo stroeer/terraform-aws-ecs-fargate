@@ -36,8 +36,9 @@ locals {
     ]
   ))
 
-  additional_sidecars   = [for s in var.additional_container_definitions : jsonencode(s)]
-  container_definitions = "[${join(",", concat(compact([local.app_container, local.envoy_container, local.fluentbit_container, local.otel_container])), compact(local.additional_sidecars))}]"
+  additional_sidecars          = [for s in var.additional_container_definitions : jsonencode(s)]
+  container_definitions        = concat([module.container_definition.merged, module.envoy_container_definition.merged, module.fluentbit_container_definition.merged, module.otel_container_definition.merged], var.additional_container_definitions)
+  container_definitions_string = "[${join(",", concat(compact([local.app_container, local.envoy_container, local.fluentbit_container, local.otel_container])), compact(local.additional_sidecars))}]"
 }
 
 data "aws_subnets" "selected" {
@@ -156,7 +157,7 @@ resource "aws_ecs_task_definition" "this" {
     aws_iam_role.ecs_task_role
   ]
 
-  container_definitions    = local.container_definitions
+  container_definitions    = local.container_definitions_string
   cpu                      = var.cpu
   execution_role_arn       = var.task_execution_role_arn == "" ? aws_iam_role.task_execution_role[0].arn : var.task_execution_role_arn
   family                   = var.service_name
