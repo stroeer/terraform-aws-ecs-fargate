@@ -11,7 +11,7 @@ output "cloudwatch_log_group" {
 output "container_definitions" {
   description = "Container definitions used by this service including all sidecars."
   sensitive   = true
-  value       = local.container_definitions
+  value       = local.container_definitions_string
 }
 
 output "ecr_repository_arn" {

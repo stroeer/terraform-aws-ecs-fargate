@@ -36,8 +36,9 @@ locals {
     ]
   ))
 
-  additional_sidecars   = [for s in var.additional_container_definitions : jsonencode(s)]
-  container_definitions = "[${join(",", concat(compact([local.app_container, local.envoy_container, local.fluentbit_container, local.otel_container])), compact(local.additional_sidecars))}]"
+  additional_sidecars          = [for s in var.additional_container_definitions : jsonencode(s)]
+  container_definitions        = concat([module.container_definition.merged, module.envoy_container_definition.merged, module.fluentbit_container_definition.merged, module.otel_container_definition.merged], var.additional_container_definitions)
+  container_definitions_string = "[${join(",", concat(compact([local.app_container, local.envoy_container, local.fluentbit_container, local.otel_container])), compact(local.additional_sidecars))}]"
 }
 
 data "aws_subnets" "selected" {
@@ -54,7 +55,7 @@ data "aws_subnets" "selected" {
 module "sg" {
   count   = var.create_ingress_security_group && length(local.ingress_targets) > 0 ? 1 : 0
   source  = "registry.terraform.io/terraform-aws-modules/security-group/aws"
-  version = "~> 3.0"
+  version = "~> 5.0"
 
   name                                  = "${var.service_name}-inbound-from-target-groups"
   description                           = "Allow TCP from target groups to port"
@@ -63,16 +64,15 @@ module "sg" {
   vpc_id                                = var.vpc_id
 }
 
-resource "aws_security_group_rule" "trusted_egress_attachment" {
-  depends_on               = [data.aws_lb.public]
-  for_each                 = { for route in local.ingress_targets : "${route["prefix"]}-${route["protocol"]}-${route["from_port"]}-${route["to_port"]}" => route }
-  type                     = "egress"
-  from_port                = each.value["from_port"]
-  to_port                  = each.value["to_port"]
-  protocol                 = "tcp"
-  description              = "Attached from ${module.sg[0].this_security_group_name} (${each.value["prefix"]})"
-  source_security_group_id = module.sg[0].this_security_group_id
-  security_group_id        = each.value["source_security_group_id"]
+resource "aws_vpc_security_group_egress_rule" "trusted_egress_attachment" {
+  depends_on                   = [data.aws_lb.public]
+  for_each                     = { for route in local.ingress_targets : "${route["prefix"]}-${route["protocol"]}-${route["from_port"]}-${route["to_port"]}" => route }
+  from_port                    = each.value["from_port"]
+  to_port                      = each.value["to_port"]
+  description                  = "Attached from ${module.sg[0].security_group_name} (${each.value["prefix"]})"
+  referenced_security_group_id = module.sg[0].security_group_id
+  security_group_id            = each.value["source_security_group_id"]
+  ip_protocol                  = "tcp"
 }
 
 resource "aws_ecs_service" "this" {
@@ -132,7 +132,7 @@ resource "aws_ecs_service" "this" {
 
   network_configuration {
     assign_public_ip = var.assign_public_ip
-    security_groups  = concat(concat(var.security_groups, [for sg in module.sg : sg.this_security_group_id]), [])
+    security_groups  = concat(concat(var.security_groups, [for sg in module.sg : sg.security_group_id]), [])
     subnets          = data.aws_subnets.selected.ids
   }
 
@@ -156,7 +156,7 @@ resource "aws_ecs_task_definition" "this" {
     aws_iam_role.ecs_task_role
   ]
 
-  container_definitions    = local.container_definitions
+  container_definitions    = local.container_definitions_string
   cpu                      = var.cpu
   execution_role_arn       = var.task_execution_role_arn == "" ? aws_iam_role.task_execution_role[0].arn : var.task_execution_role_arn
   family                   = var.service_name
