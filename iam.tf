@@ -35,7 +35,7 @@ resource "aws_iam_role" "task_execution_role" {
 }
 
 resource "aws_iam_role_policy" "ssm" {
-  count = var.task_execution_role_arn == "" ? 1 : 0
+  count = var.task_execution_role_arn == "" && length(local.ssm_parameters) > 0 ? 1 : 0
 
   name   = "ssm-parameter-access-${var.service_name}-${data.aws_region.current.name}"
   role   = aws_iam_role.task_execution_role[0].id
