@@ -17,6 +17,7 @@ locals {
       options = {
         Aws_Auth           = "On"
         Aws_Region         = null != var.firelens.aws_region ? var.firelens.aws_region : data.aws_region.current.name
+        Compress           = "gzip"
         Host               = var.firelens.opensearch_host
         Logstash_Format    = "true"
         Logstash_Prefix    = "${var.service_name}-app"
