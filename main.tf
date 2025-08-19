@@ -36,8 +36,16 @@ locals {
     ]
   ))
 
-  additional_sidecars          = [for s in var.additional_container_definitions : jsonencode(s)]
-  container_definitions        = concat([module.container_definition.merged, module.envoy_container_definition.merged, module.fluentbit_container_definition.merged, module.otel_container_definition.merged], var.additional_container_definitions)
+  additional_sidecars = [for s in var.additional_container_definitions : jsonencode(s)]
+
+  container_definitions = concat(
+    [module.container_definition.merged],
+    var.app_mesh.enabled ? [module.envoy_container_definition.merged] : [],
+    var.firelens.enabled ? [module.fluentbit_container_definition.merged] : [],
+    var.otel.enabled ? [module.otel_container_definition.merged] : [],
+    var.additional_container_definitions
+  )
+
   container_definitions_string = "[${join(",", concat(compact([local.app_container, local.envoy_container, local.fluentbit_container, local.otel_container])), compact(local.additional_sidecars))}]"
 }
 
