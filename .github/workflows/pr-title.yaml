@@ -37,5 +37,4 @@ jobs:
             The subject "{subject}" found in the pull request title "{title}"
             didn't match the configured pattern. Please ensure that the subject
             doesn't starts with an uppercase character.
-          wip: true
           validateSingleCommit: false
