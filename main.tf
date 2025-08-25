@@ -75,7 +75,7 @@ module "sg" {
 }
 
 resource "aws_vpc_security_group_egress_rule" "trusted_egress_attachment" {
-  depends_on                   = [data.aws_lb.public]
+  depends_on = [data.aws_lb.public]
 
   region = var.region
 
