@@ -29,7 +29,7 @@ resource "aws_iam_role" "task_execution_role" {
 
   assume_role_policy = data.aws_iam_policy_document.task_execution_role[count.index].json
   description        = "Task execution role for ${var.service_name}"
-  name               = "${var.service_name}-execution-role-${data.aws_region.current.name}"
+  name               = "${var.service_name}-execution-role-${data.aws_region.current.region}"
   path               = "/ecs/"
   tags               = var.tags
 }
@@ -37,7 +37,7 @@ resource "aws_iam_role" "task_execution_role" {
 resource "aws_iam_role_policy" "ssm" {
   count = var.task_execution_role_arn == "" && length(local.ssm_parameters) > 0 ? 1 : 0
 
-  name   = "ssm-parameter-access-${var.service_name}-${data.aws_region.current.name}"
+  name   = "ssm-parameter-access-${var.service_name}-${data.aws_region.current.region}"
   role   = aws_iam_role.task_execution_role[0].id
   policy = data.aws_iam_policy_document.ssm.json
 }
@@ -52,7 +52,7 @@ data "aws_iam_policy_document" "ssm" {
 resource "aws_iam_role_policy" "ecr" {
   count = var.task_execution_role_arn == "" ? 1 : 0
 
-  name   = "ecr-access-${var.service_name}-${data.aws_region.current.name}"
+  name   = "ecr-access-${var.service_name}-${data.aws_region.current.region}"
   role   = aws_iam_role.task_execution_role[0].id
   policy = data.aws_iam_policy_document.ecr.json
 }
@@ -87,7 +87,7 @@ data "aws_iam_policy_document" "ecr" {
 
 resource "aws_iam_role_policy" "logs" {
   count  = var.task_execution_role_arn == "" ? 1 : 0
-  name   = "logs-access-${var.service_name}-${data.aws_region.current.name}"
+  name   = "logs-access-${var.service_name}-${data.aws_region.current.region}"
   role   = aws_iam_role.task_execution_role[0].id
   policy = data.aws_iam_policy_document.logs.json
 }
@@ -102,7 +102,7 @@ data "aws_iam_policy_document" "logs" {
       "logs:DescribeLogStreams"
     ]
     resources = [
-      "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:/aws/ecs/${var.service_name}*"
+      "arn:aws:logs:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/ecs/${var.service_name}*"
     ]
   }
 }
@@ -125,7 +125,7 @@ resource "aws_iam_role" "ecs_task_role" {
 
   assume_role_policy = data.aws_iam_policy_document.ecs_task_assume_role_policy[count.index].json
   description        = "Task Role for service ${var.service_name}"
-  name               = "${var.service_name}-${data.aws_region.current.name}"
+  name               = "${var.service_name}-${data.aws_region.current.region}"
   path               = "/ecs/task-role/"
   tags               = var.tags
 }
@@ -133,7 +133,7 @@ resource "aws_iam_role" "ecs_task_role" {
 resource "aws_iam_role_policy" "ecs_task_role_policy" {
   count = var.task_role_arn == "" && var.policy_document != "" ? 1 : 0
 
-  name   = "ecs-task-${var.service_name}-${data.aws_region.current.name}"
+  name   = "ecs-task-${var.service_name}-${data.aws_region.current.region}"
   policy = var.policy_document
   role   = aws_iam_role.ecs_task_role[count.index].id
 }
@@ -169,7 +169,7 @@ data "aws_iam_policy_document" "enable_execute_command" {
 resource "aws_iam_policy" "enable_execute_command" {
   count = var.enable_execute_command ? 1 : 0
 
-  name   = "enable-execute-command-${var.service_name}-${data.aws_region.current.name}"
+  name   = "enable-execute-command-${var.service_name}-${data.aws_region.current.region}"
   path   = "/ecs/task-role/"
   policy = data.aws_iam_policy_document.enable_execute_command[count.index].json
 }
