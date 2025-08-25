@@ -60,6 +60,8 @@ data "aws_subnets" "selected" {
   }
 }
 
+// FIXME: the module is currently not upgraded to aws 6.x and doesn't support the `region` variable, see https://github.com/terraform-aws-modules/terraform-aws-security-group/issues/341
+// update the complete example using a different region as soon as the module is fixed
 module "sg" {
   count   = var.create_ingress_security_group && length(local.ingress_targets) > 0 ? 1 : 0
   source  = "registry.terraform.io/terraform-aws-modules/security-group/aws"
@@ -73,7 +75,10 @@ module "sg" {
 }
 
 resource "aws_vpc_security_group_egress_rule" "trusted_egress_attachment" {
-  depends_on                   = [data.aws_lb.public]
+  depends_on = [data.aws_lb.public]
+
+  region = var.region
+
   for_each                     = { for route in local.ingress_targets : "${route["prefix"]}-${route["protocol"]}-${route["from_port"]}-${route["to_port"]}" => route }
   from_port                    = each.value["from_port"]
   to_port                      = each.value["to_port"]
@@ -84,6 +89,8 @@ resource "aws_vpc_security_group_egress_rule" "trusted_egress_attachment" {
 }
 
 resource "aws_ecs_service" "this" {
+  region = var.region
+
   availability_zone_rebalancing      = var.availability_zone_rebalancing
   cluster                            = var.cluster_id
   deployment_maximum_percent         = var.deployment_maximum_percent
@@ -164,6 +171,8 @@ resource "aws_ecs_task_definition" "this" {
     aws_iam_role.ecs_task_role
   ]
 
+  region = var.region
+
   container_definitions    = local.container_definitions_string
   cpu                      = var.cpu
   execution_role_arn       = var.task_execution_role_arn == "" ? aws_iam_role.task_execution_role[0].arn : var.task_execution_role_arn
@@ -236,6 +245,8 @@ module "ecr" {
   source = "./modules/ecr"
   count  = var.create_ecr_repository ? 1 : 0
 
+  region = var.region
+
   custom_lifecycle_policy         = var.ecr_custom_lifecycle_policy
   enable_default_lifecycle_policy = var.ecr_enable_default_lifecycle_policy
   force_delete                    = var.ecr_force_delete
@@ -248,6 +259,8 @@ module "ecr" {
 module "code_deploy" {
   source = "./modules/deployment"
   count  = var.create_deployment_pipeline && (var.create_ecr_repository || var.ecr_repository_name != "") ? 1 : 0
+
+  region = var.region
 
   cluster_name                            = var.cluster_id
   container_name                          = local.container_name
@@ -279,6 +292,8 @@ module "code_deploy" {
 resource "aws_appautoscaling_target" "ecs" {
   count = var.appautoscaling_settings != null ? 1 : 0
 
+  region = var.region
+
   max_capacity       = lookup(var.appautoscaling_settings, "max_capacity", var.desired_count)
   min_capacity       = lookup(var.appautoscaling_settings, "min_capacity", var.desired_count)
   resource_id        = "service/${var.cluster_id}/${aws_ecs_service.this.name}"
@@ -288,6 +303,8 @@ resource "aws_appautoscaling_target" "ecs" {
 
 resource "aws_appautoscaling_policy" "ecs" {
   count = var.appautoscaling_settings != null ? 1 : 0
+
+  region = var.region
 
   name               = "${var.service_name}-auto-scaling"
   policy_type        = "TargetTrackingScaling"

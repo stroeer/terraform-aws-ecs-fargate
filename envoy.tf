@@ -3,7 +3,7 @@ locals {
   envoy_container_defaults = {
     dependsOn              = var.firelens.enabled ? [{ containerName = var.firelens.container_name, condition = "HEALTHY" }] : []
     name                   = var.app_mesh.container_name
-    image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.name}.amazonaws.com/ecr-public/appmesh/aws-appmesh-envoy:v1.29.12.1-prod"
+    image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${data.aws_region.current.region}.amazonaws.com/ecr-public/appmesh/aws-appmesh-envoy:v1.29.12.1-prod"
     essential              = true
     mountPoints            = []
     portMappings           = []
@@ -15,7 +15,7 @@ locals {
     environment = [
       {
         name  = "APPMESH_RESOURCE_ARN",
-        value = "arn:aws:appmesh:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:mesh/${var.app_mesh.mesh_name}/virtualNode/${var.service_name}"
+        value = "arn:aws:appmesh:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:mesh/${var.app_mesh.mesh_name}/virtualNode/${var.service_name}"
       }
     ]
 
@@ -41,7 +41,7 @@ locals {
       logDriver = "awsfirelens",
       options = {
         Aws_Auth           = "On"
-        Aws_Region         = null != var.firelens.aws_region ? var.firelens.aws_region : data.aws_region.current.name
+        Aws_Region         = null != var.firelens.aws_region ? var.firelens.aws_region : data.aws_region.current.region
         Host               = var.firelens.opensearch_host
         Logstash_Format    = "true"
         Logstash_Prefix    = "${var.service_name}-envoy"
@@ -55,7 +55,7 @@ locals {
         logDriver = "awslogs"
         options = {
           awslogs-group : aws_cloudwatch_log_group.containers[0].name
-          awslogs-region : data.aws_region.current.name
+          awslogs-region : data.aws_region.current.region
           awslogs-stream-prefix : var.app_mesh.container_name
         }
     } : null)
@@ -96,7 +96,7 @@ resource "aws_iam_role_policy_attachment" "acm" {
 resource "aws_iam_policy" "acm" {
   count = var.app_mesh.enabled && var.task_role_arn == "" ? 1 : 0
 
-  name   = "${var.service_name}-acm-${data.aws_region.current.name}"
+  name   = "${var.service_name}-acm-${data.aws_region.current.region}"
   policy = data.aws_iam_policy_document.acm[count.index].json
 }
 
