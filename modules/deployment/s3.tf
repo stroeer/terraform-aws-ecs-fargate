@@ -1,9 +1,9 @@
 module "s3_bucket" {
-  source        = "registry.terraform.io/terraform-aws-modules/s3-bucket/aws"
-  version       = "~> 3.1"
+  source        = "terraform-aws-modules/s3-bucket/aws"
+  version       = "5.6.0"
   create_bucket = var.artifact_bucket == "" ? true : false
 
-  bucket        = "codepipeline-bucket-${var.service_name}-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}"
+  bucket        = "codepipeline-bucket-${var.service_name}-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}"
   force_destroy = true
 
   # S3 bucket-level Public Access Block configuration

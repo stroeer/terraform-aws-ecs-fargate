@@ -17,8 +17,8 @@ Note that this example may create resources which cost money. Run `terraform des
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.32 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5.7 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 6.0 |
 | <a name="requirement_null"></a> [null](#requirement\_null) | >= 3.2 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | >= 3.4 |
 
@@ -26,7 +26,7 @@ Note that this example may create resources which cost money. Run `terraform des
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 5.32 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 6.0 |
 | <a name="provider_null"></a> [null](#provider\_null) | >= 3.2 |
 | <a name="provider_random"></a> [random](#provider\_random) | >= 3.4 |
 
@@ -36,7 +36,7 @@ Note that this example may create resources which cost money. Run `terraform des
 |------|--------|---------|
 | <a name="module_alb"></a> [alb](#module\_alb) | terraform-aws-modules/alb/aws | ~> 9.0 |
 | <a name="module_service"></a> [service](#module\_service) | ../../ | n/a |
-| <a name="module_vpc"></a> [vpc](#module\_vpc) | terraform-aws-modules/vpc/aws | ~> 5.0 |
+| <a name="module_vpc"></a> [vpc](#module\_vpc) | terraform-aws-modules/vpc/aws | ~> 6.0 |
 
 ## Resources
 

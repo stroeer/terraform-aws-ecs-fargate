@@ -17,7 +17,7 @@ resource "aws_codestarnotifications_notification_rule" "notification" {
 
   detail_type    = var.codestar_notifications_detail_type
   event_type_ids = var.codestar_notifications_event_type_ids
-  name           = "${var.service_name}-notifications-${data.aws_region.current.name}"
+  name           = "${var.service_name}-notifications-${data.aws_region.current.region}"
   resource       = aws_codepipeline.codepipeline.arn
 
   tags = merge(var.tags, {
