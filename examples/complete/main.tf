@@ -76,6 +76,12 @@ module "alb" {
   }
 }
 
+resource "aws_ssm_parameter" "secret" {
+  name  = "FOO_SECRET"
+  type  = "SecureString"
+  value = "CHANGE_ME"
+}
+
 module "service" {
   source     = "../../"
   depends_on = [module.vpc]
@@ -106,6 +112,10 @@ module "service" {
   // overwrite the default container definition or add further task definition parameters
   container_definition_overwrites = {
     readonlyRootFilesystem = false
+
+    secrets = [
+      { "name" : aws_ssm_parameter.secret.name, "valueFrom" : aws_ssm_parameter.secret.arn }
+    ]
   }
 
   // add listener rules that determine how the load balancer routes requests to its registered targets.

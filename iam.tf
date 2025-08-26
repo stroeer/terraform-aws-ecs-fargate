@@ -1,11 +1,16 @@
 locals {
-  ssm_parameters = flatten([
-    for container_def in local.container_definitions : (
-      lookup(container_def, "secrets", null) != null ? [
-        for secret in container_def.secrets : secret.valueFrom
-      ] : []
-    )
-  ])
+  // retrieve all SSM parameter ARNs from container definitions and additional container definitions
+  // at plan time to create an conditional IAM policy for the task execution role
+  ssm_parameter_arns = distinct(compact(flatten(concat(
+    try([for s in try(var.container_definition_overwrites.secrets, []) :
+      try(s.valueFrom, try(jsondecode(s).valueFrom, null))
+    ], []),
+    [for c in var.additional_container_definitions :
+      try([for s in try(try(c.secrets, jsondecode(c).secrets, []), []) :
+        try(s.valueFrom, try(jsondecode(s).valueFrom, null))
+      ], [])
+    ]
+  ))))
 
   ecr_images = {
     for container_def in local.container_definitions : container_def.name => (
@@ -35,17 +40,19 @@ resource "aws_iam_role" "task_execution_role" {
 }
 
 resource "aws_iam_role_policy" "ssm" {
-  count = var.task_execution_role_arn == "" && length(local.ssm_parameters) > 0 ? 1 : 0
+  count = var.task_execution_role_arn == "" && length(local.ssm_parameter_arns) > 0 ? 1 : 0
 
   name   = "ssm-parameter-access-${var.service_name}-${data.aws_region.current.name}"
   role   = aws_iam_role.task_execution_role[0].id
-  policy = data.aws_iam_policy_document.ssm.json
+  policy = data.aws_iam_policy_document.ssm[0].json
 }
 
 data "aws_iam_policy_document" "ssm" {
+  count = var.task_execution_role_arn == "" && length(local.ssm_parameter_arns) > 0 ? 1 : 0
+
   statement {
     actions   = ["ssm:GetParameter*", "ssm:DescribeParameters"]
-    resources = local.ssm_parameters
+    resources = local.ssm_parameter_arns
   }
 }
 
