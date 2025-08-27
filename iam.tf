@@ -34,29 +34,13 @@ resource "aws_iam_role" "task_execution_role" {
   tags               = var.tags
 }
 
-resource "aws_iam_role_policy" "ssm" {
-  count = var.task_execution_role_arn == "" && length(local.ssm_parameters) > 0 ? 1 : 0
-
-  name   = "ssm-parameter-access-${var.service_name}-${data.aws_region.current.name}"
-  role   = aws_iam_role.task_execution_role[0].id
-  policy = data.aws_iam_policy_document.ssm.json
-}
-
-data "aws_iam_policy_document" "ssm" {
-  statement {
-    actions   = ["ssm:GetParameter*", "ssm:DescribeParameters"]
-    resources = local.ssm_parameters
-  }
-}
-
 resource "aws_iam_role_policy" "ecr" {
   count = var.task_execution_role_arn == "" ? 1 : 0
 
-  name   = "ecr-access-${var.service_name}-${data.aws_region.current.name}"
-  role   = aws_iam_role.task_execution_role[0].id
+  name   = "ecr-policy"
+  role   = aws_iam_role.task_execution_role[count.index].id
   policy = data.aws_iam_policy_document.ecr.json
 }
-
 
 data "aws_iam_policy_document" "ecr" {
   statement {
@@ -85,14 +69,15 @@ data "aws_iam_policy_document" "ecr" {
   }
 }
 
-resource "aws_iam_role_policy" "logs" {
-  count  = var.task_execution_role_arn == "" ? 1 : 0
-  name   = "logs-access-${var.service_name}-${data.aws_region.current.name}"
-  role   = aws_iam_role.task_execution_role[0].id
-  policy = data.aws_iam_policy_document.logs.json
+resource "aws_iam_role_policy" "logs_ssm" {
+  count = var.task_execution_role_arn == "" ? 1 : 0
+
+  name   = "logs-and-ssm-policy"
+  role   = aws_iam_role.task_execution_role[count.index].id
+  policy = data.aws_iam_policy_document.logs_ssm.json
 }
 
-data "aws_iam_policy_document" "logs" {
+data "aws_iam_policy_document" "logs_ssm" {
   statement {
     actions = [
       "logs:CreateLogStream",
@@ -104,6 +89,15 @@ data "aws_iam_policy_document" "logs" {
     resources = [
       "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:/aws/ecs/${var.service_name}*"
     ]
+  }
+
+  dynamic "statement" {
+    for_each = length(local.ssm_parameters) > 0 ? [true] : []
+
+    content {
+      actions   = ["ssm:GetParameter*", "ssm:DescribeParameters"]
+      resources = local.ssm_parameters
+    }
   }
 }
 
@@ -166,17 +160,10 @@ data "aws_iam_policy_document" "enable_execute_command" {
   }
 }
 
-resource "aws_iam_policy" "enable_execute_command" {
-  count = var.enable_execute_command ? 1 : 0
-
-  name   = "enable-execute-command-${var.service_name}-${data.aws_region.current.name}"
-  path   = "/ecs/task-role/"
-  policy = data.aws_iam_policy_document.enable_execute_command[count.index].json
-}
-
-resource "aws_iam_role_policy_attachment" "enable_execute_command" {
+resource "aws_iam_role_policy" "execute_command" {
   count = var.enable_execute_command && var.task_role_arn == "" ? 1 : 0
 
-  role       = aws_iam_role.ecs_task_role[count.index].name
-  policy_arn = aws_iam_policy.enable_execute_command[count.index].arn
+  name   = "execute-command-policy"
+  policy = data.aws_iam_policy_document.enable_execute_command[count.index].json
+  role   = aws_iam_role.ecs_task_role[count.index].id
 }

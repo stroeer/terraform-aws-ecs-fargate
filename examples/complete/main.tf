@@ -4,6 +4,11 @@ locals {
 
   vpc_cidr = "10.0.0.0/16"
   azs      = slice(data.aws_availability_zones.available.names, 0, 3)
+
+  secrets = {
+    foo = "CHANGE_ME"
+    bar = "CHANGE_ME"
+  }
 }
 
 resource "random_pet" "this" {
@@ -76,6 +81,14 @@ module "alb" {
   }
 }
 
+resource "aws_ssm_parameter" "secrets" {
+  for_each = local.secrets
+
+  name  = "/${random_pet.this.id}/${each.key}"
+  type  = "SecureString"
+  value = each.value
+}
+
 module "service" {
   source     = "../../"
   depends_on = [module.vpc]
@@ -95,6 +108,9 @@ module "service" {
   security_groups               = [aws_security_group.egress_all.id]
   vpc_id                        = module.vpc.vpc_id
 
+  // (optionally) enable ECS Exec, see https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-exec.html
+  enable_execute_command = true
+
   // configure autoscaling for this service
   appautoscaling_settings = {
     max_capacity           = 4
@@ -106,6 +122,13 @@ module "service" {
   // overwrite the default container definition or add further task definition parameters
   container_definition_overwrites = {
     readonlyRootFilesystem = false
+
+    secrets = [
+      for name, _ in local.secrets : {
+        name      = name
+        valueFrom = aws_ssm_parameter.secrets[name].arn
+      }
+    ]
   }
 
   // add listener rules that determine how the load balancer routes requests to its registered targets.
