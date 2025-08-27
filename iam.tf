@@ -101,29 +101,6 @@ data "aws_iam_policy_document" "logs_ssm" {
   }
 }
 
-data "aws_iam_policy_document" "enable_execute_command" {
-  count = var.enable_execute_command && var.task_role_arn == "" ? 1 : 0
-
-  statement {
-    actions = [
-      "ssmmessages:CreateControlChannel",
-      "ssmmessages:CreateDataChannel",
-      "ssmmessages:OpenControlChannel",
-      "ssmmessages:OpenDataChannel",
-    ]
-
-    resources = ["*"]
-  }
-}
-
-resource "aws_iam_role_policy" "execute_command" {
-  count = var.enable_execute_command ? 1 : 0
-
-  name   = "execute-command-policy"
-  policy = data.aws_iam_policy_document.enable_execute_command[0].json
-  role   = aws_iam_role.task_execution_role[0].id
-}
-
 data "aws_iam_policy_document" "task_execution_role" {
   count = var.task_execution_role_arn == "" ? 1 : 0
 
@@ -166,4 +143,27 @@ data "aws_iam_policy_document" "ecs_task_assume_role_policy" {
       identifiers = ["ecs-tasks.amazonaws.com"]
     }
   }
+}
+
+data "aws_iam_policy_document" "enable_execute_command" {
+  count = var.enable_execute_command && var.task_role_arn == "" ? 1 : 0
+
+  statement {
+    actions = [
+      "ssmmessages:CreateControlChannel",
+      "ssmmessages:CreateDataChannel",
+      "ssmmessages:OpenControlChannel",
+      "ssmmessages:OpenDataChannel",
+    ]
+
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_role_policy" "execute_command" {
+  count = var.enable_execute_command && var.task_role_arn == "" ? 1 : 0
+
+  name   = "execute-command-policy"
+  policy = data.aws_iam_policy_document.enable_execute_command[0].json
+  role   = aws_iam_role.ecs_task_role[0].id
 }
