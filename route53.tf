@@ -14,6 +14,7 @@ resource "aws_service_discovery_service" "this" {
     }
   }
 
+  // removing the deprecated `failure_threshold` attribute will force a recreation of the resource
   health_check_custom_config {
     failure_threshold = 1
   }

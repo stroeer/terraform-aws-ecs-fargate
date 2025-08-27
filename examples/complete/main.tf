@@ -21,7 +21,7 @@ resource "aws_ecs_cluster" "this" {
 
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "~> 5.0"
+  version = "~> 6.0"
 
   azs             = local.azs
   cidr            = local.vpc_cidr
