@@ -38,7 +38,7 @@ resource "aws_iam_role_policy" "ecr" {
   count = var.task_execution_role_arn == "" ? 1 : 0
 
   name   = "ecr-policy"
-  role   = aws_iam_role.task_execution_role[0].id
+  role   = aws_iam_role.task_execution_role[count.index].id
   policy = data.aws_iam_policy_document.ecr.json
 }
 
@@ -73,7 +73,7 @@ resource "aws_iam_role_policy" "logs_ssm" {
   count = var.task_execution_role_arn == "" ? 1 : 0
 
   name   = "logs-and-ssm-policy"
-  role   = aws_iam_role.task_execution_role[0].id
+  role   = aws_iam_role.task_execution_role[count.index].id
   policy = data.aws_iam_policy_document.logs_ssm.json
 }
 
@@ -164,6 +164,6 @@ resource "aws_iam_role_policy" "execute_command" {
   count = var.enable_execute_command && var.task_role_arn == "" ? 1 : 0
 
   name   = "execute-command-policy"
-  policy = data.aws_iam_policy_document.enable_execute_command[0].json
-  role   = aws_iam_role.ecs_task_role[0].id
+  policy = data.aws_iam_policy_document.enable_execute_command[count.index].json
+  role   = aws_iam_role.ecs_task_role[count.index].id
 }
