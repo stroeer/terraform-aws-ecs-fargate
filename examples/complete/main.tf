@@ -101,6 +101,9 @@ module "service" {
   security_groups               = [aws_security_group.egress_all.id]
   vpc_id                        = module.vpc.vpc_id
 
+  // (optionally) enable ECS Exec, see https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-exec.html
+  enable_execute_command = true
+
   // configure autoscaling for this service
   appautoscaling_settings = {
     max_capacity           = 4

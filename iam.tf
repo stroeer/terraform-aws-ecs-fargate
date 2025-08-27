@@ -1,16 +1,11 @@
 locals {
-  // retrieve all SSM parameter ARNs from container definitions and additional container definitions
-  // at plan time to create an conditional IAM policy for the task execution role
-  ssm_parameter_arns = distinct(compact(flatten(concat(
-    try([for s in try(var.container_definition_overwrites.secrets, []) :
-      try(s.valueFrom, try(jsondecode(s).valueFrom, null))
-    ], []),
-    [for c in var.additional_container_definitions :
-      try([for s in try(try(c.secrets, jsondecode(c).secrets, []), []) :
-        try(s.valueFrom, try(jsondecode(s).valueFrom, null))
-      ], [])
-    ]
-  ))))
+  ssm_parameters = flatten([
+    for container_def in local.container_definitions : (
+      lookup(container_def, "secrets", null) != null ? [
+        for secret in container_def.secrets : secret.valueFrom
+      ] : []
+    )
+  ])
 
   ecr_images = {
     for container_def in local.container_definitions : container_def.name => (
@@ -39,31 +34,13 @@ resource "aws_iam_role" "task_execution_role" {
   tags               = var.tags
 }
 
-resource "aws_iam_role_policy" "ssm" {
-  count = var.task_execution_role_arn == "" && length(local.ssm_parameter_arns) > 0 ? 1 : 0
-
-  name   = "ssm-parameter-access-${var.service_name}-${data.aws_region.current.name}"
-  role   = aws_iam_role.task_execution_role[0].id
-  policy = data.aws_iam_policy_document.ssm[0].json
-}
-
-data "aws_iam_policy_document" "ssm" {
-  count = var.task_execution_role_arn == "" && length(local.ssm_parameter_arns) > 0 ? 1 : 0
-
-  statement {
-    actions   = ["ssm:GetParameter*", "ssm:DescribeParameters"]
-    resources = local.ssm_parameter_arns
-  }
-}
-
 resource "aws_iam_role_policy" "ecr" {
   count = var.task_execution_role_arn == "" ? 1 : 0
 
-  name   = "ecr-access-${var.service_name}-${data.aws_region.current.name}"
+  name   = "ecr-policy"
   role   = aws_iam_role.task_execution_role[0].id
   policy = data.aws_iam_policy_document.ecr.json
 }
-
 
 data "aws_iam_policy_document" "ecr" {
   statement {
@@ -92,14 +69,15 @@ data "aws_iam_policy_document" "ecr" {
   }
 }
 
-resource "aws_iam_role_policy" "logs" {
-  count  = var.task_execution_role_arn == "" ? 1 : 0
-  name   = "logs-access-${var.service_name}-${data.aws_region.current.name}"
+resource "aws_iam_role_policy" "logs_ssm" {
+  count = var.task_execution_role_arn == "" ? 1 : 0
+
+  name   = "logs-and-ssm-policy"
   role   = aws_iam_role.task_execution_role[0].id
-  policy = data.aws_iam_policy_document.logs.json
+  policy = data.aws_iam_policy_document.logs_ssm.json
 }
 
-data "aws_iam_policy_document" "logs" {
+data "aws_iam_policy_document" "logs_ssm" {
   statement {
     actions = [
       "logs:CreateLogStream",
@@ -112,6 +90,38 @@ data "aws_iam_policy_document" "logs" {
       "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:/aws/ecs/${var.service_name}*"
     ]
   }
+
+  dynamic "statement" {
+    for_each = local.ssm_parameters
+
+    content {
+      actions   = ["ssm:GetParameter*", "ssm:DescribeParameters"]
+      resources = local.ssm_parameters
+    }
+  }
+}
+
+data "aws_iam_policy_document" "enable_execute_command" {
+  count = var.enable_execute_command && var.task_role_arn == "" ? 1 : 0
+
+  statement {
+    actions = [
+      "ssmmessages:CreateControlChannel",
+      "ssmmessages:CreateDataChannel",
+      "ssmmessages:OpenControlChannel",
+      "ssmmessages:OpenDataChannel",
+    ]
+
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_role_policy" "execute_command" {
+  count = var.enable_execute_command ? 1 : 0
+
+  name   = "execute-command-policy"
+  policy = data.aws_iam_policy_document.enable_execute_command[0].json
+  role   = aws_iam_role.task_execution_role[0].id
 }
 
 data "aws_iam_policy_document" "task_execution_role" {
@@ -156,34 +166,4 @@ data "aws_iam_policy_document" "ecs_task_assume_role_policy" {
       identifiers = ["ecs-tasks.amazonaws.com"]
     }
   }
-}
-
-data "aws_iam_policy_document" "enable_execute_command" {
-  count = var.enable_execute_command && var.task_role_arn == "" ? 1 : 0
-
-  statement {
-    actions = [
-      "ssmmessages:CreateControlChannel",
-      "ssmmessages:CreateDataChannel",
-      "ssmmessages:OpenControlChannel",
-      "ssmmessages:OpenDataChannel",
-    ]
-
-    resources = ["*"]
-  }
-}
-
-resource "aws_iam_policy" "enable_execute_command" {
-  count = var.enable_execute_command ? 1 : 0
-
-  name   = "enable-execute-command-${var.service_name}-${data.aws_region.current.name}"
-  path   = "/ecs/task-role/"
-  policy = data.aws_iam_policy_document.enable_execute_command[count.index].json
-}
-
-resource "aws_iam_role_policy_attachment" "enable_execute_command" {
-  count = var.enable_execute_command && var.task_role_arn == "" ? 1 : 0
-
-  role       = aws_iam_role.ecs_task_role[count.index].name
-  policy_arn = aws_iam_policy.enable_execute_command[count.index].arn
 }
