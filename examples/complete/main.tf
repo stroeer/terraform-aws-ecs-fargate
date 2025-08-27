@@ -4,6 +4,11 @@ locals {
 
   vpc_cidr = "10.0.0.0/16"
   azs      = slice(data.aws_availability_zones.available.names, 0, 3)
+
+  secrets = {
+    foo = "CHANGE_ME"
+    bar = "CHANGE_ME"
+  }
 }
 
 resource "random_pet" "this" {
@@ -76,10 +81,12 @@ module "alb" {
   }
 }
 
-resource "aws_ssm_parameter" "secret" {
-  name  = "FOO_SECRET"
+resource "aws_ssm_parameter" "secrets" {
+  for_each = local.secrets
+
+  name  = "/${random_pet.this.id}/${each.key}"
   type  = "SecureString"
-  value = "CHANGE_ME"
+  value = each.value
 }
 
 module "service" {
@@ -117,7 +124,10 @@ module "service" {
     readonlyRootFilesystem = false
 
     secrets = [
-      { "name" : aws_ssm_parameter.secret.name, "valueFrom" : aws_ssm_parameter.secret.arn }
+      for name, _ in local.secrets : {
+        name      = name
+        valueFrom = aws_ssm_parameter.secrets[name].arn
+      }
     ]
   }
 

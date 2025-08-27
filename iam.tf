@@ -92,7 +92,7 @@ data "aws_iam_policy_document" "logs_ssm" {
   }
 
   dynamic "statement" {
-    for_each = local.ssm_parameters
+    for_each = length(local.ssm_parameters) > 0 ? [true] : []
 
     content {
       actions   = ["ssm:GetParameter*", "ssm:DescribeParameters"]
