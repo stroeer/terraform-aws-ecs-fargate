@@ -1,0 +1,123 @@
+name: "PR LocalStack tflocal apply"
+
+on:
+  pull_request:
+    branches:
+      - main
+
+env:
+  AWS_ACCESS_KEY_ID: test
+  AWS_SECRET_ACCESS_KEY: test
+  AWS_REGION: eu-west-1
+  AWS_DEFAULT_REGION: eu-west-1
+  TF_IN_AUTOMATION: "true"
+
+jobs:
+  clean-apply:
+    name: clean state plan+apply (tflocal)
+    runs-on: ubuntu-latest
+    services:
+      localstack:
+        image: localstack/localstack:latest
+        ports:
+          - 4566:4566
+        env:
+          DEBUG: "1"
+          PERSISTENCE: "0"
+        options: >-
+          --health-cmd="sh -c 'curl -fsS http://localhost:4566/_localstack/health | grep -q \"\\\"services\\\"\"'"
+          --health-interval=5s
+          --health-timeout=2s
+          --health-retries=60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.7"
+
+      - name: Install tflocal
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install terraform-local
+          tflocal --version
+
+      - name: Terraform init (clean)
+        working-directory: examples/complete
+        run: tflocal init -upgrade
+
+      - name: Terraform plan (clean, target module.service)
+        working-directory: examples/complete
+        run: tflocal plan -target=module.service
+
+      - name: Terraform apply (clean, target module.service)
+        working-directory: examples/complete
+        run: tflocal apply -auto-approve -target=module.service
+
+  main-vs-pr-apply:
+    name: main apply then overlay PR (tflocal)
+    runs-on: ubuntu-latest
+    needs: clean-apply
+    services:
+      localstack:
+        image: localstack/localstack:latest
+        ports:
+          - 4566:4566
+        env:
+          DEBUG: "1"
+          PERSISTENCE: "0"
+        options: >-
+          --health-cmd="sh -c 'curl -fsS http://localhost:4566/_localstack/health | grep -q \"\\\"services\\\"\"'"
+          --health-interval=5s
+          --health-timeout=2s
+          --health-retries=60
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          clean: true
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.7"
+
+      - name: Install tflocal
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install terraform-local
+          tflocal --version
+
+      - name: Terraform init (main)
+        working-directory: examples/complete
+        run: tflocal init -upgrade
+
+      - name: Terraform plan (main, target module.service)
+        working-directory: examples/complete
+        run: tflocal plan -target=module.service
+
+      - name: Terraform apply (main, target module.service)
+        working-directory: examples/complete
+        run: tflocal apply -auto-approve -target=module.service
+
+      - name: Checkout PR head (preserve TF state)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          clean: false
+
+      - name: Terraform re-init (PR)
+        working-directory: examples/complete
+        run: tflocal init -upgrade
+
+      - name: Terraform plan (PR over main state, target module.service)
+        working-directory: examples/complete
+        run: tflocal plan -target=module.service
+
+      - name: Terraform apply (PR over main state, target module.service)
+        working-directory: examples/complete
+        run: tflocal apply -auto-approve -target=module.service
