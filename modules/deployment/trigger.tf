@@ -1,4 +1,6 @@
 resource "aws_cloudwatch_event_rule" "this" {
+  region = var.region
+
   name        = "${var.service_name}-ecr-trigger"
   description = "Capture ECR push events."
 

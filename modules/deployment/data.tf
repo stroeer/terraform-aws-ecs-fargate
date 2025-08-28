@@ -1,5 +1,7 @@
 data "aws_caller_identity" "current" {}
-data "aws_region" "current" {}
+data "aws_region" "current" {
+  region = var.region
+}
 
 data "aws_iam_role" "code_build" {
   count = var.code_build_role != "" ? 1 : 0

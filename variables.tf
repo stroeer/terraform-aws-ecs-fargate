@@ -459,3 +459,9 @@ variable "task_role_arn" {
   description = "ARN of the IAM role that allows your Amazon ECS container task to make calls to other AWS services. If not specified, the default ECS task role created in this module will be used."
   type        = string
 }
+
+variable "region" {
+  description = "Alternative region used in all region-aware resources. If not set, the provider's region will be used."
+  default     = null
+  type        = string
+}
