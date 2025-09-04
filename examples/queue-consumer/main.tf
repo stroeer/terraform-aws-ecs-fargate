@@ -9,6 +9,11 @@ resource "random_pet" "this" {
 
 resource "aws_ecs_cluster" "this" {
   name = random_pet.this.id
+
+  setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
 }
 
 module "vpc" {
@@ -28,8 +33,29 @@ module "vpc" {
   }
 }
 
+# KMS key for SQS queue encryption
+resource "aws_kms_key" "sqs" {
+  description             = "KMS key for SQS queue encryption"
+  deletion_window_in_days = 7
+
+  tags = {
+    Name = "${random_pet.this.id}-sqs-key"
+  }
+}
+
+resource "aws_kms_alias" "sqs" {
+  name          = "alias/${random_pet.this.id}-sqs"
+  target_key_id = aws_kms_key.sqs.key_id
+}
+
 resource "aws_sqs_queue" "example" {
   name = "${random_pet.this.id}-queue"
+
+  # Enable encryption with customer-managed key
+  kms_master_key_id = aws_kms_key.sqs.arn
+
+  # Enable encryption in transit
+  sqs_managed_sse_enabled = false # Use customer-managed key instead
 }
 
 # Example service that consumes from SQS queue without exposing any ports
@@ -70,6 +96,14 @@ module "queue_consumer_service" {
           "sqs:GetQueueAttributes"
         ]
         Resource = aws_sqs_queue.example.arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "kms:Decrypt",
+          "kms:DescribeKey"
+        ]
+        Resource = aws_kms_key.sqs.arn
       }
     ]
   })
