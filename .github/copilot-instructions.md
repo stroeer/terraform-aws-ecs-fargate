@@ -125,4 +125,25 @@ Always reference these instructions first and fallback to search or bash command
 - Trivy: 0.66.0+
 - terraform-docs: 0.18.0+
 
+### Commit and PR Conventions
+This repository uses [Conventional Commits](https://www.conventionalcommits.org/) for PR titles and follows semantic versioning:
+
+**Required PR Title Format**: `<type>: <description>`
+
+**Allowed Types**:
+- `fix:` - Bug fixes and patches
+- `feat:` - New features and enhancements  
+- `docs:` - Documentation changes
+- `ci:` - CI/CD pipeline changes
+- `chore:` - Maintenance tasks, dependency updates
+- `refactor:` - Code refactoring without functional changes
+
+**Examples**:
+- `fix: resolve CloudWatch Logs IAM permissions assignment`
+- `feat: add App Mesh integration support`
+- `docs: update README with new usage examples`
+- `chore: upgrade Terraform provider to v6.0`
+
+**Validation**: PR titles are automatically validated by GitHub Actions. PRs with incorrect titles will fail the `pr title` check.
+
 Always run the known-working validation steps and use the Make targets for consistency across environments.
