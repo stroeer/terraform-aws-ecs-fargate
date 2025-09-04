@@ -36,13 +36,16 @@ locals {
     } : null)
 
     # concat with var.extra_port_mappings
-    portMappings = concat([
-      {
-        hostPort      = var.container_port,
-        containerPort = var.container_port,
-        protocol      = "tcp"
-      }
-    ], var.extra_port_mappings)
+    portMappings = concat(
+      var.container_port != null ? [
+        {
+          hostPort      = var.container_port,
+          containerPort = var.container_port,
+          protocol      = "tcp"
+        }
+      ] : [],
+      var.extra_port_mappings
+    )
 
     ulimits = startswith(upper(var.operating_system_family), "WINDOWS") ? [] : [
       {

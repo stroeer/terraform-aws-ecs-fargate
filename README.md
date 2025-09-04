@@ -68,6 +68,52 @@ module "service" {
   ]
 }
 ```
+
+### without exposed ports (queue consumers, stream processors, etc.)
+
+For applications that don't need to expose HTTP/TCP ports (e.g., SQS queue consumers, Kinesis stream processors, DynamoDB stream processors), you can omit the `container_port` parameter:
+
+see [example](examples/queue-consumer) for details
+
+```terraform
+module "queue_consumer" {
+  source = "registry.terraform.io/stroeer/ecs-fargate/aws"
+
+  cluster_id                    = aws_ecs_cluster.this.id
+  service_name                  = "my-queue-consumer"
+  vpc_id                        = module.vpc.vpc_id
+  # Note: container_port is not specified - no ports exposed
+  create_ingress_security_group = false # No ingress needed
+  create_deployment_pipeline    = false
+  desired_count                 = 1
+  cpu                           = 256
+  memory                        = 512
+
+  container_definition_overwrites = {
+    environment = [
+      {
+        name  = "QUEUE_URL"
+        value = aws_sqs_queue.example.url
+      }
+    ]
+  }
+
+  policy_document = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "sqs:ReceiveMessage",
+          "sqs:DeleteMessage",
+          "sqs:GetQueueAttributes"
+        ]
+        Resource = aws_sqs_queue.example.arn
+      }
+    ]
+  })
+}
+```
 ### with autoscaling
 
 ```terraform
@@ -145,6 +191,7 @@ for example.
 ## Examples
 
 - [complete](examples/complete): complete example showcasing ALB integration, autoscaling and task definition configuration
+- [queue-consumer](examples/queue-consumer): example of a service that doesn't expose any ports (SQS queue consumer)
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
