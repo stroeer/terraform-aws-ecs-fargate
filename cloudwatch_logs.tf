@@ -7,7 +7,7 @@ resource "aws_cloudwatch_log_group" "containers" {
 }
 
 data "aws_iam_policy_document" "cloudwatch_logs_policy" {
-  count = var.cloudwatch_logs.enabled && var.task_role_arn == "" ? 1 : 0
+  count = var.cloudwatch_logs.enabled && var.task_execution_role_arn == "" ? 1 : 0
 
   statement {
     actions = [
@@ -22,16 +22,16 @@ data "aws_iam_policy_document" "cloudwatch_logs_policy" {
 }
 
 resource "aws_iam_policy" "cloudwatch_logs_policy" {
-  count = var.task_role_arn == "" ? 1 : 0
+  count = var.cloudwatch_logs.enabled && var.task_execution_role_arn == "" ? 1 : 0
 
   name   = "cw-logs-access-${var.service_name}-${data.aws_region.current.region}"
-  path   = "/ecs/task-role/"
+  path   = "/ecs/"
   policy = data.aws_iam_policy_document.cloudwatch_logs_policy[count.index].json
 }
 
 resource "aws_iam_role_policy_attachment" "cloudwatch_logs_policy" {
-  count = var.cloudwatch_logs.enabled && var.task_role_arn == "" ? 1 : 0
+  count = var.cloudwatch_logs.enabled && var.task_execution_role_arn == "" ? 1 : 0
 
-  role       = aws_iam_role.ecs_task_role[count.index].name
+  role       = aws_iam_role.task_execution_role[count.index].name
   policy_arn = aws_iam_policy.cloudwatch_logs_policy[count.index].arn
 }
