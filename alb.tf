@@ -20,6 +20,7 @@ resource "aws_alb_target_group" "main" {
   lambda_multi_value_headers_enabled = lookup(var.target_groups[count.index], "lambda_multi_value_headers_enabled", false)
   load_balancing_algorithm_type      = lookup(var.target_groups[count.index], "load_balancing_algorithm_type", null)
   connection_termination             = lookup(var.target_groups[count.index], "connection_termination", false)
+  preserve_client_ip                 = lookup(var.target_groups[count.index], "preserve_client_ip", null)
 
   dynamic "health_check" {
     for_each = length(keys(lookup(var.target_groups[count.index], "health_check", {}))) == 0 ? [] : [
