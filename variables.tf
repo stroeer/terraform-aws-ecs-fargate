@@ -459,3 +459,15 @@ variable "task_role_arn" {
   description = "ARN of the IAM role that allows your Amazon ECS container task to make calls to other AWS services. If not specified, the default ECS task role created in this module will be used."
   type        = string
 }
+
+variable "aws_iam_openid_connect_provider" {
+  default     = ""
+  description = "The id of the aws iam openid provider."
+  type        = string
+}
+
+variable "ecr_statements" {
+  description = "A list of statements to allow ecr access based upon."
+  type        = list(string)
+  default     = []
+}

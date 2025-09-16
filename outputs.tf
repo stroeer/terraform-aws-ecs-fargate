@@ -68,3 +68,13 @@ output "alb_target_group_arn_suffixes" {
   description = "ARN suffixes of the created target groups."
   value       = aws_alb_target_group.main[*].arn_suffix
 }
+
+output "github_oidc_ecr_access_arn" {
+  description = "The ARN to access the ecr via github oidc."
+  value       = try(aws_iam_role.ecr_access[0].arn, "")
+}
+
+output "github_oidc_ecr_access_name" {
+  description = "The ARN to access the ecr via github oidc."
+  value       = try(aws_iam_role.ecr_access[0].name, "")
+}
