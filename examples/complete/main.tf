@@ -103,6 +103,7 @@ module "service" {
   desired_count                 = 2
   ecr_force_delete              = true
   ecr_image_tag                 = local.image_tag
+  ecr_cross_region_replication_destination_region_names = ["eu-north-1"]
   memory                        = 512
   service_name                  = random_pet.this.id
   security_groups               = [aws_security_group.egress_all.id]
