@@ -249,27 +249,27 @@ module "code_deploy" {
   source = "./modules/deployment"
   count  = var.create_deployment_pipeline && (var.create_ecr_repository || var.ecr_repository_name != "") ? 1 : 0
 
-  cluster_name                            = var.cluster_id
-  container_name                          = local.container_name
-  code_build_environment_compute_type     = var.code_build_environment_compute_type
-  code_build_environment_image            = var.code_build_environment_image
-  code_build_environment_type             = var.code_build_environment_type
-  codestar_notifications_detail_type      = var.codestar_notifications_detail_type
-  codestar_notifications_event_type_ids   = var.codestar_notifications_event_type_ids
-  codestar_notifications_target_arn       = var.codestar_notifications_target_arn
-  codestar_notification_kms_master_key_id = var.codestar_notifications_kms_master_key_id
-  ecr_repository_name                     = var.create_ecr_repository ? module.ecr[count.index].name : var.ecr_repository_name
-  ecr_image_tag                           = var.ecr_image_tag
-  service_name                            = var.service_name
-  code_build_role                         = var.code_build_role_name
-  code_build_log_retention_in_days        = var.code_build_log_retention_in_days
-  code_pipeline_role                      = var.code_pipeline_role_name
-  code_pipeline_type                      = var.code_pipeline_type
-  code_pipeline_variables                 = var.code_pipeline_variables
-  artifact_bucket                         = var.code_pipeline_artifact_bucket
-  artifact_bucket_server_side_encryption  = var.code_pipeline_artifact_bucket_sse
-
-  tags = var.tags
+  cluster_name                                          = var.cluster_id
+  container_name                                        = local.container_name
+  code_build_environment_compute_type                   = var.code_build_environment_compute_type
+  code_build_environment_image                          = var.code_build_environment_image
+  code_build_environment_type                           = var.code_build_environment_type
+  codestar_notifications_detail_type                    = var.codestar_notifications_detail_type
+  codestar_notifications_event_type_ids                 = var.codestar_notifications_event_type_ids
+  codestar_notifications_target_arn                     = var.codestar_notifications_target_arn
+  codestar_notification_kms_master_key_id               = var.codestar_notifications_kms_master_key_id
+  ecr_repository_name                                   = var.create_ecr_repository ? module.ecr[count.index].name : var.ecr_repository_name
+  ecr_image_tag                                         = var.ecr_image_tag
+  service_name                                          = var.service_name
+  code_build_role                                       = var.code_build_role_name
+  code_build_log_retention_in_days                      = var.code_build_log_retention_in_days
+  code_pipeline_role                                    = var.code_pipeline_role_name
+  code_pipeline_type                                    = var.code_pipeline_type
+  code_pipeline_variables                               = var.code_pipeline_variables
+  artifact_bucket                                       = var.code_pipeline_artifact_bucket
+  artifact_bucket_server_side_encryption                = var.code_pipeline_artifact_bucket_sse
+  ecr_cross_region_replication_destination_region_names = var.ecr_cross_region_replication_destination_region_names
+  tags                                                  = var.tags
 }
 
 ##############

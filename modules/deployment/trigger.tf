@@ -6,7 +6,7 @@ resource "aws_cloudwatch_event_rule" "this" {
     tf_module = basename(path.module)
   })
 
-  event_pattern = <<PATTERN
+  event_pattern = <<HEREDOC
 {
     "detail-type": [
         "ECR Image Action"
@@ -16,7 +16,10 @@ resource "aws_cloudwatch_event_rule" "this" {
     ],
     "detail": {
         "action-type": [
-            "PUSH"
+            "${contains(
+    var.ecr_cross_region_replication_destination_region_names,
+    data.aws_region.current.name
+  ) ? "REPLICATE" : "PUSH"}"
         ],
         "image-tag": [
             "${var.ecr_image_tag}"
@@ -29,7 +32,7 @@ resource "aws_cloudwatch_event_rule" "this" {
         ]
     }
 }
-PATTERN
+HEREDOC
 }
 
 resource "aws_cloudwatch_event_target" "trigger" {
