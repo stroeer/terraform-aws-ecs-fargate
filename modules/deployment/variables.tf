@@ -130,6 +130,6 @@ variable "ecr_image_tag" {
 
 variable "ecr_cross_region_replication_destination_region_names" {
   description = "If the current region is one of the destination regions, the codepipeline will be triggered when an image with the specified tag is replicated - action-type `REPLICATE`. If the current region is the source region, the action-type of the trigger will be `PUSH`."
-  type = list(string)
-  default = []
+  type        = list(string)
+  default     = []
 }

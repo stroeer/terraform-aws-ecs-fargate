@@ -17,9 +17,9 @@ resource "aws_cloudwatch_event_rule" "this" {
     "detail": {
         "action-type": [
             "${contains(
-    var.ecr_cross_region_replication_destination_region_names,
-    data.aws_region.current.name
-  ) ? "REPLICATE" : "PUSH"}"
+  var.ecr_cross_region_replication_destination_region_names,
+  data.aws_region.current.name
+) ? "REPLICATE" : "PUSH"}"
         ],
         "image-tag": [
             "${var.ecr_image_tag}"
