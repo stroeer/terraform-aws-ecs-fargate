@@ -11,7 +11,6 @@ MAJOR              := $(word 1,$(VERSION_PARTS))
 MINOR              := $(word 2,$(VERSION_PARTS))
 PATCH              := $(word 3,$(VERSION_PARTS))
 
-BUMP ?= patch
 ifeq ($(BUMP), major)
 NEXT_VERSION		:= $(shell echo $$(($(MAJOR)+1)).0.0)
 else ifeq ($(BUMP), minor)
@@ -71,7 +70,20 @@ check-git-branch: check-git-clean
 	git fetch --all --tags --prune
 	git checkout main
 
-release: check-git-branch bump
+.PHONY: check-bump
+check-bump:
+	@if [ -z "$(BUMP)" ]; then \
+		echo "Error: BUMP variable must be specified for release."; \
+		echo "Usage: make release BUMP=major|minor|patch"; \
+		exit 1; \
+	fi
+	@if [ "$(BUMP)" != "major" ] && [ "$(BUMP)" != "minor" ] && [ "$(BUMP)" != "patch" ]; then \
+		echo "Error: BUMP must be one of: major, minor, patch"; \
+		echo "Usage: make release BUMP=major|minor|patch"; \
+		exit 1; \
+	fi
+
+release: check-bump check-git-branch bump
 	git add README.md
 	git commit -vsam "Bump version to $(NEXT_TAG)"
 	git tag -a $(NEXT_TAG) -m "$(NEXT_TAG)"
