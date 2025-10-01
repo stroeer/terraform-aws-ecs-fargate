@@ -1,6 +1,6 @@
-resource "aws_cloudwatch_event_rule" "this" {
+resource "aws_cloudwatch_event_rule" "ecr-action" {
   name        = "${var.service_name}-ecr-trigger"
-  description = "Capture ECR push events."
+  description = "Capture ECR push and replication events."
 
   tags = merge(var.tags, {
     tf_module = basename(path.module)
@@ -9,17 +9,14 @@ resource "aws_cloudwatch_event_rule" "this" {
   event_pattern = <<HEREDOC
 {
     "detail-type": [
-        "ECR Image Action"
+        "ECR Image Action", "ECR Replication Action"
     ],
     "source": [
         "aws.ecr"
     ],
     "detail": {
         "action-type": [
-            "${contains(
-  var.ecr_cross_region_replication_destination_region_names,
-  data.aws_region.current.name
-) ? "REPLICATE" : "PUSH"}"
+            "REPLICATE", "PUSH"
         ],
         "image-tag": [
             "${var.ecr_image_tag}"
@@ -36,7 +33,7 @@ HEREDOC
 }
 
 resource "aws_cloudwatch_event_target" "trigger" {
-  rule      = aws_cloudwatch_event_rule.this.name
+  rule      = aws_cloudwatch_event_rule.ecr-action.name
   target_id = "CodePipeline"
   arn       = aws_codepipeline.codepipeline.arn
   role_arn  = aws_iam_role.trigger.arn
