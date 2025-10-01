@@ -93,21 +93,20 @@ module "service" {
   source     = "../../"
   depends_on = [module.vpc]
 
-  availability_zone_rebalancing                         = "ENABLED"
-  cpu                                                   = 256
-  cpu_architecture                                      = "ARM64"
-  cluster_id                                            = aws_ecs_cluster.this.id
-  container_port                                        = local.container_port
-  create_ingress_security_group                         = true
-  create_deployment_pipeline                            = false
-  desired_count                                         = 2
-  ecr_force_delete                                      = true
-  ecr_image_tag                                         = local.image_tag
-  ecr_cross_region_replication_destination_region_names = ["eu-north-1"]
-  memory                                                = 512
-  service_name                                          = random_pet.this.id
-  security_groups                                       = [aws_security_group.egress_all.id]
-  vpc_id                                                = module.vpc.vpc_id
+  availability_zone_rebalancing = "ENABLED"
+  cpu                           = 256
+  cpu_architecture              = "ARM64"
+  cluster_id                    = aws_ecs_cluster.this.id
+  container_port                = local.container_port
+  create_ingress_security_group = true
+  create_deployment_pipeline    = false
+  desired_count                 = 2
+  ecr_force_delete              = true
+  ecr_image_tag                 = local.image_tag
+  memory                        = 512
+  service_name                  = random_pet.this.id
+  security_groups               = [aws_security_group.egress_all.id]
+  vpc_id                        = module.vpc.vpc_id
 
   // (optionally) enable ECS Exec, see https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-exec.html
   enable_execute_command = true

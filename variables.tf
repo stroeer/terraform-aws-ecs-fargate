@@ -324,12 +324,6 @@ variable "ecr_image_tag_mutability" {
   default = "MUTABLE"
 }
 
-variable "ecr_cross_region_replication_destination_region_names" {
-  description = "If the current region is one of the destination regions, the codepipeline will be triggered when an image with the specified tag is replicated - action-type `REPLICATE`. If the current region is the source region, the action-type of the trigger will be `PUSH`. Image replication needs to be enabled on ECR per region for this to work."
-  type        = list(string)
-  default     = []
-}
-
 variable "efs_volumes" {
   default     = []
   description = "Configuration block for EFS volumes."
