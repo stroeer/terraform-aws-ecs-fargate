@@ -1,3 +1,8 @@
+moved {
+  from = aws_cloudwatch_event_rule.this
+  to   = aws_cloudwatch_event_rule.ecr-action
+}
+
 resource "aws_cloudwatch_event_rule" "ecr-action" {
   name        = "${var.service_name}-ecr-trigger"
   description = "Capture ECR push and replication events."
