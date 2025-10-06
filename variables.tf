@@ -9,8 +9,9 @@ variable "cluster_id" {
 }
 
 variable "container_port" {
-  description = "The port used by the app within the container."
+  description = "The port used by the app within the container. Optional for apps that don't expose ports (e.g., stream consumers, queue processors)."
   type        = number
+  default     = null
 }
 
 variable "service_name" {
