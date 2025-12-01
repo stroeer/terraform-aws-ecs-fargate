@@ -42,7 +42,9 @@ locals {
       options = {
         Aws_Auth           = "On"
         Aws_Region         = null != var.firelens.aws_region ? var.firelens.aws_region : data.aws_region.current.region
+        AWS_Service_Name   = var.firelens.aws_service_name
         Host               = var.firelens.opensearch_host
+        Compress           = "gzip"
         Logstash_Format    = "true"
         Logstash_Prefix    = "${var.service_name}-envoy"
         Name               = "opensearch"

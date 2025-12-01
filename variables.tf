@@ -351,6 +351,7 @@ variable "firelens" {
     init_config_files            = optional(list(string), [])
     log_level                    = optional(string, "info")
     opensearch_host              = optional(string, "")
+    aws_service_name             = optional(string, "es")
     aws_region                   = optional(string)
   })
 }
