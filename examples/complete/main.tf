@@ -169,8 +169,6 @@ resource "aws_security_group" "egress_all" {
   vpc_id      = module.vpc.vpc_id
 
   # make sure to secure traffic in production environments
-  # see https://avd.aquasec.com/misconfig/aws/ec2/avd-aws-0104/#Terraform
-  #trivy:ignore:AVD-AWS-0104
   egress {
     from_port        = 0
     to_port          = 0

@@ -70,7 +70,6 @@ data "aws_iam_policy_document" "code_pipepline_permissions" {
   }
 
   # cloudtrail reports that codepipeline actually requires access to `*`
-  #trivy:ignore:AVD-AWS-0057
   statement {
     actions = [
       "ecs:DescribeTaskDefinition",
