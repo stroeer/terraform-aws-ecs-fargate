@@ -1,6 +1,7 @@
 resource "aws_ecr_repository" "this" {
-  force_delete         = var.force_delete
-  image_tag_mutability = var.image_tag_mutability #tfsec:ignore:aws-ecr-enforce-immutable-repository
+  force_delete = var.force_delete
+  # wiz-scan ignore-line
+  image_tag_mutability = var.image_tag_mutability
   name                 = var.name
   tags                 = var.tags
 

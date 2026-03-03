@@ -1,0 +1,8 @@
+# Configuration file for excluding Wiz findings in this repository for all types of scans,
+# see https://docs.wiz.io/docs/exception-management-with-wiz-code#code-and-ci-cd-policy-exclusions for details.
+ignore:
+  global_paths:
+    ".terraform/**":
+      reason: BY_DESIGN
+    "**/.terraform/**":
+      reason: BY_DESIGN

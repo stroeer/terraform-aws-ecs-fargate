@@ -53,6 +53,6 @@ data "aws_iam_policy_document" "codebuild" {
       "s3:PutObject"
     ]
 
-    resources = ["${local.artifact_bucket_arn}/*"] #tfsec:ignore:aws-iam-no-policy-wildcards
+    resources = ["${local.artifact_bucket_arn}/*"]
   }
 }

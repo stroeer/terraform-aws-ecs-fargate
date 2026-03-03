@@ -23,7 +23,7 @@ NEXT_TAG 			:= v$(NEXT_VERSION)
 STACKS = $(shell find . -not -path "*/\.*" -iname "*.tf" | sed -E "s|/[^/]+$$||" | sort --unique)
 ROOT_DIR := $(shell pwd)
 
-all: fmt validate tflint trivy
+all: fmt validate tflint
 
 init: ## Initialize a Terraform working directory
 	@echo "+ $@"
@@ -53,9 +53,11 @@ tflint: ## Runs tflint on all Terraform files
 		tflint --chdir=$$s --format=compact --config=$(ROOT_DIR)/.tflint.hcl || exit 1;\
 	done;
 
-trivy: ## Runs trivy on all Terraform files
+.PHONY: wiz
+wiz: ## Runs wizcli scan on repo or specific stack (make wiz STACK=modules/deployment)
 	@echo "+ $@"
-	@trivy config  --exit-code 1 --severity HIGH --tf-exclude-downloaded-modules .
+	@command -v wizcli >/dev/null 2>&1 || { echo >&2 "Please install wizcli: 'brew install --cask wizcli'"; exit 1; }
+	@wizcli scan dir '$(or $(STACK),.)' --use-device-code --name "terraform-aws-ecs-fargate" -p "$${WIZCLI_POLICY:-Buzz IaC Policy}" --disabled-scanners=AIModels,Malware --by-policy-hits=BLOCK --no-publish --ignore-comments
 
 bump ::
 	@echo bumping version from $(VERSION_TAG) to $(NEXT_TAG)

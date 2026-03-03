@@ -7,14 +7,17 @@ repos:
         args:
           - --init-args=-backend=false
       - id: terraform_tflint
-      - id: terraform_trivy
-        args:
-          - --args=--tf-exclude-downloaded-modules
-          - --args=--skip-dirs "**/.terraform/**/*"
-          - --args=--severity=HIGH,CRITICAL
       - id: terraform_docs
         args:
           - '--args=--lockfile=false'
+  - repo: local
+    hooks:
+      - id: wizcli-scan
+        name: Wiz scan
+        entry: ./scripts/wizcli-scan.sh
+        language: script
+        files: \.tf$
+        require_serial: true
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
