@@ -119,6 +119,28 @@ module "service" {
     target_value           = 25
   }
 
+  // add additional container definitions to the task definition, e.g. for sidecars
+  additional_container_definitions = [
+    {
+      name      = "datadog-agent"
+      image     = "public.ecr.aws/datadog/agent:latest"
+      essential = false
+      environment = [
+        { name = "DD_API_KEY", value = "CHANGE_ME" },
+        { name = "DD_SITE", value = "datadoghq.eu" },
+        { name = "ECS_FARGATE", value = "true" }
+      ]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = "/aws/ecs/${random_pet.this.id}"
+          "awslogs-region"        = var.region
+          "awslogs-stream-prefix" = "datadog"
+        }
+      }
+    }
+  ]
+
   // overwrite the default container definition or add further task definition parameters
   container_definition_overwrites = {
     readonlyRootFilesystem = false
