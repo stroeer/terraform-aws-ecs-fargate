@@ -14,13 +14,11 @@ locals {
   }
 
   ecr_repository_info = [
-    for image in values(local.ecr_images) : (
-      image != null ? {
-        account_id = regex("^([0-9]+)\\.dkr\\.ecr\\.[^/]+\\.amazonaws\\.com/", image)[0]
-        region     = regex("^[0-9]+\\.dkr\\.ecr\\.([^.]*)\\.amazonaws\\.com/", image)[0]
-        repo_name  = regex("^[0-9]+\\.dkr\\.ecr\\.[^/]+\\.amazonaws\\.com/(.+):.+$", image)[0]
-      } : null
-    )
+    for image in values(local.ecr_images) : {
+      account_id = regex("^([0-9]+)\\.dkr\\.ecr\\.[^/]+\\.amazonaws\\.com/", image)[0]
+      region     = regex("^[0-9]+\\.dkr\\.ecr\\.([^.]*)\\.amazonaws\\.com/", image)[0]
+      repo_name  = regex("^[0-9]+\\.dkr\\.ecr\\.[^/]+\\.amazonaws\\.com/([^:@]+)", image)[0]
+    } if image != null && can(regex("^([0-9]+)\\.dkr\\.ecr\\.[^/]+\\.amazonaws\\.com/", image))
   ]
 }
 
