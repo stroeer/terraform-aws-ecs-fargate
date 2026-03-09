@@ -6,8 +6,8 @@ locals {
   azs      = slice(data.aws_availability_zones.available.names, 0, 3)
 
   secrets = {
-    foo = "CHANGE_ME"
-    bar = "CHANGE_ME"
+    app_secret = "CHANGE_ME"
+    dd_api_key = "CHANGE_ME"
   }
 }
 
@@ -44,7 +44,7 @@ module "vpc" {
 
 module "alb" {
   source  = "terraform-aws-modules/alb/aws"
-  version = "~> 9.0"
+  version = "~> 10"
 
   enable_deletion_protection = false
   load_balancer_type         = "application"
@@ -123,13 +123,18 @@ module "service" {
   additional_container_definitions = [
     {
       name      = "datadog-agent"
-      image     = "public.ecr.aws/datadog/agent:latest"
+      image     = "public.ecr.aws/datadog/agent@sha256:1468b8eacce36914b1b1d94e9733346d672f7343d70315fed72c84e76a05964f"
       essential = false
+
       environment = [
-        { name = "DD_API_KEY", value = "CHANGE_ME" },
         { name = "DD_SITE", value = "datadoghq.eu" },
         { name = "ECS_FARGATE", value = "true" }
       ]
+
+      secrets = [
+        { name = "DD_API_KEY", valueFrom = aws_ssm_parameter.secrets["dd_api_key"].arn }
+      ]
+
       logConfiguration = {
         logDriver = "awslogs"
         options = {
@@ -143,13 +148,12 @@ module "service" {
 
   // overwrite the default container definition or add further task definition parameters
   container_definition_overwrites = {
-    readonlyRootFilesystem = false
+    environment = [
+      { name = "APP_ENV", value = "production" }
+    ]
 
     secrets = [
-      for name, _ in local.secrets : {
-        name      = name
-        valueFrom = aws_ssm_parameter.secrets[name].arn
-      }
+      { name = "APP_SECRET", valueFrom = aws_ssm_parameter.secrets["app_secret"].arn }
     ]
   }
 
