@@ -16,14 +16,14 @@ jobs:
       matrix:
         terraform: [ ~1.7 ]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
-      - uses: actions/cache@v5
+      - uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
         with:
           path: ~/.tflint.d/plugins
           key: ${{ matrix.os }}-tflint-${{ hashFiles('.tflint.hcl') }}
 
-      - uses: hashicorp/setup-terraform@v3
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
         with:
           terraform_version: ${{ matrix.terraform }}
 
