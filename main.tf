@@ -132,7 +132,7 @@ resource "aws_ecs_service" "this" {
     for_each = aws_alb_target_group.main
 
     content {
-      container_name   = local.container_name
+      container_name   = lookup(var.target_groups[load_balancer.key], "target_container", local.container_name)
       container_port   = load_balancer.value.port
       target_group_arn = load_balancer.value.arn
     }
