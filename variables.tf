@@ -124,7 +124,7 @@ variable "cloudwatch_logs" {
 
 variable "container_name" {
   default     = ""
-  description = "Defaults to var.service_name, can be overridden if it differs. Used as a target for LB."
+  description = "Defaults to var.service_name, can be overridden if it differs. Used as a target for LB, the service-discovery name and for the automated deployment pipeline ('which image should be updated?')."
   type        = string
 }
 
@@ -444,7 +444,7 @@ variable "tags" {
 }
 
 variable "target_groups" {
-  description = "A list of maps containing key/value pairs that define the target groups to be created. Order of these maps is important and the index of these are to be referenced in listener definitions. Required key/values: name, backend_protocol, backend_port"
+  description = "A list of maps containing key/value pairs that define the target groups to be created. Order of these maps is important and the index of these are to be referenced in listener definitions. Required key/values: name, backend_protocol, backend_port. Optional key/values: target_container (defaults to container_name/service_name, use this to route traffic to a specific container e.g. a sidecar)"
   type        = any
   default     = []
 }
