@@ -63,7 +63,7 @@ data "aws_subnets" "selected" {
 module "sg" {
   count   = var.create_ingress_security_group && length(local.ingress_targets) > 0 ? 1 : 0
   source  = "registry.terraform.io/terraform-aws-modules/security-group/aws"
-  version = "~> 5.0"
+  version = "~> 6.0"
 
   name                                  = "${var.service_name}-inbound-from-target-groups"
   description                           = "Allow TCP from target groups to port"
