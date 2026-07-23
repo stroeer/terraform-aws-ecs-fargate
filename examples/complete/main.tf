@@ -103,10 +103,21 @@ module "service" {
   desired_count                 = 2
   ecr_force_delete              = true
   ecr_image_tag                 = local.image_tag
-  memory                        = 512
-  service_name                  = random_pet.this.id
-  security_groups               = [aws_security_group.egress_all.id]
-  vpc_id                        = module.vpc.vpc_id
+  ecr_image_tag_mutability      = "IMMUTABLE_WITH_EXCLUSION"
+  ecr_image_tag_immutability_exclusion_filters = [
+    {
+      filter_type = "WILDCARD"
+      filter      = local.image_tag
+    },
+    {
+      filter_type = "WILDCARD"
+      filter      = "*-pr"
+    }
+  ]
+  memory          = 512
+  service_name    = random_pet.this.id
+  security_groups = [aws_security_group.egress_all.id]
+  vpc_id          = module.vpc.vpc_id
 
   // (optionally) enable ECS Exec, see https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-exec.html
   enable_execute_command = true
