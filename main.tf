@@ -236,13 +236,14 @@ module "ecr" {
   source = "./modules/ecr"
   count  = var.create_ecr_repository ? 1 : 0
 
-  custom_lifecycle_policy         = var.ecr_custom_lifecycle_policy
-  enable_default_lifecycle_policy = var.ecr_enable_default_lifecycle_policy
-  force_delete                    = var.ecr_force_delete
-  image_scanning_configuration    = var.ecr_image_scanning_configuration
-  image_tag_mutability            = var.ecr_image_tag_mutability
-  name                            = var.ecr_repository_name != "" ? var.ecr_repository_name : var.service_name
-  tags                            = var.tags
+  custom_lifecycle_policy               = var.ecr_custom_lifecycle_policy
+  enable_default_lifecycle_policy       = var.ecr_enable_default_lifecycle_policy
+  force_delete                          = var.ecr_force_delete
+  image_scanning_configuration          = var.ecr_image_scanning_configuration
+  image_tag_mutability                  = var.ecr_image_tag_mutability
+  image_tag_mutability_exclusion_filter = var.ecr_image_tag_immutability_exclusion_filters
+  name                                  = var.ecr_repository_name != "" ? var.ecr_repository_name : var.service_name
+  tags                                  = var.tags
 }
 
 module "code_deploy" {
