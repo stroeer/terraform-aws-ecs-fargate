@@ -320,8 +320,31 @@ variable "ecr_image_scanning_configuration" {
 }
 
 variable "ecr_image_tag_mutability" {
-  type    = string
-  default = "MUTABLE"
+  type        = string
+  default     = "MUTABLE"
+  description = "The tag mutability setting for the repository."
+  validation {
+    condition = contains(
+      ["MUTABLE", "IMMUTABLE", "IMMUTABLE_WITH_EXCLUSION", "MUTABLE_WITH_EXCLUSION"],
+      var.ecr_image_tag_mutability
+    )
+    error_message = "Must be one of MUTABLE, IMMUTABLE, IMMUTABLE_WITH_EXCLUSION, MUTABLE_WITH_EXCLUSION"
+  }
+}
+
+variable "ecr_image_tag_immutability_exclusion_filters" {
+  type = list(object({
+    filter      = string
+    filter_type = string
+  }))
+  default     = []
+  description = "ECR tag immutability exclusion filters. Only applicable when ecr_image_tag_mutability is in (IMMUTABLE_WITH_EXCLUSION, MUTABLE_WITH_EXCLUSION). All filter must must contain only letters, numbers, and special characters (._-), be up to 128 characters long and can contain a maximum of 2 wildcards. All filter_type must be WILDCARD."
+  validation {
+    condition = (length(var.ecr_image_tag_immutability_exclusion_filters) == 0 || contains(["IMMUTABLE_WITH_EXCLUSION", "MUTABLE_WITH_EXCLUSION"], var.ecr_image_tag_mutability)) && alltrue(
+      [for ief in var.ecr_image_tag_immutability_exclusion_filters : (ief.filter_type == "WILDCARD")]
+    )
+    error_message = "Only applicable when ecr_image_tag_mutability in (IMMUTABLE_WITH_EXCLUSION, MUTABLE_WITH_EXCLUSION). All filter_type must be WILDCARD."
+  }
 }
 
 variable "efs_volumes" {
