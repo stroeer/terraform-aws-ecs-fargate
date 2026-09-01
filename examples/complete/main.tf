@@ -170,6 +170,7 @@ module "service" {
 
   // add listener rules that determine how the load balancer routes requests to its registered targets.
   https_listener_rules = [{
+    name         = "Forward to ECS/${random_pet.this.id}"
     listener_arn = module.alb.listeners["http"].arn
 
     actions = [{

@@ -392,7 +392,7 @@ variable "health_check_grace_period_seconds" {
 }
 
 variable "https_listener_rules" {
-  description = "A list of maps describing the Listener Rules for this ALB. Required key/values: actions, conditions. Optional key/values: priority, https_listener_index (default to https_listeners[count.index])"
+  description = "A list of maps describing the Listener Rules for this ALB. Required key/values: actions, conditions. Optional key/values: name (used as the rule's Name tag), priority, https_listener_index (default to https_listeners[count.index])"
   type        = any
   default     = []
 }

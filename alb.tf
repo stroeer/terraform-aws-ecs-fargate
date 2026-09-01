@@ -253,4 +253,6 @@ resource "aws_alb_listener_rule" "public" {
       }
     }
   }
+
+  tags = merge(var.tags, try({ Name = var.https_listener_rules[count.index].name }, {}))
 }
