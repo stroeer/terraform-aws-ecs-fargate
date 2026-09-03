@@ -61,11 +61,11 @@ wiz: ## Runs wizcli scan on repo or specific stack (make wiz STACK=modules/deplo
 
 bump ::
 	@echo bumping version from $(VERSION_TAG) to $(NEXT_TAG)
-	@sed -i ''s/$(VERSION)/$(NEXT_VERSION)/g README.md
+	@sed -i '' s/$(VERSION)/$(NEXT_VERSION)/g README.md
 
 .PHONY: check-git-clean
 check-git-clean:
-	@#git diff-index --quiet HEAD || (echo "There are uncomitted changes"; exit 1)
+	@git diff-index --quiet HEAD || (echo "There are uncomitted changes"; exit 1)
 
 .PHONY: check-git-branch
 check-git-branch: check-git-clean
