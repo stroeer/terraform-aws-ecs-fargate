@@ -9,7 +9,7 @@ Terraform module to create [Fargate ECS](https://docs.aws.amazon.com/AmazonECS/l
 * integration with AWS Cloud Map [service discovery](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-discovery.html)
 * configuration of listener rules and target groups for [Application Load Balancers](#Load-Balancing)
 * [Elastic Container Registry](https://docs.aws.amazon.com/AmazonECR/latest/userguide/what-is-ecr.html) configuration like image scanning and lifecycle policies
-* [blue/green deployments](#Automated-service-deployment) using CodePipeline and CodeDeploy
+* [blue/green deployments](#with-bluegreen-deployments) using CodePipeline and CodeDeploy
 * configuration of [custom log routing](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_firelens.html) using FireLens and Fluent Bit
 * CloudWatch log group and IAM permissions for storing container logs
 * [AWS Distro for OpenTelemetry](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/trace-data.html) sidecar and IAM permission configuration
