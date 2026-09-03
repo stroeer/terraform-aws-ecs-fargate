@@ -34,22 +34,6 @@ variable "additional_container_definitions" {
   type        = list(any)
 }
 
-variable "app_mesh" {
-  default     = {}
-  description = "Configuration of optional AWS App Mesh integration using an Envoy sidecar."
-  type = object({
-    container_definition = optional(any, {})
-    container_name       = optional(string, "envoy")
-    enabled              = optional(bool, false)
-    mesh_name            = optional(string, "apps")
-
-    tls = optional(object({
-      acm_certificate_arn = optional(string)
-      root_ca_arn         = optional(string)
-    }), {})
-  })
-}
-
 variable "appautoscaling_settings" {
   default     = null
   description = "Autoscaling configuration for this service."
