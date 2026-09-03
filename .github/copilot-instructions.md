@@ -1,6 +1,6 @@
 # AWS ECS Fargate Terraform Module
 
-AWS ECS Fargate Terraform Module provides comprehensive infrastructure-as-code for deploying containerized applications on AWS ECS Fargate with ALB integration, autoscaling, blue/green deployments, service discovery, App Mesh integration, and observability features.
+AWS ECS Fargate Terraform Module provides comprehensive infrastructure-as-code for deploying containerized applications on AWS ECS Fargate with ALB integration, autoscaling, blue/green deployments, service discovery, and observability features.
 
 Always reference these instructions first and fallback to search or bash commands only when you encounter unexpected information that does not match the info here.
 
@@ -81,7 +81,6 @@ Always reference these instructions first and fallback to search or bash command
 - **Autoscaling**: Application autoscaling based on CPU/memory metrics
 - **Blue/Green Deployments**: CodePipeline + CodeDeploy automation
 - **Service Discovery**: AWS Cloud Map integration
-- **App Mesh**: Envoy sidecar and service mesh configuration
 - **Observability**: CloudWatch logs, OpenTelemetry, Fluent Bit log routing
 - **Security**: IAM roles, security groups, ECR image scanning
 
@@ -90,7 +89,7 @@ Always reference these instructions first and fallback to search or bash command
 - ALB configuration: `alb.tf` (target groups and listener rules)
 - IAM permissions: `iam.tf` (task and execution roles)
 - Container definitions: `container_definition.tf` (main app container)
-- Sidecar containers: `envoy.tf`, `fluentbit.tf`, `otel.tf`
+- Sidecar containers: `fluentbit.tf`, `otel.tf`
 - CloudWatch logging: `cloudwatch_logs.tf`
 - Route53/Service Discovery: `route53.tf`
 - Module inputs: `variables.tf` (100+ input variables)
@@ -101,7 +100,6 @@ Always reference these instructions first and fallback to search or bash command
 - With ALB: Configure `target_groups` and `https_listener_rules`
 - With autoscaling: Set `appautoscaling_settings` map
 - With blue/green deployments: Enable `create_deployment_pipeline = true`
-- With service mesh: Configure `app_mesh` settings
 
 ### Troubleshooting
 - **TFLint failures**: GitHub API rate limiting in CI is common, not a code issue
@@ -140,7 +138,7 @@ This repository uses [Conventional Commits](https://www.conventionalcommits.org/
 
 **Examples**:
 - `fix: resolve CloudWatch Logs IAM permissions assignment`
-- `feat: add App Mesh integration support`
+- `feat: add OpenTelemetry sidecar support`
 - `docs: update README with new usage examples`
 - `chore: upgrade Terraform provider to v6.0`
 

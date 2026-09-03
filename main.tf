@@ -40,13 +40,12 @@ locals {
 
   container_definitions = concat(
     [module.container_definition.merged],
-    var.app_mesh.enabled ? [module.envoy_container_definition.merged] : [],
     var.firelens.enabled ? [module.fluentbit_container_definition.merged] : [],
     var.otel.enabled ? [module.otel_container_definition.merged] : [],
     var.additional_container_definitions
   )
 
-  container_definitions_string = "[${join(",", concat(compact([local.app_container, local.envoy_container, local.fluentbit_container, local.otel_container])), compact(local.additional_sidecars))}]"
+  container_definitions_string = "[${join(",", concat(compact([local.app_container, local.fluentbit_container, local.otel_container])), compact(local.additional_sidecars))}]"
 }
 
 data "aws_subnets" "selected" {
@@ -202,24 +201,6 @@ resource "aws_ecs_task_definition" "this" {
     }
   }
 
-  dynamic "proxy_configuration" {
-    for_each = try(var.app_mesh.enabled, false) ? [true] : []
-
-    content {
-      container_name = var.app_mesh.container_name
-      type           = "APPMESH"
-
-      properties = {
-        AppPorts = join(",", concat([tostring(var.container_port)], [
-          for x in var.extra_port_mappings : x.containerPort
-        ]))
-        EgressIgnoredIPs = "169.254.170.2,169.254.169.254"
-        IgnoredGID       = "1337"
-        ProxyEgressPort  = 15001
-        ProxyIngressPort = 15000
-      }
-    }
-  }
 }
 
 # Simply specify the family to find the latest ACTIVE revision in that family.

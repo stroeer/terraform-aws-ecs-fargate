@@ -7,7 +7,6 @@ Terraform module to create [Fargate ECS](https://docs.aws.amazon.com/AmazonECS/l
 ## Features
 
 * integration with AWS Cloud Map [service discovery](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-discovery.html)
-* integration with [App Mesh](https://docs.aws.amazon.com/app-mesh/latest/userguide/what-is-app-mesh.html) including Envoy sidecar and IAM permission configuration
 * configuration of listener rules and target groups for [Application Load Balancers](#Load-Balancing)
 * [Elastic Container Registry](https://docs.aws.amazon.com/AmazonECR/latest/userguide/what-is-ecr.html) configuration like image scanning and lifecycle policies
 * [blue/green deployments]((#Automated-service-deployment)) using CodePipeline and CodeDeploy
@@ -170,7 +169,6 @@ for example.
 | <a name="module_code_deploy"></a> [code\_deploy](#module\_code\_deploy) | ./modules/deployment | n/a |
 | <a name="module_container_definition"></a> [container\_definition](#module\_container\_definition) | registry.terraform.io/cloudposse/config/yaml//modules/deepmerge | 1.0.2 |
 | <a name="module_ecr"></a> [ecr](#module\_ecr) | ./modules/ecr | n/a |
-| <a name="module_envoy_container_definition"></a> [envoy\_container\_definition](#module\_envoy\_container\_definition) | registry.terraform.io/cloudposse/config/yaml//modules/deepmerge | 1.0.2 |
 | <a name="module_fluentbit_container_definition"></a> [fluentbit\_container\_definition](#module\_fluentbit\_container\_definition) | registry.terraform.io/cloudposse/config/yaml//modules/deepmerge | 1.0.2 |
 | <a name="module_otel_container_definition"></a> [otel\_container\_definition](#module\_otel\_container\_definition) | registry.terraform.io/cloudposse/config/yaml//modules/deepmerge | 1.0.2 |
 | <a name="module_sg"></a> [sg](#module\_sg) | registry.terraform.io/terraform-aws-modules/security-group/aws | ~> 5.0 |
@@ -197,7 +195,6 @@ for example.
 | [aws_iam_role_policy.execute_command](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
 | [aws_iam_role_policy.logs_ssm](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
 | [aws_iam_role_policy_attachment.acm](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
-| [aws_iam_role_policy_attachment.appmesh](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.cloudwatch_logs_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.fluent_bit_config_access](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.otel](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
@@ -205,7 +202,6 @@ for example.
 | [aws_vpc_security_group_egress_rule.trusted_egress_attachment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_security_group_egress_rule) | resource |
 | [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
 | [aws_ecs_task_definition.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ecs_task_definition) | data source |
-| [aws_iam_policy.appmesh](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy) | data source |
 | [aws_iam_policy_document.acm](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.cloudwatch_logs_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.ecr](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
@@ -224,7 +220,6 @@ for example.
 | Name | Description | Type | Default | Required |
 | ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_additional_container_definitions"></a> [additional\_container\_definitions](#input\_additional\_container\_definitions) | Additional container definitions added to the task definition of this service, see https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html for allowed parameters. | `list(any)` | `[]` | no |
-| <a name="input_app_mesh"></a> [app\_mesh](#input\_app\_mesh) | Configuration of optional AWS App Mesh integration using an Envoy sidecar. | <pre>object({<br/>    container_definition = optional(any, {})<br/>    container_name       = optional(string, "envoy")<br/>    enabled              = optional(bool, false)<br/>    mesh_name            = optional(string, "apps")<br/><br/>    tls = optional(object({<br/>      acm_certificate_arn = optional(string)<br/>      root_ca_arn         = optional(string)<br/>    }), {})<br/>  })</pre> | `{}` | no |
 | <a name="input_appautoscaling_settings"></a> [appautoscaling\_settings](#input\_appautoscaling\_settings) | Autoscaling configuration for this service. | `map(any)` | `null` | no |
 | <a name="input_assign_public_ip"></a> [assign\_public\_ip](#input\_assign\_public\_ip) | Assign a public IP address to the ENI of this service. | `bool` | `false` | no |
 | <a name="input_availability_zone_rebalancing"></a> [availability\_zone\_rebalancing](#input\_availability\_zone\_rebalancing) | ECS automatically redistributes tasks within a service across Availability Zones (AZs) to mitigate the risk of impaired application availability due to underlying infrastructure failures and task lifecycle activities. The valid values are `ENABLED` and `DISABLED`. | `string` | `"DISABLED"` | no |
