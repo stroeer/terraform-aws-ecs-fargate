@@ -211,6 +211,26 @@ data "aws_ecs_task_definition" "this" {
 
 locals {
   container_name = var.container_name == "" ? var.service_name : var.container_name
+
+  # dynamically build a list of required sidecars for automated updating during deployment
+  deployment_sidecar_container_image_names = merge(
+    var.firelens.enabled ? {
+      (var.firelens.container_name) = {
+        "image_ssm_parameter_name" = "/internal/ecs/sidecar/fluent_bit_image"
+      }
+    } : {},
+    contains([for c in var.additional_container_definitions : try(c.name, "")], "envoy") ? {
+      "envoy" = {
+        "image_ssm_parameter_name" = "/internal/ecs/sidecar/envoy_image"
+      }
+    } : {},
+    var.otel.enabled ? {
+      "otel" = {
+        "image_ssm_parameter_name" = "/internal/ecs/sidecar/otel_image"
+      }
+    } : {}
+  )
+
 }
 
 module "ecr" {
@@ -243,6 +263,7 @@ module "code_deploy" {
   ecr_repository_name                     = var.create_ecr_repository ? module.ecr[count.index].name : var.ecr_repository_name
   ecr_image_tag                           = var.ecr_image_tag
   service_name                            = var.service_name
+  sidecar_container_image_names           = local.deployment_sidecar_container_image_names
   code_build_role                         = var.code_build_role_name
   code_build_log_retention_in_days        = var.code_build_log_retention_in_days
   code_pipeline_role                      = var.code_pipeline_role_name

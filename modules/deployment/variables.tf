@@ -127,3 +127,11 @@ variable "ecr_image_tag" {
   description = "Tag of the new image pushed to the Amazon ECR repository to trigger the deployment pipeline."
   type        = string
 }
+
+variable "sidecar_container_image_names" {
+  description = "Configuration map for sidecar containers. The key is the container name and the value holds the `image_ssm_parameter_name` of the sidecar image."
+  default     = {}
+  type = map(object({
+    image_ssm_parameter_name = string
+  }))
+}

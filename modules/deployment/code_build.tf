@@ -41,6 +41,15 @@ resource "aws_codebuild_project" "this" {
       name  = "CONTAINER_NAME"
       value = var.container_name
     }
+
+    dynamic "environment_variable" {
+      for_each = var.sidecar_container_image_names
+      content {
+        name  = "SIDE_CAR_${environment_variable.key}"
+        type  = "PARAMETER_STORE"
+        value = environment_variable.value.image_ssm_parameter_name
+      }
+    }
   }
 
   source {
@@ -52,12 +61,7 @@ phases:
   build:
     commands:
       - |
-        python -c 'import json, os
-        with open("imageDetail.json", "r") as json_file:
-            image_uri = json.load(json_file).get("ImageURI")
-            container_name = os.environ.get("CONTAINER_NAME")
-            with open("imagedefinitions.json", "w") as outfile:
-                json.dump([{"name": container_name, "imageUri": image_uri}], outfile)'
+        python -c '${indent(8, trimspace(file("${path.module}/imagedefinitions.py")))}'
 
       - cat imagedefinitions.json
 artifacts:
@@ -67,30 +71,28 @@ EOF
   }
 }
 
-/* Sample Input imageDetail.json
-{
-    "ImageSizeInBytes": "50801513",
-    "ImageDigest": "sha256:c3f76d75ee2150c7732b2b9c563234563550855c9f25f35cdd6754114c180cf9",
-    "Version": "1.0",
-    "ImagePushedAt": "Thu Oct 31 13:19:48 UTC 2019",
-    "RegistryId": "933782373565",
-    "RepositoryName": "code-deploy-sample",
-    "ImageURI": "933782373565.dkr.ecr.eu-west-1.amazonaws.com/code-deploy-sample@sha256:c3f76d75ee2150c7732b2b9c563234563550855c9f25f35cdd6754114c180cf9",
-    "ImageTags": [
-        "production",
-        "build_2",
-        "container.code-deploy-sample"
-    ]
-}
-*/
 
-/* Sample output imagedefinitions.json https://docs.aws.amazon.com/codepipeline/latest/userguide/file-reference.html
-
-[
-  {
-    "name": "sample-app",
-    "imageUri": "11111EXAMPLE.dkr.ecr.us-west-2.amazonaws.com/ecs-repo:latest"
-  }
-]
-
-*/
+# https://docs.aws.amazon.com/codepipeline/latest/userguide/file-reference.html
+# {
+#     "ImageSizeInBytes": "50801513",
+#     "ImageDigest": "sha256:c3f76d75ee2150c7732b2b9c563234563550855c9f25f35cdd6754114c180cf9",
+#     "Version": "1.0",
+#     "ImagePushedAt": "Thu Oct 31 13:19:48 UTC 2019",
+#     "RegistryId": "933782373565",
+#     "RepositoryName": "code-deploy-sample",
+#     "ImageURI": "933782373565.dkr.ecr.eu-west-1.amazonaws.com/code-deploy-sample@sha256:c3f76d75ee2150c7732b2b9c563234563550855c9f25f35cdd6754114c180cf9",
+#     "ImageTags": [
+#         "production",
+#         "build_2",
+#         "container.code-deploy-sample"
+#     ]
+# }
+#
+#  Sample output imagedefinitions.json https://docs.aws.amazon.com/codepipeline/latest/userguide/file-reference.html
+#
+# [
+#     {
+#         "name": "sample-app",
+#         "imageUri": "11111EXAMPLE.dkr.ecr.us-west-2.amazonaws.com/ecs-repo:latest"
+#     }
+# ]

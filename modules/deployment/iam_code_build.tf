@@ -55,4 +55,13 @@ data "aws_iam_policy_document" "codebuild" {
 
     resources = ["${local.artifact_bucket_arn}/*"]
   }
+
+  dynamic "statement" {
+    for_each = length(var.sidecar_container_image_names) > 0 ? [true] : []
+
+    content {
+      actions   = ["ssm:GetParameter", "ssm:GetParameters"]
+      resources = [for s in values(var.sidecar_container_image_names) : "arn:aws:ssm:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:parameter${s.image_ssm_parameter_name}"]
+    }
+  }
 }
